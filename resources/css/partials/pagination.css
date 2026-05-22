@@ -1,0 +1,57 @@
+/* ==========================================================================
+   Pagination
+   ========================================================================== */
+
+.ll-ba-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.ll-ba-pagination-button {
+  height: 44px;
+  width: 44px;
+  background-color: white;
+  border-radius: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .3s;
+  margin: 0 8px;
+
+  svg {
+    height: 20px;
+    width: 20px;
+    flex: none;
+    color: black;
+    transition: all .3s;
+  }
+
+  &:hover {
+    background-color: black;
+    color: white;
+  }
+}
+
+.ll-ba-page-link {
+  color: var(--general-body);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%;
+
+  &:hover {
+    color: var(--general-heading);
+  }
+}
+
+.ll-ba-page-current {
+  color: var(--general-heading);
+  text-decoration: underline;
+}
+
+.ll-ba-page-ellipsis {
+
+}

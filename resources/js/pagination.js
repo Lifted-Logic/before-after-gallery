@@ -15,7 +15,7 @@ export function renderPagination(el, totalPages, page, onPageChange) {
   const items = [];
 
   if (page > 1) {
-    items.push(`<a class="ll-ba-page-link" data-page="${page - 1}" href="#">&larr;</a>`);
+    items.push(`<a class="ll-ba-prev-link ll-ba-pagination-button" data-page="${page - 1}" href="#"><svg class='icon icon-arrow-left' aria-hidden='true'><use xlink:href='#icon-arrow-left'></use></svg></a>`);
   }
 
   const start = Math.max(1, page - 2);
@@ -28,7 +28,7 @@ export function renderPagination(el, totalPages, page, onPageChange) {
 
   for (let i = start; i <= end; i++) {
     if (i === page) {
-      items.push(`<span class="ll-ba-page-current">${i}</span>`);
+      items.push(`<span class="ll-ba-page-link ll-ba-page-current">${i}</span>`);
     } else {
       items.push(`<a class="ll-ba-page-link" data-page="${i}" href="#">${i}</a>`);
     }
@@ -40,12 +40,12 @@ export function renderPagination(el, totalPages, page, onPageChange) {
   }
 
   if (page < totalPages) {
-    items.push(`<a class="ll-ba-page-link" data-page="${page + 1}" href="#">&rarr;</a>`);
+    items.push(`<a class="ll-ba-next-link ll-ba-pagination-button" data-page="${page + 1}" href="#"><svg class='icon icon-arrow-right' aria-hidden='true'><use xlink:href='#icon-arrow-right'></use></svg></a>`);
   }
 
   el.innerHTML = `<nav class="ll-ba-pagination">${items.join('')}</nav>`;
 
-  el.querySelectorAll('.ll-ba-page-link').forEach(link => {
+  el.querySelectorAll('[data-page]').forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
       onPageChange(parseInt(link.dataset.page, 10));
