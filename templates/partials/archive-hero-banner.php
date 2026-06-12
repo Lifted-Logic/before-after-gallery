@@ -28,7 +28,7 @@ $hero_image   = $hero['image']   ?? null;
     <div class="ll-ba-hero-banner__row js-fade-group">
       <div class="ll-ba-hero-banner__content">
         <div class="wysiwyg">
-          <?= $hero_content ?>
+          <?= wp_kses_post( $hero_content ) ?>
         </div>
       </div>
       <?php if ( $hero_link ) : ?>

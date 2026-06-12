@@ -19,17 +19,17 @@ $posts   = $component_data['posts']   ?? [];
 $color_theme = $component_data['color_theme'] ?? '';
 ?>
 
-<div class="ll-ba-related-bna <?= $color_theme ?> component-spacing ba_grid-cols-container">
+<div class="ll-ba-related-bna <?= esc_attr( $color_theme ) ?> component-spacing ba_grid-cols-container">
   <div class="ll-ba-related-bna__container">
     <div class="ll-ba-related-bna__heading-content">
       <?php if ( $content ) : ?>
         <div class="wysiwyg">
-          <?= $content ?>
+          <?= wp_kses_post( $content ) ?>
         </div>
       <?php endif; ?>
       <?php if ( $link ) : ?>
-        <a class="btn-primary" href="<?= $link['url']; ?>" <?= $link['target'] ? 'target="' . $link['target'] . '"' : '' ?>>
-          <?= $link['title']; ?>
+        <a class="btn-primary" href="<?= esc_url( $link['url'] ?? '' ); ?>" <?= !empty( $link['target'] ) ? 'target="' . esc_attr( $link['target'] ) . '"' : '' ?>>
+          <?= esc_html( $link['title'] ?? '' ); ?>
           <?php if($link['target'] === '_blank') : ?>
             <span class="sr-only"> (opens in new tab)</span>
           <?php endif; ?>

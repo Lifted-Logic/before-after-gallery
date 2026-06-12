@@ -56,6 +56,8 @@ if ( !empty($images_field) ) {
             'single_image_id'  => $image['ll_ba_single_image'],
             'before_image_id'  => $image['ll_ba_before_image'],
             'after_image_id'   => $image['ll_ba_after_image'],
+            'video_url'        => $image['ll_ba_video_url'] ?? '',
+            'video_title'      => $image['ll_ba_video_title'] ?? '',
         ];
     }
 }
@@ -124,9 +126,9 @@ $provider_link   = $provider_term ? get_field( 'll_ba_provider_link',  'term_' .
                 'loading'        => true,
               ] ); ?>
               <div class="ll-ba-single__video-overlay">
-                  <a class="ll-ba-single__video-trigger js-init-video" href="<?= $image['video_url'] ?>" data-title="<?= $image['video_title'] ?>">
+                  <a class="ll-ba-single__video-trigger js-init-video" href="<?= esc_url( $card_image['video_url'] ) ?>" data-title="<?= esc_attr( $card_image['video_title'] ) ?>">
                       <svg class="ll-ba-single__video-icon icon icon-play-triangle" aria-hidden="true"><use xlink:href="#icon-play-triangle"></use></svg>
-                      <span class="sr-only">View <?= $image['video_title'] ?> video</span>
+                      <span class="sr-only">View <?= esc_html( $card_image['video_title'] ) ?> video</span>
                   </a>
               </div>
             </div>

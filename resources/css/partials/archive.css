@@ -39,6 +39,7 @@
 }
 
 .ll-ba-no-posts {
+  grid-column: 1 / -1;
   padding-top: 3rem;
   padding-bottom: 3rem;
   font-size: 0.875rem;
@@ -265,7 +266,7 @@
 }
 
 .ll-ba-filters__clear-all:hover {
-  color: theme('colors.gray');
+  color: var(--filter-accordions-text-hover);
 }
 
 .ll-ba-tag-remove {
@@ -358,7 +359,7 @@
   transform: translateY(-50%);
   height: 16px;
   width: 16px;
-  color: var(--filter-accordioons-search-text);
+  color: var(--filter-accordions-search-text);
 }
 
 .ll-ba-option-search {

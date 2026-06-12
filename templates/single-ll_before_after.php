@@ -79,7 +79,7 @@ if ( !empty($images_field) ) {
 
         <div class="ll-ba-single__header">
             <h4 class="ll-ba-single__title ba_hdg-medium">
-                <?= $treatment_title ?>
+                <?= esc_html( $treatment_title ) ?>
             </h4>
             <?php if ( !empty( $card_terms['terms'] ) ) : ?>
                 <ul class="ll-ba-single__categories">
@@ -127,14 +127,14 @@ if ( !empty($images_field) ) {
                                 <?= $key === 0 ? 'data-toggle-is-active' : '' ?>
                             <?php endif; ?>
                         >
-                            <?= $section_trigger['title'] ?>
+                            <?= esc_html( $section_trigger['title'] ) ?>
                         </<?= $section_trigger['tag'] ?>>
                     <?php endforeach; ?>
                 </div>
                 <div class="ll-ba-single__detail-panels">
                     <?php foreach ( $detail_sections as $section_content ) : ?>
                         <div id="<?= $section_content['tab_id'] ?>" class="ll-ba-single__detail-panel wysiwyg <?= $section_content['is_tab'] ? ' ll-ba-single__detail-panel--tab' : '' ?>">
-                            <?= $section_content['content'] ?>
+                            <?= wp_kses_post( $section_content['content'] ) ?>
                             <?php if ( !empty($section_content['read_more_content']) ) : ?>
                                 <div class="ll-ba-single__detail-read-more">
                                     <button class="ll-ba-single__detail-read-more-trigger" data-mfp-src="#<?= $section_content['read_more_id'] ?>">
@@ -143,7 +143,7 @@ if ( !empty($images_field) ) {
                                     </button>
                                     <div class="mfp-hide ll-ba-single__read-more-popup ll-ba__mfp-popup" id="<?= $section_content['read_more_id'] ?>">
                                         <div class="wysiwyg">
-                                            <?= $section_content['read_more_content'] ?>
+                                            <?= wp_kses_post( $section_content['read_more_content'] ) ?>
                                         </div>
                                     </div>
                                 </div>
@@ -280,9 +280,9 @@ if ( !empty($images_field) ) {
                                                     'loading'        => true,
                                                 ] ); ?>
                                                 <div class="ll-ba-single__video-overlay">
-                                                    <a class="ll-ba-single__video-trigger js-init-video" href="<?= $image['video_url'] ?>" data-title="<?= $image['video_title'] ?>">
+                                                    <a class="ll-ba-single__video-trigger js-init-video" href="<?= esc_url( $image['video_url'] ) ?>" data-title="<?= esc_attr( $image['video_title'] ) ?>">
                                                         <svg class="ll-ba-single__video-icon icon icon-play-triangle" aria-hidden="true"><use xlink:href="#icon-play-triangle"></use></svg>
-                                                        <span class="sr-only">View <?= $image['video_title'] ?> video</span>
+                                                        <span class="sr-only">View <?= esc_html( $image['video_title'] ) ?> video</span>
                                                     </a>
                                                 </div>
                                             </div>

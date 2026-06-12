@@ -103,7 +103,7 @@ class ThemeComponentInjector {
     $new_data['content'] = $data['ll_ba_related_bna_content'] ?? $data[''] ?? '';
     $new_data['link']    = $data['ll_ba_related_bna_link']    ?? null;
     $new_data['posts']   = $data['ll_ba_related_bna_posts']   ?? [];
-    $new_data['theme']   = $data['ll_ba_related_bna_color_theme'] ?? 'theme-one';
+    $new_data['color_theme'] = $data['ll_ba_related_bna_color_theme'] ?? 'theme-one';
     return $new_data;
   }
 
@@ -123,6 +123,34 @@ class ThemeComponentInjector {
     }
 
     return str_repeat( '../', count( $from_parts ) ) . implode( '/', $to_parts );
+  }
+
+  // Theme picker sub-field — only on sites that have ComponentThemePickerFieldGroup
+  private function themePickerSubField( string $key, string $name ): ?array {
+    if ( !class_exists( 'LiftedLogic\\Components\\UtilityComponents\\ComponentThemePickerFieldGroup' ) ) {
+      return null;
+    }
+
+    $picker_class = 'LiftedLogic\\Components\\UtilityComponents\\ComponentThemePickerFieldGroup';
+    $picker_field = acf_get_local_field( 'field_5f592y688ra43' );
+    if ( !$picker_field ) {
+      ( new $picker_class() )->boot();
+      $picker_field = acf_get_local_field( 'field_5f592y688ra43' );
+    }
+
+    $choices = $picker_field['choices'] ?? [ 'theme-one' => 'Theme One' ];
+
+    return [
+      'key'           => $key,
+      'label'         => 'Theme',
+      'name'          => $name,
+      '_name'         => $name,
+      'type'          => 'button_group',
+      'choices'       => $choices,
+      'default_value' => array_key_first( $choices ),
+      'layout'        => 'horizontal',
+      'return_format' => 'value',
+    ];
   }
 
   public function injectLayouts( array $field ): array {
@@ -149,28 +177,8 @@ class ThemeComponentInjector {
     $sub_fields = [];
 
     // Theme picker first — only on sites that have ComponentThemePickerFieldGroup
-    if ( class_exists( 'LiftedLogic\\Components\\UtilityComponents\\ComponentThemePickerFieldGroup' ) ) {
-      $picker_class = 'LiftedLogic\\Components\\UtilityComponents\\ComponentThemePickerFieldGroup';
-
-      $picker_field = acf_get_local_field( 'field_5f592y688ra43' );
-      if ( !$picker_field ) {
-        ( new $picker_class() )->boot();
-        $picker_field = acf_get_local_field( 'field_5f592y688ra43' );
-      }
-
-      $choices = $picker_field['choices'] ?? [ 'theme-one' => 'Theme One' ];
-
-      $sub_fields[] = [
-        'key'           => 'field_ll_ba_rba_theme',
-        'label'         => 'Theme',
-        'name'          => 'll_ba_related_bna_color_theme',
-        '_name'         => 'll_ba_related_bna_color_theme',
-        'type'          => 'button_group',
-        'choices'       => $choices,
-        'default_value' => array_key_first( $choices ),
-        'layout'        => 'horizontal',
-        'return_format' => 'value',
-      ];
+    if ( $theme_field = $this->themePickerSubField( 'field_ll_ba_rba_theme', 'll_ba_related_bna_color_theme' ) ) {
+      $sub_fields[] = $theme_field;
     }
 
     $sub_fields[] = [
@@ -236,6 +244,7 @@ class ThemeComponentInjector {
 
   public function formatBeforeAndAfterSliderData( array $new_data, string $component_name, array $data ): array {
     $new_data['color_theme'] = $data['ll_ba_slider_color_theme'] ?? 'theme-one';
+    $new_data['layout']      = $data['ll_ba_slider_layout']      ?? 'content-image';
     $new_data['content']     = $data['ll_ba_slider_content']     ?? '';
     $new_data['posts']       = $data['ll_ba_slider_posts']       ?? [];
     return $new_data;
@@ -244,25 +253,8 @@ class ThemeComponentInjector {
   private function beforeAndAfterSliderLayout(): array {
     $sub_fields = [];
 
-    if ( class_exists( 'LiftedLogic\\Components\\UtilityComponents\\ComponentThemePickerFieldGroup' ) ) {
-      $picker_class = 'LiftedLogic\\Components\\UtilityComponents\\ComponentThemePickerFieldGroup';
-      $picker_field = acf_get_local_field( 'field_5f592y688ra43' );
-      if ( !$picker_field ) {
-        ( new $picker_class() )->boot();
-        $picker_field = acf_get_local_field( 'field_5f592y688ra43' );
-      }
-      $choices = $picker_field['choices'] ?? [ 'theme-one' => 'Theme One' ];
-      $sub_fields[] = [
-        'key'           => 'field_ll_ba_slider_theme',
-        'label'         => 'Theme',
-        'name'          => 'll_ba_slider_color_theme',
-        '_name'         => 'll_ba_slider_color_theme',
-        'type'          => 'button_group',
-        'choices'       => $choices,
-        'default_value' => array_key_first( $choices ),
-        'layout'        => 'horizontal',
-        'return_format' => 'value',
-      ];
+    if ( $theme_field = $this->themePickerSubField( 'field_ll_ba_slider_theme', 'll_ba_slider_color_theme' ) ) {
+      $sub_fields[] = $theme_field;
     }
 
     $sub_fields[] = [

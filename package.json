@@ -9,10 +9,10 @@
     },
     "devDependencies": {
         "vite": "^6.2",
-        "vite-plugin-full-reload": "^1.2.0"
+        "vite-plugin-full-reload": "^1.2.0",
+        "magnific-popup": "^1.1.0"
     },
     "dependencies": {
-        "@splidejs/splide": "^4.1.4",
-    "magnific-popup": "^1.1.0"
+        "@splidejs/splide": "^4.1.4"
     }
 }

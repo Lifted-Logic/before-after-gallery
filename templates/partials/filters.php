@@ -40,7 +40,7 @@ if ($filters->isEmpty()) {
     <?php foreach ($filters as $filter) :
       $taxonomy = $filter['meta_key'] ?? '';
       $display  = $filter['display'] ?? 'checkbox';
-      $label    = esc_html($filter['label']);
+      $label    = $filter['label'] ?? '';
 
       $terms = get_terms(['taxonomy' => $taxonomy, 'hide_empty' => false]);
       if (is_wp_error($terms) || empty($terms)) continue;
@@ -49,14 +49,14 @@ if ($filters->isEmpty()) {
         class="ll-ba-filter-group"
         data-meta-key="<?= esc_attr($taxonomy); ?>"
         data-display="<?= esc_attr($display); ?>"
-        data-label="<?= $label; ?>"
+        data-label="<?= esc_attr($label); ?>"
       >
         <button
           type="button"
           class="ll-ba-filter-toggle"
           aria-expanded="false"
         >
-          <span><?= $label; ?></span>
+          <span><?= esc_html($label); ?></span>
 
           <svg class='icon icon-chevron-down' aria-hidden='true'><use xlink:href='#icon-chevron-down'></use></svg>
         </button>
@@ -68,7 +68,7 @@ if ($filters->isEmpty()) {
               <input
                 type="search"
                 class="ll-ba-option-search"
-                placeholder="<?= 'Search ' . $filter['label'];?>"
+                placeholder="<?= esc_attr( 'Search ' . $label ); ?>"
               >
               <svg class='icon icon-search' aria-hidden='true'><use xlink:href='#icon-search'></use></svg>
             </div>

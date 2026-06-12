@@ -30,13 +30,13 @@ class TemplateLoader {
   private function enqueueMagnificPopup(): void {
     wp_enqueue_style(
       'll-bag-magnific-popup',
-      LL_BAG_URL . 'node_modules/magnific-popup/dist/magnific-popup.css',
+      LL_BAG_URL . 'resources/vendor/magnific-popup/magnific-popup.css',
       [],
       '1.1.0'
     );
     wp_enqueue_script(
       'll-bag-magnific-popup',
-      LL_BAG_URL . 'node_modules/magnific-popup/dist/jquery.magnific-popup.min.js',
+      LL_BAG_URL . 'resources/vendor/magnific-popup/jquery.magnific-popup.min.js',
       ['jquery'],
       '1.1.0',
       true
@@ -44,15 +44,17 @@ class TemplateLoader {
   }
 
   private function enqueueCssOverrides(): void {
-    $files = ['ba-colors.css'];
+    $deps = [];
 
-    foreach ($files as $file) {
+    foreach (['primitives.css', 'ba-colors.css'] as $file) {
       $themeFile = get_stylesheet_directory() . '/ll-before-after/css/' . $file;
       $url = file_exists($themeFile)
         ? get_stylesheet_directory_uri() . '/ll-before-after/css/' . $file
         : LL_BAG_URL . 'resources/css/' . $file;
 
-      wp_enqueue_style('ll-bag-' . basename($file, '.css'), $url, [], LL_BAG_VERSION);
+      $handle = 'll-bag-' . basename($file, '.css');
+      wp_enqueue_style($handle, $url, $deps, LL_BAG_VERSION);
+      $deps = [$handle];
     }
     $cardBgColor = get_field('ll_ba_card_bg_color', 'option') ?: '#000000';
     wp_add_inline_style('ll-bag-ba-colors', ':root { --ll-ba-card-bg: ' . sanitize_hex_color($cardBgColor) . '; }');

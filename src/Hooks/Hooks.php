@@ -60,9 +60,9 @@ class Hooks {
   public static function bag_link_card_markup( string $title, array $link ): string {
     if ( empty( $link ) ) return '';
 
-    $href       = $link['url'] ?? '';
-    $link_text  = $link['title'] ?? '';
-    $target     = $link['target'] ? 'target="' . $link['target'] . '"' : '';
+    $href       = esc_url( $link['url'] ?? '' );
+    $link_text  = esc_html( $link['title'] ?? '' );
+    $target     = !empty( $link['target'] ) ? 'target="' . esc_attr( $link['target'] ) . '"' : '';
     $sr_text    = $link['target'] === '_blank' ? '<span class="sr-only"> (opens in new tab)</span>' : '';
     $markup     = <<<HTML
       <div class="ll-ba-single__cta-card">

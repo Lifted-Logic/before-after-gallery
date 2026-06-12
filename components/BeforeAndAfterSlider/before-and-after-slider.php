@@ -22,11 +22,11 @@ if ( empty( $posts ) ) return;
 ?>
 
 <div class="ll-ba-before-after-slider component-spacing ba_grid-cols-container <?= esc_attr( $color_theme ) ?>">
-  <div class="ll-ba-before-after-slider__container <?= $layout ?>">
+  <div class="ll-ba-before-after-slider__container <?= esc_attr( $layout ) ?>">
     <div class="ll-ba-before-after-slider__content">
       <?php if ( $content ) : ?>
         <div class="ll-ba-before-after-slider__content wysiwyg">
-          <?= $content ?>
+          <?= wp_kses_post( $content ) ?>
         </div>
       <?php endif; ?>
     </div>

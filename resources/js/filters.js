@@ -153,7 +153,7 @@ export function initFilters() {
       const data = await res.json();
 
       if (data.success) {
-        grid.innerHTML = data.data.html || `<p class="col-span-full py-12 text-sm text-center text-gray-500">${llBag.noResults ?? 'No results found.'}</p>`;
+        grid.innerHTML = data.data.html || `<p class="ll-ba-no-posts">${llBag.noResults ?? 'No results found.'}</p>`;
         renderPagination(paginationEl, data.data.total_pages, data.data.current_page, applyFilters);
         updateSensitiveBar( document.getElementById( 'll-ba-sensitive-bar' ), grid );
         applySensitiveMode( grid, currentSensitiveMode );

@@ -28,7 +28,7 @@ class BeforeAfterPostType {
   }
 
   private function getRewriteSlug(): string {
-    $pageId = (int) get_field(SettingsPage::FIELD_POSTS_PAGE, 'option');
+    $pageId = (int) get_option('options_' . SettingsPage::FIELD_POSTS_PAGE);
     return $pageId ? (get_page_uri($pageId) ?: 'll-before-after') : 'll-before-after';
   }
 

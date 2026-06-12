@@ -3,7 +3,7 @@
    ========================================================================== */
 
 .ll-ba-before-after-slider {
-   background-color: var(--background-fill);
+   background-color: var(--general-background);
 }
 
 .ll-ba-before-after-slider__container {

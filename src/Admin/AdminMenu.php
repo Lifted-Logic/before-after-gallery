@@ -8,7 +8,7 @@ use LiftedLogic\LLBag\Support\Vite;
 class AdminMenu {
   public function __construct(private readonly FilterSettingsPage $filterSettingsPage) {}
 
-  public function register(): void{
+  public function register(): void {
     add_action('admin_menu', [$this, 'registerMenu']);
     add_action('admin_enqueue_scripts', [$this, 'enqueueAssets']);
     add_action('admin_post_ll_bag_save_filters', [$this, 'handleFilterSave']);

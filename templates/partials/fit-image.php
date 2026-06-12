@@ -45,7 +45,7 @@ $image_args['loading'] = $component_data['loading'] ? 'lazy' : 'eager';
 ?>
 
 <?php if ( !$image_id ) return; ?>
-<div class="fit-image <?= implode( " ", $classes ); ?>" <?= ( $component_id ? 'id="'.$component_id.'"' : '' ); ?>>
+<div class="fit-image <?= esc_attr( implode( " ", $classes ) ); ?>" <?= ( $component_id ? 'id="' . esc_attr( $component_id ) . '"' : '' ); ?>>
   <?= wp_get_attachment_image(
     $image_id,
     $thumbnail_size,
