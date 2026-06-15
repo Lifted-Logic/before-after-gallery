@@ -78,8 +78,22 @@
   .ll-ba-card__image {
     position: relative;
     height: 100%;
+    width: 100%;
     margin: 0 auto;
     flex-shrink: 0;
+  }
+
+  .ll-ba-card__single-image,
+  .ll-ba-card__video-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      object-fit: contain;
+      height: 100%;
+      width: fit-content;
+    }
   }
 
   .ll-ba-card__image.ll-ba-single__ratio--panorama,

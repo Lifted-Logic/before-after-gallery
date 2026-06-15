@@ -27,7 +27,7 @@ class BeforeAfterPostType {
     return $archiveLink ? trailingslashit($archiveLink) . 'categories/' : '';
   }
 
-  private function getRewriteSlug(): string {
+  public static function getRewriteSlug(): string {
     $pageId = (int) get_option('options_' . SettingsPage::FIELD_POSTS_PAGE);
     return $pageId ? (get_page_uri($pageId) ?: 'll-before-after') : 'll-before-after';
   }
@@ -35,7 +35,7 @@ class BeforeAfterPostType {
   public function registerRewriteRules(): void {
     if ( !get_option( 'options_ll_bag_use_category_archive' ) ) return;
 
-    $slug = $this->getRewriteSlug();
+    $slug = self::getRewriteSlug();
     add_rewrite_rule(
       '^' . preg_quote($slug, '/') . '/categories/?$',
       'index.php?ll_ba_view=categories',
@@ -44,7 +44,7 @@ class BeforeAfterPostType {
   }
 
   public function registerPostType(): void {
-    $rewriteSlug = $this->getRewriteSlug();
+    $rewriteSlug = self::getRewriteSlug();
 
     register_post_type(self::SLUG, [
       'labels' => [

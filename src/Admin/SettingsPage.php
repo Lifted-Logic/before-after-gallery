@@ -39,6 +39,8 @@ class SettingsPage {
       !== LL_BAG_PATH . 'templates/partials/archive-hero-banner.php';
     $heroBannerFieldsEnabled = apply_filters( 'll_bag/hero_banner_fields_enabled', !$heroBannerOverridden );
 
+    $categoriesArchiveUrl = home_url( '/' . BeforeAfterPostType::getRewriteSlug() . '/categories/' );
+
 
     $fields = [
       [
@@ -107,6 +109,15 @@ class SettingsPage {
         'endpoint'  => 0,
       ],
       [
+        'key'  => 'field_ll_bag_global_default_single_page_label',
+        'label' => 'Default Single Page Label',
+        'name' => 'll_ba_global_default_single_page_label',
+        'type' => 'text',
+        'wrapper' => [
+          'data-tooltip' => 'If left empty the label will default to "Treatments Used"',
+        ],
+      ],
+      [
         'key'     => 'field_ll_bag_cta_message',
         'type'    => 'message',
         'message' => 'Leave CTA fields blank to omit CTA on single pages',
@@ -131,6 +142,20 @@ class SettingsPage {
         'label' => 'Related Treatments Slider Title',
         'name'  => 'll_bag_related_treatments_slider_title',
         'type'  => 'text',
+      ],
+      [
+        'key'       => 'field_ll_bag_nsfw_popup_tab',
+        'label'     => 'NSFW Popup',
+        'type'      => 'tab',
+        'placement' => 'left',
+        'endpoint'  => 0,
+      ],
+      [
+        'key'           => 'field_ll_bag_nsfw_popup_text',
+        'label'         => 'NSFW Popup Text',
+        'name'          => 'll_bag_nsfw_popup_text',
+        'type'          => 'text',
+        'default_value' => 'This before and after contains sensitive content.',
       ],
       [
         'key'       => 'field_ll_bag_archive_settings_tab_2',
@@ -163,6 +188,14 @@ class SettingsPage {
         'ui'            => 1,
         'ui_on_text'    => 'Yes',
         'ui_off_text'   => 'No',
+      ],
+      [
+        'key'     => 'field_ll_bag_category_archive_url_message',
+        'type'    => 'message',
+        'message' => 'The category archive page will live at: <a href="' . esc_url( $categoriesArchiveUrl ) . '" target="_blank" rel="noopener">' . esc_html( $categoriesArchiveUrl ) . '</a>',
+        'conditional_logic' => [
+          [ [ 'field' => 'field_ll_bag_use_category_archive', 'operator' => '==', 'value' => '1' ] ],
+        ],
       ],
       [
         'key'    => 'field_ll_ba_category_archive_hero',

@@ -22,11 +22,24 @@ class Hooks {
 
   // Back button
   public static function bag_back_button_markup(): string {
-    $classes = 'bag_back-text bag-inline-block';
-    $text    = 'Back to Gallery';
-    $refUrl  = isset($_GET['ba_ref']) ? wp_validate_redirect(wp_unslash($_GET['ba_ref']), '') : '';
-    $href    = esc_url($refUrl ?: get_post_type_archive_link('ll_before_after') ?: site_url('/'));
-    $markup  = <<<HTML
+    $classes    = 'bag_back-text bag-inline-block';
+    $text       = 'Back to Gallery';
+    $archiveUrl = get_post_type_archive_link('ll_before_after') ?: site_url('/');
+    $refUrl     = isset($_GET['ba_ref']) ? wp_validate_redirect(wp_unslash($_GET['ba_ref']), '') : '';
+
+    // Only honor ba_ref if it actually points back to the gallery archive page
+    // (preserving any active filters). If the card was clicked from some other
+    // page on the site, fall back to the plain, unfiltered archive URL.
+    if ( $refUrl ) {
+      $refPath     = untrailingslashit( (string) wp_parse_url( $refUrl, PHP_URL_PATH ) );
+      $archivePath = untrailingslashit( (string) wp_parse_url( $archiveUrl, PHP_URL_PATH ) );
+      if ( $refPath !== $archivePath ) {
+        $refUrl = '';
+      }
+    }
+
+    $href   = esc_url( $refUrl ?: $archiveUrl );
+    $markup = <<<HTML
       <a href="$href" class="$classes"><svg class='icon icon-arrow-right' aria-hidden='true'><use xlink:href='#icon-arrow-right'></use></svg>$text</a>
     HTML;
 
@@ -54,6 +67,33 @@ class Hooks {
     HTML;
 
     return apply_filters( 'lifted_logic/bag/related_slider_arrows_markup', $markup, $prev, $next );
+  }
+
+  // NSFW confirmation modal
+  public static function bag_nsfw_modal_markup( string $message, string $archive_url ): string {
+    $fallback_url = esc_url( $archive_url );
+    $message_html = esc_html( $message );
+
+    $actions = <<<HTML
+      <div class="ll-ba-nsfw-modal__actions">
+          <button type="button" class="ll-ba-nsfw-modal__btn ba_btn-primary" data-nsfw-action="unblur-once">Unblur This Only</button>
+          <button type="button" class="ll-ba-nsfw-modal__btn ll-ba-nsfw-modal__btn--secondary" data-nsfw-action="unblur-all">Unblur All</button>
+      </div>
+    HTML;
+
+    $markup = <<<HTML
+      <div class="ll-ba-nsfw-modal ll-ba-hidden" id="ll-ba-nsfw-modal" role="dialog" aria-modal="true" aria-label="Sensitive content">
+          <div class="ll-ba-nsfw-modal__panel">
+              <button type="button" class="ll-ba-nsfw-modal__close" data-nsfw-action="leave" data-fallback-url="$fallback_url" aria-label="Go back">
+                  <svg class="icon icon-exit" aria-hidden="true"><use xlink:href="#icon-exit"></use></svg>
+              </button>
+              <p class="ll-ba-nsfw-modal__message">$message_html</p>
+              $actions
+          </div>
+      </div>
+    HTML;
+
+    return apply_filters( 'lifted_logic/bag/nsfw_modal_markup', $markup, $message, $archive_url, $actions );
   }
 
   // CTA Link card

@@ -60,7 +60,7 @@ All ACF field groups are registered programmatically via `acf_add_local_field_gr
 - `ll_ba_category_archive_hero` — group with content/link/image for the categories page hero
 - `ll_ba_categories_subtitle` — subtitle text above the category grid
 
-**`get_option()` vs `get_field()` in early hooks:** Never call `get_field()` inside a `pre_get_posts` callback. ACF's `get_field()` calls `get_posts()` internally to look up field registration, which fires `pre_get_posts` again → infinite recursion → fatal error. Use `get_option('options_{field_name}')` instead — it reads directly from the options table with no query. Example: `get_option('options_ll_bag_use_category_archive')` in `registerRewriteRules()` and `scopeCategoryArchive()`. `TemplateLoader::loadTemplate()` (on `template_include`) is safe to use `get_field()` since it fires much later.
+**`get_option()` vs `get_field()` in early hooks:** Never call `get_field()` inside a `pre_get_posts` callback. ACF's `get_field()` calls `get_posts()` internally to look up field registration, which fires `pre_get_posts` again → infinite recursion → fatal error. The same `get_option('options_{field_name}')` pattern is also used for `init`-hooked logic that needs an options-page field before templates load — ACF's options fields aren't reliably available that early either. Use `get_option('options_{field_name}')` instead — it reads directly from the options table with no query. Examples: `get_option('options_ll_bag_use_category_archive')` in `registerRewriteRules()` / `scopeCategoryArchive()`, and `get_option('options_' . SettingsPage::FIELD_POSTS_PAGE)` in `BeforeAfterPostType::getRewriteSlug()` (called from `registerPostType()`/`registerRewriteRules()` on `init`). `TemplateLoader::loadTemplate()` (on `template_include`) is safe to use `get_field()` since it fires much later.
 
 The images repeater field (`ll_ba_images`) is the core data structure for the single post. Each row has:
 - `ll_ba_image_options` — `one-image` | `two-images` | `video`
@@ -89,15 +89,18 @@ CSS is split into:
 - `resources/css/partials/single-post.css` — BEM styles for the single post page
 - `resources/css/partials/archive.css` — BEM styles for the archive, post card, and filter sidebar
 - `resources/css/partials/hero-banner.css` — BEM styles for the archive hero banner component
-- `resources/css/ba-colors.css` — CSS custom properties for UI colors (overrideable from theme)
+- `resources/css/primitives.css` — raw color values as `--hex-codes-*` custom properties
+- `resources/css/ba-colors.css` — semantic UI color tokens (`--general-*`, `--filter-*`, etc.), each defined as `var(--hex-codes-*)`; overrideable from theme
 
 When adding a new component partial, create a matching CSS file in `resources/css/partials/` and import it in `frontend.css`.
 
-Colors come from CSS custom properties defined in `ba-colors.css` (e.g. `var(--background-fill)`, `var(--text-heading)`). Use `var(--property-name)` directly — there is no token abstraction layer.
+Colors come from CSS custom properties defined in `ba-colors.css` (e.g. `var(--general-background)`, `var(--general-body)`), which reference the raw values in `primitives.css`. Use `var(--property-name)` directly — there is no token abstraction layer. `TemplateLoader::enqueueCssOverrides()` enqueues `primitives.css` as a dependency of `ba-colors.css` (in that order); both follow the same theme-override resolution as other CSS partials — if a `var(--general-*)` or `var(--hex-codes-*)` resolves to nothing, check that both files are still wired up this way.
 
 CSS nesting is acceptable. Use it for component-scoped child selectors (e.g. `.ll-ba-card { .ll-ba-card__image { ... } }`). Avoid deep nesting — keep selectors readable.
 
 State toggling classes (`ll-ba-hidden`, `rotate-180`, `is-filtering`) are defined in `archive.css` and toggled by JavaScript. Use `ll-ba-hidden` (not `hidden`) for any show/hide state in plugin-owned elements to avoid polluting the global namespace.
+
+**Empty-state messaging:** Use `.ll-ba-no-posts` (defined in `archive.css`, `grid-column: 1 / -1`) for "no results" text. It's shared between the initial empty archive (`archive-ll_before_after.php`) and the AJAX-filtered empty state (`filters.js`) so both look consistent.
 
 ### JavaScript
 
@@ -124,6 +127,8 @@ The `llBag` global (set via `wp_localize_script`) provides `ajaxUrl`, `nonce`, `
 
 **jQuery plugins** are enqueued via WordPress (`wp_enqueue_script` with `['jquery']` dependency), not bundled through Vite. This avoids CJS/ESM interop issues with jQuery. Current plugins: Magnific Popup (`ll-bag-magnific-popup`, loaded in `TemplateLoader::enqueueMagnificPopup()`). Do not import jQuery-dependent libraries directly in `frontend.js`.
 
+**Vendored assets:** Magnific Popup's CSS/JS are committed to `resources/vendor/magnific-popup/` (copied from `node_modules/magnific-popup/dist/`) rather than referenced from `node_modules/` directly, since `node_modules/` is gitignored and unavailable in production. `magnific-popup` stays in `devDependencies` purely as the source for that copy — Vite never bundles it. If bumping the version, re-copy `magnific-popup.css` and `jquery.magnific-popup.min.js` into `resources/vendor/magnific-popup/`.
+
 **Sensitive image preference** is stored in the `ll-ba-sensitive-mode` cookie (default: `'blur'`). Always use `getSensitiveMode()` / `setSensitiveMode()` from `sensitive.js` — never read or write `localStorage` or a cookie directly for this value.
 
 ### Theme Component Injection (`src/Integration/ThemeComponentInjector.php`)
@@ -143,6 +148,15 @@ Plugin components can be injected into the LL theme's flexible content field so 
 - Every sub_field must include both `'name'` and `'_name'` (set to the same value)
 - Sub-field names must follow `{layout_name}_{field_name}` convention so `ll_format_component_data` strips the prefix and delivers them as `$component_data['{field_name}']`
 - ACF's `ll_format_component_data` is NOT used for field delivery — the `format_data` filter handles this directly
+
+**`format_data` keys must match template reads:** The `format_data` filter's `$new_data` keys must exactly match the `$component_data['{field_name}']` keys the template reads. A mismatch fails silently — no error, the template just falls back to its default value (e.g. always renders `theme-one` even if a different theme is picked in the editor). When adding or renaming a sub-field, grep the component template for `$component_data[` and confirm every key lines up with the corresponding `format*Data()` method.
+
+**Theme picker sub-field:** If a layout needs a `color_theme` button-group field (matching `ComponentThemePickerFieldGroup`'s choices), use the shared `themePickerSubField(string $key, string $name): ?array` helper instead of duplicating the lookup logic. It returns `null` on sites without `ComponentThemePickerFieldGroup`:
+```php
+if ( $theme_field = $this->themePickerSubField( 'field_my_component_theme', 'll_ba_my_component_color_theme' ) ) {
+  $sub_fields[] = $theme_field;
+}
+```
 
 **Disabling components (must be in `functions.php`, checked on `after_setup_theme`):**
 
@@ -192,6 +206,8 @@ Disabling a component removes it from `injectLayouts()`, `maybeRegisterHooks()`,
 ---
 
 ## Key Conventions
+
+**Output escaping:** Escape at the point of output, not earlier. Use `esc_html()` for plain text, `esc_url()` for URLs, `esc_attr()` for attribute values, and `wp_kses_post()` for WYSIWYG/rich-text fields that may contain allowed HTML. Don't pre-escape a value into a variable and then escape it again at each output site — that double-encodes entities (e.g. `&amp;` becomes `&amp;amp;`). If a value is used in multiple contexts (e.g. both a `data-` attribute and visible text), keep the variable raw and apply the appropriate escaping function at each individual output point.
 
 **Adding a new markup filter hook:** Add a `public static function` to `src/Hooks/Hooks.php` that builds `$markup` and returns `apply_filters('lifted_logic/bag/{name}', $markup, ...$parts)`. Call it as `Hooks::method_name()` in the template. Document it in `README.md` under the Hooks section.
 

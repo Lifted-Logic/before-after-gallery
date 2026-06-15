@@ -303,6 +303,13 @@
     gap: 2.5rem;
   }
 
+  .ll-ba-single__gallery--sensitive.is-blurred {
+    .ll-ba-single-page-slider,
+    .ll-ba-single-page-slider-nav {
+      filter: blur(20px);
+    }
+  }
+
   /* Slides — shared
      ========================================================================== */
 

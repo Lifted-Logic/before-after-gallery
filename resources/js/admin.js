@@ -14,6 +14,25 @@ function labelToMetaKey(label) {
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  // Convert ACF field instructions stored in data-tooltip into hover tooltips
+  document.querySelectorAll('.acf-field[data-tooltip]').forEach((field) => {
+    const text = field.dataset.tooltip;
+    const label = field.querySelector(':scope > .acf-label label');
+    if (!text || !label) return;
+
+    const icon = document.createElement('span');
+    icon.className = 'll-bag-field-tooltip dashicons dashicons-editor-help';
+    icon.tabIndex = 0;
+    icon.setAttribute('aria-label', text);
+
+    const bubble = document.createElement('span');
+    bubble.className = 'll-bag-field-tooltip__bubble';
+    bubble.textContent = text;
+    icon.appendChild(bubble);
+
+    label.appendChild(icon);
+  });
+
   document.getElementById('ll-bag-filter-tbody')?.addEventListener('change', (e) => {
     const checked = e.target.closest('.ll-bag-card-display');
     if (!checked?.checked) return;

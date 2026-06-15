@@ -121,7 +121,7 @@ class Fields {
           'name'          => 'll_ba_category_bg_image',
           'type'          => 'image',
           'return_format' => 'id',
-          'instructions'  => 'Used as the background image for this category card on the Before & After archive.',
+          'instructions'  => 'Used as the background image for this category card on the Before & After Category Archive.',
         ],
       ],
       'location' => [
@@ -183,7 +183,9 @@ class Fields {
           'label' => 'Treatment Label',
           'name' => 'll_ba_title',
           'type' => 'text',
-          'instructions' => 'If left blank, this will default to "Treatments Used"',
+          'wrapper' => [
+            'data-tooltip' => 'If left blank, this will default to the value entered at Before & Afters > Settings Single Page > Default Single Page Label. If nothing is entered in either field "Treatments Used" will be the default text',
+          ],
         ],
         [
           'label' => '',
@@ -253,8 +255,27 @@ class Fields {
               ],
             ],
             [
-              'key' => 'field_ll_ba_image_ratio',
+              'key' => 'field_ll_ba_image_ratio_message',
               'label' => 'Image Ratio',
+              'name' => 'll_ba_image_ratio_message',
+              'type' => 'message',
+              'message' => 'When not using multiple images, the image will be used in the ratio / crop it is uploaded with.',
+              'wrapper' => [
+                'width' => '50%',
+              ],
+              'conditional_logic' => [
+                [
+                  [
+                    'field' => 'field_ll_ba_image_options',
+                    'operator' => '!=',
+                    'value' => 'two-images',
+                  ],
+                ],
+              ],
+            ],
+            [
+              'key' => 'field_ll_ba_image_ratio',
+              'label' => 'Individual Image Ratio',
               'name' => 'll_ba_image_ratio',
               'type' => 'select',
               'choices' => [
@@ -267,6 +288,16 @@ class Fields {
               'return_format' => 'value',
               'wrapper' => [
                 'width' => '50%',
+                'data-tooltip' => 'Both images will automatically crop to the selected image ratio then be placed next to one another on the post card',
+              ],
+              'conditional_logic' => [
+                [
+                  [
+                    'field' => 'field_ll_ba_image_options',
+                    'operator' => '==',
+                    'value' => 'two-images',
+                  ],
+                ],
               ],
             ],
             [
@@ -328,9 +359,11 @@ class Fields {
               'label' => 'Use Comparison Slider?',
               'name' => 'll_ba_comparison_slider',
               'type' => 'true_false',
-              'instructions' => 'For best results use two images that are cropped identically with the subject in the same area of the image.',
               'default_value' => 0,
               'ui' => 1,
+              'wrapper' => [
+                'data-tooltip' => 'For best results use two images that are cropped identically with the subject in the same area of the image. Image comparison slider will only show on the single page. The images will be placed side by side for on the post card',
+              ],
               'conditional_logic' => [
                 [
                   [
@@ -385,7 +418,7 @@ class Fields {
           'label'         => 'Sensitive Images',
           'name'          => 'll_ba_is_nsfw',
           'type'          => 'true_false',
-          'instructions'  => 'Mark this post as containing sensitive images. Visitors will see blur/hide options in the archive.',
+          'instructions'  => 'Mark this post as containing sensitive images. Visitors will be given blur/hide options.',
           'default_value' => 0,
           'ui'            => 1,
           'ui_on_text'    => 'Yes',

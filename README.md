@@ -191,7 +191,7 @@ The plugin exposes WordPress filters so themes can override specific pieces of m
 
 Filter: `lifted_logic/bag/bag_back_button_markup`
 
-Overrides the back-to-gallery link at the top of the single post sidebar. The `$href` defaults to the post type archive URL, falling back to `site_url('/')` if no archive is configured. If a `ba_ref` query param is present it is used instead (preserves filtered archive state).
+Overrides the back-to-gallery link at the top of the single post sidebar. The `$href` defaults to the post type archive URL, falling back to `site_url('/')` if no archive is configured. If a `ba_ref` query param is present **and its path matches the gallery archive page**, it is used instead (preserves filtered archive state — e.g. active filter query args). If `ba_ref` points to some other page on the site (e.g. a B&A card embedded outside the gallery via a plugin component), it is ignored and the plain archive URL is used.
 
 **Default markup:**
 
@@ -308,6 +308,57 @@ add_filter( 'lifted_logic/bag/link_card_markup', function( $markup, $title, $lin
       </div>
     ';
 }, 10, 3 );
+```
+
+---
+
+### `bag_nsfw_modal_markup`
+
+Filter: `lifted_logic/bag/nsfw_modal_markup`
+
+Overrides the sensitive-content confirmation modal shown on single posts where the "Sensitive Images" (`ll_ba_is_nsfw`) field is enabled, unless the visitor's `ll-ba-sensitive-mode` cookie is already `unblur`. The modal markup must keep the `#ll-ba-nsfw-modal` id and `ll-ba-hidden` class — `resources/js/nsfw-modal.js` looks up the modal by id and toggles `ll-ba-hidden`. Buttons are wired up via `data-nsfw-action` values (`unblur-once`, `unblur-all`, `leave`); the close button additionally needs `data-fallback-url` for same-origin-referrer-less visits.
+
+`$message` comes from the **NSFW Popup → NSFW Popup Text** field on the **B&A Posts → Settings** options page (defaults to "This before and after contains sensitive content." if empty). `$archive_url` is the Before & After post type archive link, used as the close button's fallback URL.
+
+The filter also receives `$actions` — the `.ll-ba-nsfw-modal__actions` button group HTML — as its own string, since themes will most often want to swap out just the buttons while leaving the rest of the modal (icon, message, panel chrome) untouched.
+
+**Default markup:**
+
+```html
+<div class="ll-ba-nsfw-modal ll-ba-hidden" id="ll-ba-nsfw-modal" role="dialog" aria-modal="true" aria-label="Sensitive content">
+  <div class="ll-ba-nsfw-modal__panel">
+    <button type="button" class="ll-ba-nsfw-modal__close" data-nsfw-action="leave" data-fallback-url="{archive-url}" aria-label="Go back">
+      <svg class="icon icon-exit" aria-hidden="true"><use xlink:href="#icon-exit"></use></svg>
+    </button>
+    <p class="ll-ba-nsfw-modal__message">{message}</p>
+    <div class="ll-ba-nsfw-modal__actions">
+      <button type="button" class="ll-ba-nsfw-modal__btn ba_btn-primary" data-nsfw-action="unblur-once">Unblur This Only</button>
+      <button type="button" class="ll-ba-nsfw-modal__btn ll-ba-nsfw-modal__btn--secondary" data-nsfw-action="unblur-all">Unblur All</button>
+    </div>
+  </div>
+</div>
+```
+
+**Parameters passed to the filter:**
+| # | Variable | Type | Description |
+|---|----------|------|-------------|
+| 1 | `$markup` | `string` | Full modal HTML |
+| 2 | `$message` | `string` | Popup message text (from options page, unescaped) |
+| 3 | `$archive_url` | `string` | B&A archive URL, used as the close button's fallback |
+| 4 | `$actions` | `string` | `.ll-ba-nsfw-modal__actions` button group HTML only |
+
+The example below replaces only the action buttons, reusing the rest of the default modal:
+
+```php
+add_filter( 'lifted_logic/bag/nsfw_modal_markup', function( $markup, $message, $archive_url, $actions ) {
+    $custom_actions = '
+      <div class="ll-ba-nsfw-modal__actions">
+        <button type="button" class="ll-ba-nsfw-modal__btn ba_btn-primary" data-nsfw-action="unblur-all">Show Sensitive Content</button>
+      </div>
+    ';
+
+    return str_replace( $actions, $custom_actions, $markup );
+}, 10, 4 );
 ```
 
 ---

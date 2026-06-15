@@ -29,6 +29,7 @@ import '@splidejs/splide/css';
 import { initCardLinks }    from './card.js';
 import { initRelatedSlider } from './related-posts.js';
 import { initFilters }      from './filters.js';
+import { initNsfwModal }    from './nsfw-modal.js';
 
 // ── Splide: single post gallery + thumbnails ───────────────────────────────────
 
@@ -124,4 +125,5 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initFilters();
+  initNsfwModal();
 });

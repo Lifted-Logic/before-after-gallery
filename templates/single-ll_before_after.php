@@ -11,13 +11,16 @@ use LiftedLogic\LLBag\Hooks\Hooks;
 use LiftedLogic\LLBag\BeforeAfterPostType\BeforeAfterPostType;
 use LiftedLogic\LLBag\Support\PostTerms;
 
-
-$treatment_title = get_field('ll_ba_title') ? get_field('ll_ba_title') : 'Treatments Used:';
+$post_treatment_title = get_field('ll_ba_title');
+$global_treatment_title = get_field('ll_ba_global_default_single_page_label', 'options');
+$treatment_title = $post_treatment_title ?: ( $global_treatment_title ?: 'Treatments Used:' );
 $global_cta_title = get_field('ll_ba_global_cta_title', 'options') ?? '';
 $global_cta_link = get_field('ll_ba_global_cta_link', 'options') ?? '';
 
 $card_terms  = PostTerms::forCard( get_the_ID() );
 $archive_url = get_post_type_archive_link( BeforeAfterPostType::SLUG );
+$is_nsfw     = (bool) get_field( 'll_ba_is_nsfw' );
+$nsfw_popup_text = get_field( 'll_bag_nsfw_popup_text', 'options' ) ?: 'This before and after contains sensitive content.';
 
 $provider_terms = wp_get_post_terms( get_the_ID(), 'll_ba_provider' );
 $provider_term  = ( !is_wp_error( $provider_terms ) && !empty( $provider_terms ) ) ? $provider_terms[0] : null;
@@ -70,6 +73,10 @@ if ( !empty($images_field) ) {
 ?>
 
 <main class="ll-ba-single">
+
+    <?php if ( $is_nsfw ) : ?>
+        <?= Hooks::bag_nsfw_modal_markup( $nsfw_popup_text, $archive_url ) ?>
+    <?php endif; ?>
 
     <div class="ll-ba-single__sidebar">
 
@@ -180,7 +187,7 @@ if ( !empty($images_field) ) {
 
     </div>
 
-    <div class="ll-ba-single__gallery">
+    <div class="ll-ba-single__gallery<?= $is_nsfw ? ' ll-ba-single__gallery--sensitive' : '' ?>">
         <div class="ll-ba-single__gallery-inner">
             <?php if ( !empty( $ba_images ) ) : ?>
 
@@ -192,14 +199,8 @@ if ( !empty($images_field) ) {
                                 <?php if ( $image['option'] === 'one-image' && $image['single_image_id'] ) : ?>
                                     <li class="splide__slide">
                                         <div class="ll-ba-single__slide-inner">
-                                            <div class="ll-ba-single__slide-image <?= $image['ratio'] ?>">
-                                                <?php bag_include_partial( 'fit-image', [
-                                                    'image_id'       => $image['single_image_id'],
-                                                    'thumbnail_size' => 'large',
-                                                    'fit'            => 'object-cover',
-                                                    'position'       => 'object-center',
-                                                    'loading'        => true,
-                                                ] ); ?>
+                                            <div class="ll-ba-single__slide-image">
+                                                <?php echo wp_get_attachment_image( $image['single_image_id'], 'large', "", [ "class" => "" ]); ?>
                                             </div>
                                         </div>
                                     </li>
@@ -271,14 +272,8 @@ if ( !empty($images_field) ) {
                                 <?php elseif ( $image['option'] === 'video' ) : ?>
                                     <li class="splide__slide">
                                         <div class="ll-ba-single__slide-inner">
-                                            <div class="ll-ba-single__video <?= $image['ratio'] ?>">
-                                                <?php bag_include_partial( 'fit-image', [
-                                                    'image_id'       => $image['single_image_id'],
-                                                    'thumbnail_size' => 'large',
-                                                    'fit'            => 'object-cover',
-                                                    'position'       => 'object-center',
-                                                    'loading'        => true,
-                                                ] ); ?>
+                                            <div class="ll-ba-single__video">
+                                                <?php echo wp_get_attachment_image( $image['single_image_id'], 'large', "", [ "class" => "" ]); ?>
                                                 <div class="ll-ba-single__video-overlay">
                                                     <a class="ll-ba-single__video-trigger js-init-video" href="<?= esc_url( $image['video_url'] ) ?>" data-title="<?= esc_attr( $image['video_title'] ) ?>">
                                                         <svg class="ll-ba-single__video-icon icon icon-play-triangle" aria-hidden="true"><use xlink:href="#icon-play-triangle"></use></svg>
@@ -288,7 +283,6 @@ if ( !empty($images_field) ) {
                                             </div>
                                         </div>
                                     </li>
-
                                 <?php endif; ?>
                             <?php endforeach; ?>
                         </ul>
