@@ -29,7 +29,9 @@ class Plugin {
     $this->container->singleton(BeforeAfterPostType::class);
     $this->container->singleton(Fields::class);
     $this->container->singleton(TaxonomyRegistrar::class);
-    $this->container->singleton(SettingsPage::class);
+    $this->container->singleton(SettingsPage::class, function () {
+      return new SettingsPage($this->container->make(FilterManager::class));
+    });
     $this->container->singleton(TemplateLoader::class);
     $this->container->singleton(AjaxHandler::class);
     $this->container->singleton(ThemeComponentInjector::class);

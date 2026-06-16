@@ -35,6 +35,15 @@ import { initNsfwModal }    from './nsfw-modal.js';
 
 document.querySelectorAll( '.ll-ba-single-page-slider' ).forEach( el => {
   const navEl = el.nextElementSibling?.classList.contains( 'll-ba-single-page-slider-nav' ) ? el.nextElementSibling : null;
+
+  const slideCount = el.querySelectorAll( '.splide__slide' ).length;
+
+  if ( slideCount <= 1 ) {
+    if ( navEl ) navEl.style.display = 'none';
+    new Splide( el, { drag: false, arrows: false, pagination: false } ).mount();
+    return;
+  }
+
   const primary = new Splide( el, {
     type: 'loop',
     perPage: 1,
@@ -50,7 +59,7 @@ document.querySelectorAll( '.ll-ba-single-page-slider' ).forEach( el => {
       isNavigation: true,
       gap: '6px',
       pagination: false,
-      arrows: true,
+      arrows: slideCount > 5,
       arrowPath: 'M0.221889 0.203398C0.517741 -0.0677994 0.997411 -0.0677994 1.29326 0.203398L11.4448 9.50895C11.7406 9.78015 11.7406 10.2198 11.4448 10.491L1.29326 19.7966C0.997411 20.0678 0.517741 20.0678 0.221889 19.7966C-0.073963 19.5254 -0.073963 19.0857 0.221889 18.8145L9.83772 10L0.221889 1.18549C-0.073963 0.914293 -0.073963 0.474596 0.221889 0.203398Z',
       fixedWidth: '80px',
       focus: 'center',

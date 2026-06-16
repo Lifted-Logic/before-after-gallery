@@ -22,10 +22,15 @@
 
 .ll-ba-archive-categories__header {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: space-between;
   gap: 20px;
   margin-bottom: 20px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+  }
 }
 
 .ll-ba-archive-categories__subtitle {
@@ -36,31 +41,16 @@
   color: var(--general-body);
 }
 
-.ll-ba-archive-categories__all-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--general-heading);
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 150%;
-
-  svg {
-    height: 12px;
-    width: 12px;
-    color: var(--general-heading);
-  }
-}
-
 .ll-ba-archive-categories__grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(1, minmax(0, 1fr));
   gap: 2rem;
-}
 
-@media (min-width: 768px) {
-  .ll-ba-archive-categories__grid {
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: 1024px) {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

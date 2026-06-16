@@ -56,9 +56,12 @@ All ACF field groups are registered programmatically via `acf_add_local_field_gr
 - `ll_ba_category_hero_image` — hero image for the category page (future use)
 
 **Category Settings tab** (`SettingsPage.php`):
-- `ll_bag_use_category_archive` — master toggle; controls URL routing and field visibility
+- `ll_bag_use_category_archive` — master toggle; controls URL routing and field visibility. When enabled, a generated message field shows the resolved URL (`home_url() . '/' . BeforeAfterPostType::getRewriteSlug() . '/categories/'`) — built without relying on `get_post_type_archive_link()` because `acf/init` fires before `register_post_type` on `init`.
 - `ll_ba_category_archive_hero` — group with content/link/image for the categories page hero
 - `ll_ba_categories_subtitle` — subtitle text above the category grid
+
+**NSFW Popup tab** (`SettingsPage.php`):
+- `ll_bag_nsfw_popup_text` — body copy shown inside the NSFW confirmation modal; PHP fallback default is `'This before and after contains sensitive content.'`
 
 **`get_option()` vs `get_field()` in early hooks:** Never call `get_field()` inside a `pre_get_posts` callback. ACF's `get_field()` calls `get_posts()` internally to look up field registration, which fires `pre_get_posts` again → infinite recursion → fatal error. The same `get_option('options_{field_name}')` pattern is also used for `init`-hooked logic that needs an options-page field before templates load — ACF's options fields aren't reliably available that early either. Use `get_option('options_{field_name}')` instead — it reads directly from the options table with no query. Examples: `get_option('options_ll_bag_use_category_archive')` in `registerRewriteRules()` / `scopeCategoryArchive()`, and `get_option('options_' . SettingsPage::FIELD_POSTS_PAGE)` in `BeforeAfterPostType::getRewriteSlug()` (called from `registerPostType()`/`registerRewriteRules()` on `init`). `TemplateLoader::loadTemplate()` (on `template_include`) is safe to use `get_field()` since it fires much later.
 
@@ -89,6 +92,7 @@ CSS is split into:
 - `resources/css/partials/single-post.css` — BEM styles for the single post page
 - `resources/css/partials/archive.css` — BEM styles for the archive, post card, and filter sidebar
 - `resources/css/partials/hero-banner.css` — BEM styles for the archive hero banner component
+- `resources/css/partials/nsfw-modal.css` — full-screen overlay modal for sensitive single posts
 - `resources/css/primitives.css` — raw color values as `--hex-codes-*` custom properties
 - `resources/css/ba-colors.css` — semantic UI color tokens (`--general-*`, `--filter-*`, etc.), each defined as `var(--hex-codes-*)`; overrideable from theme
 
@@ -119,6 +123,7 @@ Other JS modules are imported from separate files:
 | `filters.js` | Archive filter sidebar, AJAX filtering, active tags, pagination |
 | `pagination.js` | Pagination rendering helper |
 | `related-posts.js` | AJAX-loaded related posts slider on single page |
+| `nsfw-modal.js` | NSFW confirmation modal on sensitive single posts; exports `initNsfwModal()` |
 | `sensitive.js` | Shared sensitive image helpers — `getSensitiveMode()`, `setSensitiveMode()`, `applySensitiveMode(container, mode)`, `updateSensitiveBar(bar, container)` |
 | `cookieUtil.js` | `CookieUtil.getCookie(name)` / `setCookie(name, value, days)` — used by `sensitive.js` |
 | `vendor/easy-toggle-state.js` | Declarative toggle library; activated via `data-toggle-*` attributes |
@@ -130,6 +135,11 @@ The `llBag` global (set via `wp_localize_script`) provides `ajaxUrl`, `nonce`, `
 **Vendored assets:** Magnific Popup's CSS/JS are committed to `resources/vendor/magnific-popup/` (copied from `node_modules/magnific-popup/dist/`) rather than referenced from `node_modules/` directly, since `node_modules/` is gitignored and unavailable in production. `magnific-popup` stays in `devDependencies` purely as the source for that copy — Vite never bundles it. If bumping the version, re-copy `magnific-popup.css` and `jquery.magnific-popup.min.js` into `resources/vendor/magnific-popup/`.
 
 **Sensitive image preference** is stored in the `ll-ba-sensitive-mode` cookie (default: `'blur'`). Always use `getSensitiveMode()` / `setSensitiveMode()` from `sensitive.js` — never read or write `localStorage` or a cookie directly for this value.
+
+**NSFW single-post gate:** Posts flagged `ll_ba_is_nsfw` (`true_false` field in `src/BeforeAfterPostType/Fields.php`, Settings tab) show a full-screen confirmation modal on the single post page when the visitor's `ll-ba-sensitive-mode` cookie is not `'unblur'`. The gallery wrapper (`div.ll-ba-single__gallery`) gets the modifier class `ll-ba-single__gallery--sensitive` when the post is NSFW; `initNsfwModal()` in `nsfw-modal.js` adds `is-blurred` to it on load and removes it when the visitor accepts. The `.ll-ba-single__gallery--sensitive.is-blurred` rule in `single-post.css` applies `filter: blur(20px)` to both the main slider and the thumbnail nav. The modal markup is produced by `Hooks::bag_nsfw_modal_markup($message, $archive_url)` (filterable via `lifted_logic/bag/nsfw_modal_markup` — see `README.md`). The popup body copy comes from the `ll_bag_nsfw_popup_text` field (Settings → NSFW Popup tab). Three button actions are wired via `data-nsfw-action`:
+- `unblur-once` — removes blur for this page view, cookie untouched
+- `unblur-all` — removes blur and sets cookie to `'unblur'` via `setSensitiveMode()`
+- `leave` (the × close button) — navigates back using `document.referrer` only if it is same-origin **and** a different URL from the current page (prevents an infinite reload loop that occurs when `document.referrer` equals the current URL on a page refresh); falls back to `data-fallback-url` (the B&A archive URL) for direct/external visits
 
 ### Theme Component Injection (`src/Integration/ThemeComponentInjector.php`)
 
@@ -209,7 +219,11 @@ Disabling a component removes it from `injectLayouts()`, `maybeRegisterHooks()`,
 
 **Output escaping:** Escape at the point of output, not earlier. Use `esc_html()` for plain text, `esc_url()` for URLs, `esc_attr()` for attribute values, and `wp_kses_post()` for WYSIWYG/rich-text fields that may contain allowed HTML. Don't pre-escape a value into a variable and then escape it again at each output site — that double-encodes entities (e.g. `&amp;` becomes `&amp;amp;`). If a value is used in multiple contexts (e.g. both a `data-` attribute and visible text), keep the variable raw and apply the appropriate escaping function at each individual output point.
 
-**Adding a new markup filter hook:** Add a `public static function` to `src/Hooks/Hooks.php` that builds `$markup` and returns `apply_filters('lifted_logic/bag/{name}', $markup, ...$parts)`. Call it as `Hooks::method_name()` in the template. Document it in `README.md` under the Hooks section.
+**Adding a new markup filter hook:** Add a `public static function` to `src/Hooks/Hooks.php` that builds `$markup` and returns `apply_filters('lifted_logic/bag/{name}', $markup, ...$parts)`. Call it as `Hooks::method_name()` in the template. Document it in `README.md` under the Hooks section. Current hooks: `bag_back_button_markup`, `bag_related_slider_arrows_markup`, `bag_link_card_markup`, `bag_nsfw_modal_markup`, `bag_filter_actions_markup`.
+
+**`ba_ref` back-button behavior:** `card.js` appends `?ba_ref=<current-url>` to every `.ll-ba-card__link` click, including cards rendered in plugin components embedded on non-gallery pages. `Hooks::bag_back_button_markup()` validates that `ba_ref`'s URL path matches the B&A gallery archive path before honoring it — this preserves active filter state (query args) when coming from the gallery, but falls back to the plain unfiltered archive URL when the card was clicked from any other page on the site.
+
+**ACF field tooltips:** To show a hover-tooltip (? icon) instead of always-visible inline instructions on an ACF field, add `'data-tooltip' => 'Your text here'` inside the field's `'wrapper'` array. `admin.js` picks up every `.acf-field[data-tooltip]` on `DOMContentLoaded` and injects a dashicon help button with a CSS tooltip bubble next to the field label. Do not use `'instructions'` and `'data-tooltip'` on the same field — pick one.
 
 **Adding a global helper function:** Add it to `src/Hooks/functions.php` with a `function_exists` guard. Never add global functions to `Hooks.php`.
 

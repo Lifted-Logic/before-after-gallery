@@ -11,12 +11,18 @@
 
 defined('ABSPATH') || exit;
 
+use LiftedLogic\LLBag\Hooks\Hooks;
+
 if ($filters->isEmpty()) {
   return;
 }
 ?>
 
 <div class="ll-ba-filters" id="ll-ba-filters">
+
+  <button type="button" id="ll-ba-filter-close" class="ll-ba-filter-close" aria-label="Close filters">
+    <svg class='icon icon-exit' aria-hidden='true'><use xlink:href='#icon-exit'></use></svg>
+  </button>
 
   <!-- Filtered by tags -->
   <div class="ll-ba-hidden ll-ba-filters__active" id="ll-ba-active-bar">
@@ -95,5 +101,7 @@ if ($filters->isEmpty()) {
       </li>
     <?php endforeach; ?>
   </ul>
+
+  <?= Hooks::bag_filter_actions_markup() ?>
 
 </div>

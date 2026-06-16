@@ -80,93 +80,98 @@ if ( !empty($images_field) ) {
 
     <div class="ll-ba-single__sidebar">
 
-        <div class="ll-ba-single__back">
-            <?= Hooks::bag_back_button_markup() ?>
-        </div>
-
-        <div class="ll-ba-single__header">
-            <h4 class="ll-ba-single__title ba_hdg-medium">
-                <?= esc_html( $treatment_title ) ?>
-            </h4>
-            <?php if ( !empty( $card_terms['terms'] ) ) : ?>
-                <ul class="ll-ba-single__categories">
-                    <?php foreach ( $card_terms['terms'] as $term ) : ?>
-                        <li class="ll-ba-single__category">
-                            <a class="ll-ba-single__category-pill" href="<?= esc_url( add_query_arg( $card_terms['taxonomy'], $term->slug, $archive_url ) ) ?>">
-                                <?= esc_html( $term->name ) ?>
+        <div class="ll-ba-single__top">
+            <div class="ll-ba-single__back">
+                <?= Hooks::bag_back_button_markup() ?>
+            </div>
+    
+            <div class="ll-ba-single__header">
+                <h4 class="ll-ba-single__title ba_hdg-medium">
+                    <?= esc_html( $treatment_title ) ?>
+                </h4>
+                <?php if ( !empty( $card_terms['terms'] ) ) : ?>
+                    <ul class="ll-ba-single__categories">
+                        <?php foreach ( $card_terms['terms'] as $term ) : ?>
+                            <li class="ll-ba-single__category">
+                                <a class="ll-ba-single__category-pill" href="<?= esc_url( add_query_arg( $card_terms['taxonomy'], $term->slug, $archive_url ) ) ?>">
+                                    <?= esc_html( $term->name ) ?>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+                <?php if ( $provider_term && ( $provider_image || $provider_link ) ) : ?>
+                    <div class="ll-ba-single__provider">
+                        <?php if ( $provider_image ) : ?>
+                            <?php $img = wp_get_attachment_image( $provider_image, 'thumbnail', false, [
+                                'class' => 'll-ba-single__provider-image',
+                                'alt'   => esc_attr( $provider_term->name ),
+                            ] ); ?>
+                            <span class="ll-ba-single__provider-image-wrap">
+                                <?= $img ?>
+                            </span>
+                        <?php endif; ?>
+                        <?php if ( !empty( $provider_link['url'] ) ) : ?>
+                            <a class="ll-ba-single__provider-link ba_btn-secondary" href="<?= esc_url( $provider_link['url'] ) ?>" <?= !empty( $provider_link['target'] ) ? 'target="' . esc_attr( $provider_link['target'] ) . '"' : '' ?>>
+                                <svg class="icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
+                                <?= esc_html( $provider_link['title'] ?: $provider_term->name ) ?>
+                                <svg class="icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
                             </a>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            <?php endif; ?>
-            <?php if ( $provider_term && ( $provider_image || $provider_link ) ) : ?>
-                <div class="ll-ba-single__provider">
-                    <?php if ( $provider_image ) : ?>
-                        <?php $img = wp_get_attachment_image( $provider_image, 'thumbnail', false, [
-                            'class' => 'll-ba-single__provider-image',
-                            'alt'   => esc_attr( $provider_term->name ),
-                        ] ); ?>
-                        <span class="ll-ba-single__provider-image-wrap">
-                            <?= $img ?>
-                        </span>
-                    <?php endif; ?>
-                    <?php if ( !empty( $provider_link['url'] ) ) : ?>
-                        <a class="ll-ba-single__provider-link" href="<?= esc_url( $provider_link['url'] ) ?>" <?= !empty( $provider_link['target'] ) ? 'target="' . esc_attr( $provider_link['target'] ) . '"' : '' ?>>
-                            <?= esc_html( $provider_link['title'] ?: $provider_term->name ) ?>
-                            <svg class="icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
-                        </a>
-                    <?php endif; ?>
-                </div>
-            <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
 
-        <?php if ( !empty($detail_sections) ) : ?>
-            <div class="ll-ba-single__details">
-                <div class="ll-ba-single__detail-triggers">
-                    <?php foreach ( $detail_sections as $key => $section_trigger ) : ?>
-                        <<?= $section_trigger['tag'] ?>
-                            class="ll-ba-single__detail-trigger"
-                            <?php if ( $section_trigger['is_tab'] ) : ?>
-                                data-toggle-target="#<?= $section_trigger['tab_id'] ?>"
-                                data-toggle-class="ll-ba-is-active"
-                                data-toggle-radio-group="ll-ba-single-page-detail-sections"
-                                aria-expanded="false"
-                                <?= $key === 0 ? 'data-toggle-is-active' : '' ?>
-                            <?php endif; ?>
-                        >
-                            <?= esc_html( $section_trigger['title'] ) ?>
-                        </<?= $section_trigger['tag'] ?>>
-                    <?php endforeach; ?>
-                </div>
-                <div class="ll-ba-single__detail-panels">
-                    <?php foreach ( $detail_sections as $section_content ) : ?>
-                        <div id="<?= $section_content['tab_id'] ?>" class="ll-ba-single__detail-panel wysiwyg <?= $section_content['is_tab'] ? ' ll-ba-single__detail-panel--tab' : '' ?>">
-                            <?= wp_kses_post( $section_content['content'] ) ?>
-                            <?php if ( !empty($section_content['read_more_content']) ) : ?>
-                                <div class="ll-ba-single__detail-read-more">
-                                    <button class="ll-ba-single__detail-read-more-trigger" data-mfp-src="#<?= $section_content['read_more_id'] ?>">
-                                        Read More
-                                        <svg class="ll-ba-single__detail-read-more-icon icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
-                                    </button>
-                                    <div class="mfp-hide ll-ba-single__read-more-popup ll-ba__mfp-popup" id="<?= $section_content['read_more_id'] ?>">
-                                        <div class="wysiwyg">
-                                            <?= wp_kses_post( $section_content['read_more_content'] ) ?>
+        <div class="ll-ba-single__info">
+            <?php if ( !empty($detail_sections) ) : ?>
+                <div class="ll-ba-single__details">
+                    <div class="ll-ba-single__detail-triggers">
+                        <?php foreach ( $detail_sections as $key => $section_trigger ) : ?>
+                            <<?= $section_trigger['tag'] ?>
+                                class="ll-ba-single__detail-trigger"
+                                <?php if ( $section_trigger['is_tab'] ) : ?>
+                                    data-toggle-target="#<?= $section_trigger['tab_id'] ?>"
+                                    data-toggle-class="ll-ba-is-active"
+                                    data-toggle-radio-group="ll-ba-single-page-detail-sections"
+                                    aria-expanded="false"
+                                    <?= $key === 0 ? 'data-toggle-is-active' : '' ?>
+                                <?php endif; ?>
+                            >
+                                <?= esc_html( $section_trigger['title'] ) ?>
+                            </<?= $section_trigger['tag'] ?>>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="ll-ba-single__detail-panels">
+                        <?php foreach ( $detail_sections as $section_content ) : ?>
+                            <div id="<?= $section_content['tab_id'] ?>" class="ll-ba-single__detail-panel wysiwyg <?= $section_content['is_tab'] ? ' ll-ba-single__detail-panel--tab' : '' ?>">
+                                <?= wp_kses_post( $section_content['content'] ) ?>
+                                <?php if ( !empty($section_content['read_more_content']) ) : ?>
+                                    <div class="ll-ba-single__detail-read-more">
+                                        <button class="ll-ba-single__detail-read-more-trigger" data-mfp-src="#<?= $section_content['read_more_id'] ?>">
+                                            Read More
+                                            <svg class="ll-ba-single__detail-read-more-icon icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
+                                        </button>
+                                        <div class="mfp-hide ll-ba-single__read-more-popup ll-ba__mfp-popup" id="<?= $section_content['read_more_id'] ?>">
+                                            <div class="wysiwyg">
+                                                <?= wp_kses_post( $section_content['read_more_content'] ) ?>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
-            </div>
-        <?php endif; ?>
-
-        <!-- Link Card -->
-        <?php if ( is_array($global_cta_link) ) : ?>
-            <div class="ll-ba-single__cta">
-                <?= Hooks::bag_link_card_markup( $global_cta_title, $global_cta_link ) ?>
-            </div>
-        <?php endif; ?>
+            <?php endif; ?>
+    
+            <!-- Link Card -->
+            <?php if ( is_array($global_cta_link) ) : ?>
+                <div class="ll-ba-single__cta">
+                    <?= Hooks::bag_link_card_markup( $global_cta_title, $global_cta_link ) ?>
+                </div>
+            <?php endif; ?>
+        </div>
 
         <!-- Related Slider -->
         <div class="ll-ba-single__related">
@@ -177,11 +182,11 @@ if ( !empty($images_field) ) {
                             More Like This
                         </p>
                     </div>
-                    <?= Hooks::bag_related_slider_arrows_markup() ?>
                 </div>
                 <div class="splide__track">
                     <ul class="splide__list"></ul>
                 </div>
+                <?= Hooks::bag_related_slider_arrows_markup() ?>
             </div>
         </div>
 

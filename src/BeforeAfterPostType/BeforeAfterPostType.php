@@ -20,11 +20,12 @@ class BeforeAfterPostType {
   }
 
   /**
-   * Return the URL for the categories archive (/{archive-slug}/categories/).
+   * Return the URL for the categories archive (/{archive-slug}/{category-slug}/).
    */
   public static function getCategoriesArchiveUrl(): string {
-    $archiveLink = get_post_type_archive_link(self::SLUG);
-    return $archiveLink ? trailingslashit($archiveLink) . 'categories/' : '';
+    $archiveLink  = get_post_type_archive_link(self::SLUG);
+    $categorySlug = SettingsPage::getCategoryArchiveSlug();
+    return $archiveLink ? trailingslashit($archiveLink) . trailingslashit($categorySlug) : '';
   }
 
   public static function getRewriteSlug(): string {
@@ -35,9 +36,10 @@ class BeforeAfterPostType {
   public function registerRewriteRules(): void {
     if ( !get_option( 'options_ll_bag_use_category_archive' ) ) return;
 
-    $slug = self::getRewriteSlug();
+    $archiveSlug  = self::getRewriteSlug();
+    $categorySlug = SettingsPage::getCategoryArchiveSlug();
     add_rewrite_rule(
-      '^' . preg_quote($slug, '/') . '/categories/?$',
+      '^' . preg_quote($archiveSlug, '/') . '/' . preg_quote($categorySlug, '/') . '/?$',
       'index.php?ll_ba_view=categories',
       'top'
     );

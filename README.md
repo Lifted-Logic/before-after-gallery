@@ -363,6 +363,39 @@ add_filter( 'lifted_logic/bag/nsfw_modal_markup', function( $markup, $message, $
 
 ---
 
+### `bag_filter_actions_markup`
+
+Filter: `lifted_logic/bag/filter_actions_markup`
+
+Overrides the Clear / Apply button bar rendered at the bottom of the mobile filter flyout. This bar is only visible on viewports narrower than 768px — on desktop it is hidden via CSS. The markup must keep `id="ll-ba-filter-clear-mobile"` on the Clear button and `id="ll-ba-filter-apply"` on the Apply button; `resources/js/filters.js` wires the open/close and clear logic to those ids.
+
+**Default markup:**
+
+```html
+<div class="ll-ba-filter-actions">
+  <button type="button" id="ll-ba-filter-clear-mobile" class="ll-ba-filter-clear-mobile">Clear</button>
+  <button type="button" id="ll-ba-filter-apply" class="ll-ba-filter-apply">Apply</button>
+</div>
+```
+
+**Parameters passed to the filter:**
+| # | Variable | Type | Description |
+|---|----------|------|-------------|
+| 1 | `$markup` | `string` | Full action bar HTML |
+
+```php
+add_filter( 'lifted_logic/bag/filter_actions_markup', function( $markup ) {
+    return '
+      <div class="ll-ba-filter-actions">
+        <button type="button" id="ll-ba-filter-clear-mobile" class="ll-ba-filter-clear-mobile">Reset</button>
+        <button type="button" id="ll-ba-filter-apply" class="ll-ba-filter-apply">Show Results</button>
+      </div>
+    ';
+} );
+```
+
+---
+
 ## Plugin Components
 
 Plugin components appear in the LL theme's "Add Component" flexible content dropdown alongside native theme components. They work on both newer PHP-`ComponentProvider` sites and older JSON/DB-based sites — both share the same FC field key.

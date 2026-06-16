@@ -4,14 +4,20 @@ namespace LiftedLogic\LLBag\Admin;
 
 use LiftedLogic\LLBag\Frontend\TemplateLoader;
 use LiftedLogic\LLBag\BeforeAfterPostType\BeforeAfterPostType;
+use LiftedLogic\LLBag\Filters\FilterManager;
+use WP_Taxonomy;
 
 class SettingsPage {
   public const FIELD_POSTS_PAGE = 'll_bag_posts_page';
+
+  public function __construct(private readonly FilterManager $filterManager) {}
 
   public function register(): void {
     add_action('acf/init',     [$this, 'registerOptionsPage']);
     add_action('acf/init',     [$this, 'registerFields']);
     add_action('acf/save_post', [$this, 'maybeFlushRewriteRules']);
+    add_filter('acf/load_field/key=field_ll_bag_category_taxonomy',          [$this, 'populateCategoryTaxonomyChoices']);
+    add_filter('acf/load_field/key=field_ll_bag_category_archive_url_message', [$this, 'updateCategoryArchiveUrlMessage']);
   }
 
   public function maybeFlushRewriteRules(mixed $postId): void {
@@ -38,9 +44,6 @@ class SettingsPage {
     $heroBannerOverridden    = TemplateLoader::resolve( 'partials/archive-hero-banner.php' )
       !== LL_BAG_PATH . 'templates/partials/archive-hero-banner.php';
     $heroBannerFieldsEnabled = apply_filters( 'll_bag/hero_banner_fields_enabled', !$heroBannerOverridden );
-
-    $categoriesArchiveUrl = home_url( '/' . BeforeAfterPostType::getRewriteSlug() . '/categories/' );
-
 
     $fields = [
       [
@@ -190,9 +193,36 @@ class SettingsPage {
         'ui_off_text'   => 'No',
       ],
       [
+        'key'           => 'field_ll_bag_category_taxonomy',
+        'label'         => 'Category Taxonomy',
+        'name'          => 'll_bag_category_taxonomy',
+        'type'          => 'select',
+        'choices'       => [],
+        'allow_null'    => 1,
+        'multiple'      => 0,
+        'ui'            => 1,
+        'return_format' => 'value',
+        'placeholder'   => 'Select a taxonomy…',
+        'instructions'  => 'The taxonomy whose terms are used as to fill out the Category Archive page.',
+        'conditional_logic' => [
+          [ [ 'field' => 'field_ll_bag_use_category_archive', 'operator' => '==', 'value' => '1' ] ],
+        ],
+      ],
+      [
+        'key'           => 'field_ll_bag_category_archive_slug',
+        'label'         => 'Category Archive Slug',
+        'name'          => 'll_bag_category_archive_slug',
+        'type'          => 'text',
+        'default_value' => 'categories',
+        'instructions'  => 'The URL segment for the category archive page (e.g. "treatments" → /before-afters/treatments/). After changing this field you must go to Settings > Permalinks > Save in order for the change to take effect',
+        'conditional_logic' => [
+          [ [ 'field' => 'field_ll_bag_use_category_archive', 'operator' => '==', 'value' => '1' ] ],
+        ],
+      ],
+      [
         'key'     => 'field_ll_bag_category_archive_url_message',
         'type'    => 'message',
-        'message' => 'The category archive page will live at: <a href="' . esc_url( $categoriesArchiveUrl ) . '" target="_blank" rel="noopener">' . esc_html( $categoriesArchiveUrl ) . '</a>',
+        'message' => '',
         'conditional_logic' => [
           [ [ 'field' => 'field_ll_bag_use_category_archive', 'operator' => '==', 'value' => '1' ] ],
         ],
@@ -260,10 +290,56 @@ class SettingsPage {
   }
 
   /**
+   * Populate the Category Taxonomy select with all taxonomies registered to the BAG post type.
+   * Hooked to acf/load_field — fires at render time, well after init, so all custom taxonomies exist.
+   *
+   * @param array<string, mixed> $field
+   * @return array<string, mixed>
+   */
+  /**
+   * Recompute the category archive URL message at render time so it uses get_post_type_archive_link(),
+   * which is unavailable at acf/init because registerPostType() hasn't run yet.
+   *
+   * @param array<string, mixed> $field
+   * @return array<string, mixed>
+   */
+  public function updateCategoryArchiveUrlMessage(array $field): array {
+    $url = BeforeAfterPostType::getCategoriesArchiveUrl();
+    if ($url) {
+      $field['message'] = 'The category archive page will live at: <a href="' . esc_url($url) . '" target="_blank" rel="noopener">' . esc_html($url) . '</a>';
+    }
+    return $field;
+  }
+
+  public function populateCategoryTaxonomyChoices(array $field): array {
+    $field['choices'] = [];
+
+    foreach ($this->filterManager->all() as $filter) {
+      $slug = $filter['meta_key'] ?? '';
+      if ($slug === '') continue;
+
+      $taxonomy = get_taxonomy($slug);
+      if ($taxonomy instanceof WP_Taxonomy) {
+        $field['choices'][$slug] = $taxonomy->label;
+      }
+    }
+
+    return $field;
+  }
+
+  /**
    * Return the configured "all posts" page URL, or empty string if not set.
    */
   public static function getPostsPageUrl(): string {
     $pageId = (int) get_field(self::FIELD_POSTS_PAGE, 'option');
     return $pageId ? (string) get_permalink($pageId) : '';
+  }
+
+  public static function getCategoryTaxonomy(): string {
+    return (string) get_field('ll_bag_category_taxonomy', 'option');
+  }
+
+  public static function getCategoryArchiveSlug(): string {
+    return sanitize_title(get_option('options_ll_bag_category_archive_slug') ?: 'categories');
   }
 }

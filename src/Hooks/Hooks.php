@@ -77,7 +77,11 @@ class Hooks {
     $actions = <<<HTML
       <div class="ll-ba-nsfw-modal__actions">
           <button type="button" class="ll-ba-nsfw-modal__btn ba_btn-primary" data-nsfw-action="unblur-once">Unblur This Only</button>
-          <button type="button" class="ll-ba-nsfw-modal__btn ll-ba-nsfw-modal__btn--secondary" data-nsfw-action="unblur-all">Unblur All</button>
+          <button type="button" class="ll-ba-nsfw-modal__btn ll-ba-nsfw-modal__btn--secondary" data-nsfw-action="unblur-all">
+            <svg class="icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
+            Unblur All
+            <svg class="icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
+          </button>
       </div>
     HTML;
 
@@ -94,6 +98,18 @@ class Hooks {
     HTML;
 
     return apply_filters( 'lifted_logic/bag/nsfw_modal_markup', $markup, $message, $archive_url, $actions );
+  }
+
+  // Mobile filter flyout actions (Clear + Apply buttons)
+  public static function bag_filter_actions_markup(): string {
+    $markup = <<<HTML
+      <div class="ll-ba-filter-actions">
+        <button type="button" id="ll-ba-filter-clear-mobile" class="ll-ba-filter-clear-mobile">Clear</button>
+        <button type="button" id="ll-ba-filter-apply" class="ll-ba-filter-apply">Apply</button>
+      </div>
+    HTML;
+
+    return apply_filters( 'lifted_logic/bag/filter_actions_markup', $markup );
   }
 
   // CTA Link card

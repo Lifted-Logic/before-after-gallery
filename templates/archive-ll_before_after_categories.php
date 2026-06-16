@@ -11,8 +11,10 @@ defined('ABSPATH') || exit;
 use LiftedLogic\LLBag\Admin\SettingsPage;
 use LiftedLogic\LLBag\Frontend\TemplateLoader;
 
+$categoryTaxonomy = SettingsPage::getCategoryTaxonomy() ?: 'category';
+
 $categories = get_terms( [
-    'taxonomy'   => 'category',
+    'taxonomy'   => $categoryTaxonomy,
     'hide_empty' => true,
 ] );
 
@@ -35,7 +37,8 @@ $allPostsUrl = SettingsPage::getPostsPageUrl();
         <div class="ll-ba-archive-categories__header">
           <p class="ll-ba-archive-categories__subtitle"><?= esc_html( $subtitle ) ?></p>
           <?php if ( $allPostsUrl ) : ?>
-            <a class="ll-ba-archive-categories__all-link" href="<?= esc_url( $allPostsUrl ) ?>">
+            <a class="ll-ba-archive-categories__all-link ba_btn-secondary" href="<?= esc_url( $allPostsUrl ) ?>">
+              <svg class='icon icon-arrow-right' aria-hidden='true'><use xlink:href='#icon-arrow-right'></use></svg>
               View All Before &amp; Afters
               <svg class='icon icon-arrow-right' aria-hidden='true'><use xlink:href='#icon-arrow-right'></use></svg>
             </a>
@@ -45,7 +48,7 @@ $allPostsUrl = SettingsPage::getPostsPageUrl();
         <?php if ( !empty( $categories ) ) : ?>
           <div class="ll-ba-archive-categories__grid">
             <?php foreach ( $categories as $category ) :
-              TemplateLoader::get( 'partials/category-card.php', ['category' => $category] );
+              TemplateLoader::get( 'partials/category-card.php', ['category' => $category, 'taxonomy' => $categoryTaxonomy] );
             endforeach; ?>
           </div>
         <?php endif; ?>

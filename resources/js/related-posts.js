@@ -50,6 +50,13 @@ export function initRelatedSlider() {
         gap:        '32px',
         pagination: false,
         arrows:     visibleCount >= 3,
+        breakpoints: {
+          1023: {
+            perPage: 1,
+            gap:     '16px',
+            arrows:  visibleCount >= 2,
+          },
+        },
       }).mount();
     })
     .catch(() => {});
