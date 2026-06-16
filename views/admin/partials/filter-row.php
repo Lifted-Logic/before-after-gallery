@@ -43,6 +43,16 @@ $isBuiltin = !empty($filter['builtin']);
   </td>
 
   <td>
+    <input
+      type="checkbox"
+      name="ll_bag_filters[<?= esc_attr($id); ?>][enabled]"
+      value="1"
+      <?php checked(!empty($filter['enabled'])); ?>
+      class="ll-bag-filterable-input"
+    >
+  </td>
+
+  <td>
     <input type="hidden" name="ll_bag_filters[<?= esc_attr($id); ?>][display]" value="checkbox">
 
     <label class="ll-bag-searchable-wrap">
@@ -53,17 +63,7 @@ $isBuiltin = !empty($filter['builtin']);
         <?php checked(!empty($filter['searchable'])); ?>
         class="ll-bag-searchable-input"
       >
-      Searchable
     </label>
-  </td>
-
-  <td>
-    <input
-      type="checkbox"
-      name="ll_bag_filters[<?= esc_attr($id); ?>][enabled]"
-      value="1"
-      <?php checked(!empty($filter['enabled'])); ?>
-    >
   </td>
 
   <td class="ll-bag-card-display-td">

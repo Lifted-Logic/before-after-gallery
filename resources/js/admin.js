@@ -12,6 +12,18 @@ function labelToMetaKey(label) {
     .replace(/^_+|_+$/g, '');
 }
 
+function syncSearchable(row) {
+  const filterable     = row.querySelector('.ll-bag-filterable-input');
+  const searchableWrap = row.querySelector('.ll-bag-searchable-wrap');
+  const searchable     = row.querySelector('.ll-bag-searchable-input');
+  if (!filterable || !searchableWrap || !searchable) return;
+
+  const enabled = filterable.checked;
+  searchableWrap.classList.toggle('is-disabled', !enabled);
+  searchable.disabled = !enabled;
+  if (!enabled) searchable.checked = false;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 
   // Convert ACF field instructions stored in data-tooltip into hover tooltips
@@ -33,13 +45,21 @@ document.addEventListener('DOMContentLoaded', () => {
     label.appendChild(icon);
   });
 
-  document.getElementById('ll-bag-filter-tbody')?.addEventListener('change', (e) => {
-    const checked = e.target.closest('.ll-bag-card-display');
-    if (!checked?.checked) return;
+  // Init searchable disabled state for all existing rows
+  document.querySelectorAll('.ll-bag-filter-row').forEach(syncSearchable);
 
-    document.querySelectorAll('.ll-bag-card-display').forEach(cb => {
-      if (cb !== checked) cb.checked = false;
-    });
+  document.getElementById('ll-bag-filter-tbody')?.addEventListener('change', (e) => {
+    // Keep card display as a radio group (only one selected at a time)
+    const checked = e.target.closest('.ll-bag-card-display');
+    if (checked?.checked) {
+      document.querySelectorAll('.ll-bag-card-display').forEach(cb => {
+        if (cb !== checked) cb.checked = false;
+      });
+    }
+
+    // Sync searchable when filterable changes
+    const filterable = e.target.closest('.ll-bag-filterable-input');
+    if (filterable) syncSearchable(filterable.closest('.ll-bag-filter-row'));
   });
 
   // prevent duplicate meta key detection on save
@@ -149,5 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
     row.dataset.isNew = '1'; // flag so meta key auto-generates from label
 
     tbody.appendChild(row);
+    syncSearchable(tbody.lastElementChild);
   });
 });

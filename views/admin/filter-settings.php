@@ -40,8 +40,8 @@ defined('ABSPATH') || exit;
         <tr>
           <th></th>
           <th>Label</th>
+          <th title="This will enable the filter's display in the filter sidebar">Filterable?</th>
           <th>Show Search Bar?</th>
-          <th title="This will enable the filter's display in the filter sidebar">Fiterable?</th>
           <th title="Show this taxonomy's terms as pills on each post card">Show on Cards</th>
           <th>Actions</th>
         </tr>

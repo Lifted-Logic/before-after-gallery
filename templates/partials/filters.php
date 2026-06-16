@@ -48,7 +48,7 @@ if ($filters->isEmpty()) {
       $display  = $filter['display'] ?? 'checkbox';
       $label    = $filter['label'] ?? '';
 
-      $terms = get_terms(['taxonomy' => $taxonomy, 'hide_empty' => false]);
+      $terms = get_terms(['taxonomy' => $taxonomy, 'hide_empty' => true]);
       if (is_wp_error($terms) || empty($terms)) continue;
     ?>
       <li
