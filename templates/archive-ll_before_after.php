@@ -19,7 +19,8 @@ $filters = (new FilterManager())->getEnabled();
 
 <div class="ll-ba-archive">
   <?php TemplateLoader::get( 'partials/archive-hero-banner.php' ); ?>
-  <div class="ll-ba-archive__inner">
+  <?php $archive_inner_classes = implode( ' ', array_map( 'sanitize_html_class', apply_filters( 'lifted_logic/bag/archive_inner_classes', [] ) ) ); ?>
+  <div class="ll-ba-archive__inner<?= $archive_inner_classes ? ' ' . $archive_inner_classes : '' ?>">
     <!-- Sensitive images bar (shown/hidden by JS based on whether sensitive cards are in the grid) -->
     <div class="ll-ba-sensitive-bar ll-ba-hidden" id="ll-ba-sensitive-bar">
       <span class="ll-ba-sensitive-bar__label">Sensitive Images</span>

@@ -160,7 +160,7 @@
     flex-direction: column;
     gap: 1.25rem;
     padding: 1.25rem;
-    border-radius: var(--cta-card-radius);
+    border-radius: var(--cta-card-radius, 0px);
     background-color: var(--cta-card-background);
 
     @media (min-width: 768px) {

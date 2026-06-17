@@ -78,7 +78,8 @@ if ( !empty($images_field) ) {
         <?= Hooks::bag_nsfw_modal_markup( $nsfw_popup_text, $archive_url ) ?>
     <?php endif; ?>
 
-    <div class="ll-ba-single__sidebar">
+    <?php $sidebar_classes = implode( ' ', array_map( 'sanitize_html_class', apply_filters( 'lifted_logic/bag/single_sidebar_classes', [] ) ) ); ?>
+    <div class="ll-ba-single__sidebar<?= $sidebar_classes ? ' ' . $sidebar_classes : '' ?>">
 
         <div class="ll-ba-single__top">
             <div class="ll-ba-single__back ba_btn-secondary--back">

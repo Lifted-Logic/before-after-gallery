@@ -4,6 +4,9 @@
 
 .ll-ba-related-bna {
    background-color: var(--general-background);
+   &[class*="theme-"] {
+      background-color: var(--background-fill);
+   }
 }
 
 .ll-ba-related-bna__container {

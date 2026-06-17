@@ -70,8 +70,9 @@ your-theme/
         ├── archive-hero-banner.php       # Archive page hero banner
         ├── categories-hero-banner.php    # Categories listing page hero banner
         ├── category-card.php             # Individual category card
-        ├── post-card.php                 # Grid card for archive and related slider
-        └── filters.php                   # Filter sidebar
+        ├── post-card.php                        # Grid card for archive and related slider
+        ├── before-after-slider-post-card.php    # Card used inside the Before & After Slider component
+        └── filters.php                          # Filter sidebar
 ```
 
 > **Note:** Partials included via `bag_include_partial()` (e.g. `fit-image`) are hardcoded to the plugin directory and cannot be overridden from the theme.
@@ -99,52 +100,34 @@ A theme can override either file independently. `categories-hero-banner.php` is 
 
 #### Hero Banner ACF fields
 
-The plugin registers ACF fields for `archive-hero-banner.php` in **B&A Posts → Settings → Archive Settings**. When a theme overrides that partial, those fields are automatically removed from the admin — the plugin detects the override at registration time and skips them.
+The plugin registers ACF fields for `archive-hero-banner.php` directly on the page set as the archive in **B&A Posts → Settings → Archive Settings → All Posts Archive Page**. They appear as a "Before & After Archive" meta box on that page's edit screen. When a theme overrides that partial, those fields are automatically removed from the admin — the plugin detects the override at registration time and skips them.
 
-**When you override the partial, register your own field group on the same settings page:**
-
-```php
-// In your theme's functions.php
-add_action( 'acf/init', function () {
-    acf_add_local_field_group( [
-        'key'    => 'group_my_theme_hero_banner',
-        'title'  => 'Hero Banner',
-        'fields' => [
-            [
-                'key'   => 'field_my_theme_hero_heading',
-                'label' => 'Hero Heading',
-                'name'  => 'my_theme_hero_heading',
-                'type'  => 'text',
-            ],
-            [
-                'key'           => 'field_my_theme_hero_link',
-                'label'         => 'Hero Link',
-                'name'          => 'my_theme_hero_link',
-                'type'          => 'link',
-                'return_format' => 'array',
-            ],
-            // add more fields as needed
-        ],
-        'location' => [
-            [
-                [
-                    'param'    => 'options_page',
-                    'operator' => '==',
-                    'value'    => 'll-bag-settings',
-                ],
-            ],
-        ],
-    ] );
-} );
-```
-
-Your field group appears as a separate section on the **B&A Posts → Settings** page. Read values in your template with `get_field( 'my_theme_hero_heading', 'option' )`.
+**When you override the partial, inject your own fields via the `ll_bag/before_after_archive_fields` filter** (see [Archive page ACF fields](#archive-page-acf-fields) below). Read values in your template with `get_field( 'my_theme_hero_heading', $page_id )`, where `$page_id = (int) get_field( 'll_bag_posts_page', 'option' )`.
 
 To force the plugin's default hero banner fields to register even when your override file is present:
 
 ```php
 add_filter( 'll_bag/hero_banner_fields_enabled', '__return_true' );
 ```
+
+#### Archive page ACF fields
+
+Use the `ll_bag/before_after_archive_fields` filter to register ACF fields directly on the page selected as the B&A archive (set in **B&A Posts → Settings → Archive Settings → All Posts Archive Page**). The field group is created automatically by the plugin using the page ID stored in settings — no need to write `acf_add_local_field_group` yourself.
+
+```php
+// In your theme's functions.php
+add_filter( 'll_bag/before_after_archive_fields', function ( array $fields ): array {
+    $fields[] = [
+        'key'   => 'field_my_theme_archive_heading',
+        'label' => 'Archive Heading',
+        'name'  => 'my_theme_archive_heading',
+        'type'  => 'text',
+    ];
+    return $fields;
+} );
+```
+
+Read values in your template with `get_field( 'my_theme_archive_heading', $page_id )`, where `$page_id` is the ID stored in `get_field( 'll_bag_posts_page', 'option' )`. The field group only registers when a page has been selected in settings and at least one field is returned by the filter.
 
 ### CSS
 
@@ -391,6 +374,121 @@ add_filter( 'lifted_logic/bag/filter_actions_markup', function( $markup ) {
         <button type="button" id="ll-ba-filter-apply" class="ll-ba-filter-apply">Show Results</button>
       </div>
     ';
+} );
+```
+
+---
+
+### `bag_slider_card_sensitive_overlay_markup`
+
+Filter: `lifted_logic/bag/slider_card_sensitive_overlay_markup`
+
+Overrides the sensitive-content overlay panel shown on slider cards (Before & After Slider component) when a post has the "Sensitive Images" (`ll_ba_is_nsfw`) field enabled. The overlay is only shown when the visitor's `ll-ba-sensitive-mode` cookie is not `unblur` — if the cookie is already `unblur`, `applySensitiveMode()` never adds `is-blurred` to the card, so the overlay remains hidden.
+
+`$message` is the same text from **B&A Posts → Settings → NSFW Popup → NSFW Popup Text** (defaults to "This before and after contains sensitive content." if empty).
+
+The two buttons in the overlay are wired via `data-slider-card-action` attributes handled by `before-and-after-slider.js`:
+- `unblur-once` — removes `is-blurred` from the single card only; cookie is untouched
+- `unblur-all` — sets cookie to `unblur` via `setSensitiveMode()` and removes `is-blurred` from all `.ll-ba-slider-card--sensitive` elements on the page
+
+The filter also receives `$actions` — the `.ll-ba-slider-card__sensitive-actions` button group HTML — so themes can swap just the buttons while keeping the rest of the panel.
+
+**Default markup:**
+
+```html
+<div class="ll-ba-slider-card__sensitive-overlay" aria-label="Sensitive content">
+  <div class="ll-ba-slider-card__sensitive-panel">
+    <p class="ll-ba-slider-card__sensitive-message">{message}</p>
+    <div class="ll-ba-slider-card__sensitive-actions">
+      <button type="button" class="ll-ba-slider-card__sensitive-btn ll-ba-slider-card__sensitive-btn--primary" data-slider-card-action="unblur-once">Unblur This Only</button>
+      <button type="button" class="ll-ba-slider-card__sensitive-btn ll-ba-slider-card__sensitive-btn--secondary" data-slider-card-action="unblur-all">
+        Unblur All
+        <svg class="icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
+      </button>
+    </div>
+  </div>
+</div>
+```
+
+**Parameters passed to the filter:**
+| # | Variable | Type | Description |
+|---|----------|------|-------------|
+| 1 | `$markup` | `string` | Full overlay HTML |
+| 2 | `$message` | `string` | Popup message text (from options page, unescaped) |
+| 3 | `$actions` | `string` | `.ll-ba-slider-card__sensitive-actions` button group HTML only |
+
+The example below replaces only the action buttons, reusing the rest of the default panel:
+
+```php
+add_filter( 'lifted_logic/bag/slider_card_sensitive_overlay_markup', function( $markup, $message, $actions ) {
+    $custom_actions = '
+      <div class="ll-ba-slider-card__sensitive-actions">
+        <button type="button" class="ll-ba-slider-card__sensitive-btn ll-ba-slider-card__sensitive-btn--primary" data-slider-card-action="unblur-all">Show Content</button>
+      </div>
+    ';
+
+    return str_replace( $actions, $custom_actions, $markup );
+}, 10, 3 );
+```
+
+---
+
+### `single_sidebar_classes`
+
+Filter: `lifted_logic/bag/single_sidebar_classes`
+
+Injects additional CSS classes onto the `.ll-ba-single__sidebar` element on the single post page. Each value is passed through `sanitize_html_class()` before output.
+
+**Parameters passed to the filter:**
+| # | Variable | Type | Description |
+|---|----------|------|-------------|
+| 1 | `$classes` | `array` | Classes to add (empty by default) |
+
+```php
+add_filter( 'lifted_logic/bag/single_sidebar_classes', function ( $classes ) {
+    $classes[] = 'my-custom-class';
+    return $classes;
+} );
+```
+
+---
+
+### `archive_inner_classes`
+
+Filter: `lifted_logic/bag/archive_inner_classes`
+
+Injects additional CSS classes onto the `.ll-ba-archive__inner` wrapper on the main archive page. Each value is passed through `sanitize_html_class()` before output.
+
+**Parameters passed to the filter:**
+| # | Variable | Type | Description |
+|---|----------|------|-------------|
+| 1 | `$classes` | `array` | Classes to add (empty by default) |
+
+```php
+add_filter( 'lifted_logic/bag/archive_inner_classes', function ( $classes ) {
+    $classes[] = 'has-sidebar';
+    return $classes;
+} );
+```
+
+---
+
+### `grid_classes`
+
+Filter: `lifted_logic/bag/grid_classes`
+
+Injects additional CSS classes onto the Before & Afters Grid wrapper element (`.ll-ba-bag-grid`). Each value is passed through `sanitize_html_class()` before output.
+
+**Parameters passed to the filter:**
+| # | Variable | Type | Description |
+|---|----------|------|-------------|
+| 1 | `$classes` | `array` | Classes to add (empty by default) |
+
+```php
+add_filter( 'lifted_logic/bag/grid_classes', function ( $classes ) {
+    $classes[] = 'theme-two';
+    $classes[] = 'component-spacing';
+    return $classes;
 } );
 ```
 

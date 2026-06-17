@@ -17,13 +17,13 @@ export function setSensitiveMode( mode ) {
  * @param {string}  mode      - 'blur' | 'hide' | anything else = show all
  */
 export function applySensitiveMode( container, mode ) {
-  container.querySelectorAll( '.ll-ba-card' ).forEach( card => {
+  container.querySelectorAll( '.ll-ba-card, .ll-ba-slider-card' ).forEach( card => {
     card.classList.remove( 'is-blurred', 'is-hidden' );
   } );
   if ( mode === 'blur' ) {
-    container.querySelectorAll( '.ll-ba-card--sensitive' ).forEach( c => c.classList.add( 'is-blurred' ) );
+    container.querySelectorAll( '.ll-ba-card--sensitive, .ll-ba-slider-card--sensitive' ).forEach( c => c.classList.add( 'is-blurred' ) );
   } else if ( mode === 'hide' ) {
-    container.querySelectorAll( '.ll-ba-card--sensitive' ).forEach( c => c.classList.add( 'is-hidden' ) );
+    container.querySelectorAll( '.ll-ba-card--sensitive, .ll-ba-slider-card--sensitive' ).forEach( c => c.classList.add( 'is-hidden' ) );
   }
 }
 
@@ -34,6 +34,6 @@ export function applySensitiveMode( container, mode ) {
  */
 export function updateSensitiveBar( bar, container ) {
   if ( !bar ) return;
-  const hasSensitive = container.querySelectorAll( '.ll-ba-card--sensitive' ).length > 0;
+  const hasSensitive = container.querySelectorAll( '.ll-ba-card--sensitive, .ll-ba-slider-card--sensitive' ).length > 0;
   bar.classList.toggle( 'll-ba-hidden', !hasSensitive );
 }

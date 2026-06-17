@@ -16,9 +16,11 @@ use LiftedLogic\LLBag\Frontend\TemplateLoader;
 $posts = $component_data['posts'] ?? [];
 
 if ( empty( $posts ) ) return;
+
+$extra_classes = implode( ' ', array_map( 'sanitize_html_class', apply_filters( 'lifted_logic/bag/grid_classes', [] ) ) );
 ?>
 
-<div class="ll-ba-bag-grid component-spacing ba_grid-cols-container">
+<div class="ll-ba-bag-grid ba_grid-cols-container<?= $extra_classes ? ' ' . $extra_classes : '' ?>">
   <div class="ll-ba-bag-grid__sensitive-bar ll-ba-sensitive-bar ll-ba-hidden">
     <span class="ll-ba-sensitive-bar__label">Sensitive Images</span>
     <div class="ll-ba-sensitive-bar__options" role="group" aria-label="Sensitive image display mode">

@@ -112,6 +112,33 @@ class Hooks {
     return apply_filters( 'lifted_logic/bag/filter_actions_markup', $markup );
   }
 
+  // Sensitive overlay panel on slider cards
+  public static function bag_slider_card_sensitive_overlay_markup( string $message ): string {
+    $message_html = esc_html( $message );
+
+    $actions = <<<HTML
+      <div class="ll-ba-slider-card__sensitive-actions">
+        <button type="button" class="ll-ba-slider-card__sensitive-btn ba_btn-primary" data-slider-card-action="unblur-once">Unblur This Only</button>
+        <button type="button" class="ll-ba-slider-card__sensitive-btn ba_btn-secondary" data-slider-card-action="unblur-all">
+          <svg class="icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
+          Unblur All
+          <svg class="icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
+        </button>
+      </div>
+    HTML;
+
+    $markup = <<<HTML
+      <div class="ll-ba-slider-card__sensitive-overlay" aria-label="Sensitive content">
+        <div class="ll-ba-slider-card__sensitive-panel">
+          <p class="ll-ba-slider-card__sensitive-message">$message_html</p>
+          $actions
+        </div>
+      </div>
+    HTML;
+
+    return apply_filters( 'lifted_logic/bag/slider_card_sensitive_overlay_markup', $markup, $message, $actions );
+  }
+
   // CTA Link card
   public static function bag_link_card_markup( string $title, array $link ): string {
     if ( empty( $link ) ) return '';

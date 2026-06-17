@@ -13,7 +13,7 @@ defined('ABSPATH') || exit;
 
 use LiftedLogic\LLBag\Frontend\TemplateLoader;
 
-$color_theme = $component_data['color_theme'] ?? 'theme-one';
+$color_theme = $component_data['color_theme'] ?? '';
 $content     = $component_data['content']     ?? '';
 $posts       = $component_data['posts']       ?? [];
 $layout       = $component_data['layout']       ?? 'content-image';
@@ -35,20 +35,20 @@ if ( empty( $posts ) ) return;
         <ul class="splide__list">
           <?php foreach ( $posts as $post ) : ?>
             <li class="splide__slide">
-              <?php TemplateLoader::get( 'partials/post-card.php', ['post' => $post] ); ?>
+              <?php TemplateLoader::get( 'partials/before-after-slider-post-card.php', ['post' => $post] ); ?>
             </li>
           <?php endforeach; ?>
         </ul>
       </div>
       <div class="splide__arrows ll-ba-before-after-slider__splide-arrows">
       
-        <button class="btn-secondary__back splide__arrow--prev">
+        <button class="ba_btn-secondary--back splide__arrow--prev">
           <svg class="size-3 icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
           Back
           <svg class="size-3 icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
         </button>
 
-        <button class="ml-auto btn-secondary splide__arrow--next">
+        <button class="ml-auto ba_btn-secondary splide__arrow--next">
           <svg class="size-3 icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
           Next
           <svg class="size-3 icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>

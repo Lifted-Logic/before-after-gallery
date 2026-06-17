@@ -51,6 +51,12 @@
       margin-left: 0;
     }
   }
+  [class*="theme-"] & {
+    color: var(--secondary-button-default);
+    svg {
+      color: var(--secondary-button-default);
+    }
+  }
 }
 
 .ba_btn-secondary--back {
@@ -85,6 +91,12 @@
     svg:first-of-type {
       width: 0;
       margin-right: 0;
+    }
+  }
+  [class*="theme-"] & {
+    color: var(--secondary-button-default);
+    svg {
+      color: var(--secondary-button-default);
     }
   }
 }

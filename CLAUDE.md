@@ -44,6 +44,8 @@ templates/{file}                  ← plugin fallback
 
 Use `TemplateLoader::get('partials/post-card.php', ['post' => $post])` to include a partial with variables extracted into scope. Use `TemplateLoader::render()` when you need the output as a string (e.g. in AJAX handlers). **Do not use `bag_include_partial()` for partials that should be theme-overridable** — it is hardcoded to the plugin directory and bypasses theme resolution.
 
+**Theme components below the archive grid:** `archive-ll_before_after.php` conditionally renders the base theme's `templates/partials/components.php` (ACF flexible content layouts) below the grid. It uses `locate_template()` to check the file exists, then sets the global `$post` to the archive page and calls `setup_postdata()` before `get_template_part()`, followed by `wp_reset_postdata()`. This lets editors add theme-native components (hero banners, text blocks, etc.) below the B&A grid via the archive page's ACF flexible content field without any special integration.
+
 ### ACF Fields
 
 All ACF field groups are registered programmatically via `acf_add_local_field_group()` in two places:
@@ -65,6 +67,8 @@ All ACF field groups are registered programmatically via `acf_add_local_field_gr
 
 **`get_option()` vs `get_field()` in early hooks:** Never call `get_field()` inside a `pre_get_posts` callback. ACF's `get_field()` calls `get_posts()` internally to look up field registration, which fires `pre_get_posts` again → infinite recursion → fatal error. The same `get_option('options_{field_name}')` pattern is also used for `init`-hooked logic that needs an options-page field before templates load — ACF's options fields aren't reliably available that early either. Use `get_option('options_{field_name}')` instead — it reads directly from the options table with no query. Examples: `get_option('options_ll_bag_use_category_archive')` in `registerRewriteRules()` / `scopeCategoryArchive()`, and `get_option('options_' . SettingsPage::FIELD_POSTS_PAGE)` in `BeforeAfterPostType::getRewriteSlug()` (called from `registerPostType()`/`registerRewriteRules()` on `init`). `TemplateLoader::loadTemplate()` (on `template_include`) is safe to use `get_field()` since it fires much later.
 
+**Archive page fields** (`SettingsPage.php`, `registerArchivePageFields()`, hooked on `acf/init`): When a page is assigned via `FIELD_POSTS_PAGE`, the plugin registers ACF fields directly on that page's edit screen under a "Before & After Archive" meta box (`group_ll_ba_archive_page_fields`). Hero banner fields (`ll_ba_hero_banner` group — content/link/image) are included unless the theme has overridden `archive-hero-banner.php`. All fields pass through `apply_filters('ll_bag/before_after_archive_fields', $fields)` — use this filter in `functions.php` to inject additional fields onto the archive page. The block editor and classic editor are also disabled on this page: `disableBlockEditorForArchivePage()` filters `use_block_editor_for_post` to return `false`; `disableArchivePageEditor()` runs on `admin_init` and calls `remove_post_type_support('page', 'editor')` when `$_GET['post']` matches the archive page ID. Both use `get_option()` rather than `get_field()` because they fire before ACF options fields are available.
+
 The images repeater field (`ll_ba_images`) is the core data structure for the single post. Each row has:
 - `ll_ba_image_options` — `one-image` | `two-images` | `video`
 - `ll_ba_image_ratio` — `wide` | `square` | `panorama` | `vertical`
@@ -82,6 +86,8 @@ Templates map `ll_ba_image_ratio` values to CSS modifier classes (`ll-ba-single_
 The AJAX filter handler (`src/Frontend/AjaxHandler.php`) handles two actions:
 - `ll_bag_filter` — archive grid filtering; returns rendered `post-card.php` HTML
 - `ll_bag_related` — related posts for the single page slider; runs three query passes (card taxonomy → override terms → recent fallback)
+
+**Mobile active filter bar:** A second active-filter bar (`#ll-ba-active-bar-mobile`, `#ll-ba-active-tags-mobile`, `#ll-ba-clear-all-mobile`) is rendered in `archive-ll_before_after.php` immediately below `.ll-ba-filter-trigger`. `filters.js`'s `updateActiveTags()` populates and syncs both bars simultaneously. On mobile (≤767px) the sidebar's `#ll-ba-active-bar` is inside the flyout popup; this second bar stays visible in the page flow below the trigger button. On desktop the mobile bar is hidden via `.ll-ba-filters__active--mobile { display: none; }` in `archive.css`. Both bars' tag lists and clear-all buttons delegate to the same shared handler functions (`handleTagRemoval`, `handleClearAll`).
 
 ### CSS Architecture
 
@@ -124,7 +130,7 @@ Other JS modules are imported from separate files:
 | `pagination.js` | Pagination rendering helper |
 | `related-posts.js` | AJAX-loaded related posts slider on single page |
 | `nsfw-modal.js` | NSFW confirmation modal on sensitive single posts; exports `initNsfwModal()` |
-| `sensitive.js` | Shared sensitive image helpers — `getSensitiveMode()`, `setSensitiveMode()`, `applySensitiveMode(container, mode)`, `updateSensitiveBar(bar, container)` |
+| `sensitive.js` | Shared sensitive image helpers — `getSensitiveMode()`, `setSensitiveMode()`, `applySensitiveMode(container, mode)`, `updateSensitiveBar(bar, container)`. Queries both `.ll-ba-card`/`.ll-ba-card--sensitive` and `.ll-ba-slider-card`/`.ll-ba-slider-card--sensitive` — add new card class names here when introducing a card type that supports sensitive/blur |
 | `cookieUtil.js` | `CookieUtil.getCookie(name)` / `setCookie(name, value, days)` — used by `sensitive.js` |
 | `vendor/easy-toggle-state.js` | Declarative toggle library; activated via `data-toggle-*` attributes |
 
@@ -228,6 +234,10 @@ Disabling a component removes it from `injectLayouts()`, `maybeRegisterHooks()`,
 **Adding a global helper function:** Add it to `src/Hooks/functions.php` with a `function_exists` guard. Never add global functions to `Hooks.php`.
 
 **Adding a new partial:** Create the file in `templates/partials/`. Include it via `TemplateLoader::get('partials/my-partial.php', $data)` (theme-overridable) or `bag_include_partial('my-partial', $data)` (plugin-only, no theme override). Add the override path to the header docblock.
+
+**Slider card partial (`templates/partials/before-after-slider-post-card.php`):** A fork of `post-card.php` with all BEM classes renamed from `ll-ba-card` to `ll-ba-slider-card`. Used by the Before & After Slider component so its card can be styled and theme-overridden independently from the archive grid card. CSS lives in `components/BeforeAndAfterSlider/before-and-after-slider.css`. Note: `.ll-ba-slider-card__visual` is declared **outside** the nested `.ll-ba-slider-card {}` block — this mirrors the same pattern in `archive.css` where `.ll-ba-card__visual` sits in the "Sensitive card states" section, outside `.ll-ba-card {}`. When forking this card for another component, always copy the `__visual` rule explicitly — without it, images won't render.
+
+**Slider card sensitive overlay:** When a slider card has `ll_ba_is_nsfw = true`, the partial calls `Hooks::bag_slider_card_sensitive_overlay_markup($message)` to render a centered white panel over the blurred card with "Unblur This Only" and "Unblur All" buttons. The overlay is only visible when the card has both `ll-ba-slider-card--sensitive` and `is-blurred` classes (the latter added by `applySensitiveMode()` in `before-and-after-slider.js`). If the visitor's `ll-ba-sensitive-mode` cookie is already `'unblur'`, `applySensitiveMode()` never adds `is-blurred` and the overlay stays hidden. Button click handlers (event-delegated in `before-and-after-slider.js`) use `data-slider-card-action`: `unblur-once` removes `is-blurred` from the single card; `unblur-all` sets the cookie via `setSensitiveMode('unblur')` and removes `is-blurred` from all `.ll-ba-slider-card--sensitive` elements. The overlay markup is filterable via `lifted_logic/bag/slider_card_sensitive_overlay_markup` — see README for full docs.
 
 **BEM class naming in CSS:** All plugin BEM classes use the `ll-ba-` prefix — no exceptions. Examples: `ll-ba-card`, `ll-ba-single`, `ll-ba-single__gallery`, `ll-ba-comparison-slider`. Do not use the bare `ba-` prefix for plugin classes. Do not use bare utility class names (like `hidden`) that could conflict with theme styles — use `ll-ba-hidden` instead.
 

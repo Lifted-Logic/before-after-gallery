@@ -15,9 +15,28 @@ class SettingsPage {
   public function register(): void {
     add_action('acf/init',     [$this, 'registerOptionsPage']);
     add_action('acf/init',     [$this, 'registerFields']);
+    add_action('acf/init',     [$this, 'registerArchivePageFields']);
     add_action('acf/save_post', [$this, 'maybeFlushRewriteRules']);
+    add_action('admin_init',   [$this, 'disableArchivePageEditor']);
+    add_filter('use_block_editor_for_post', [$this, 'disableBlockEditorForArchivePage'], 10, 2);
     add_filter('acf/load_field/key=field_ll_bag_category_taxonomy',          [$this, 'populateCategoryTaxonomyChoices']);
     add_filter('acf/load_field/key=field_ll_bag_category_archive_url_message', [$this, 'updateCategoryArchiveUrlMessage']);
+  }
+
+  public function disableArchivePageEditor(): void {
+    $page_id = (int) get_option('options_' . self::FIELD_POSTS_PAGE);
+    if (!$page_id) return;
+
+    $current = isset($_GET['post']) ? (int) $_GET['post'] : 0;
+    if ($current !== $page_id) return;
+
+    remove_post_type_support('page', 'editor');
+  }
+
+  public function disableBlockEditorForArchivePage(bool $use, \WP_Post $post): bool {
+    $page_id = (int) get_option('options_' . self::FIELD_POSTS_PAGE);
+    if ($page_id && $post->ID === $page_id) return false;
+    return $use;
   }
 
   public function maybeFlushRewriteRules(mixed $postId): void {
@@ -41,10 +60,6 @@ class SettingsPage {
   }
 
   public function registerFields(): void {
-    $heroBannerOverridden    = TemplateLoader::resolve( 'partials/archive-hero-banner.php' )
-      !== LL_BAG_PATH . 'templates/partials/archive-hero-banner.php';
-    $heroBannerFieldsEnabled = apply_filters( 'll_bag/hero_banner_fields_enabled', !$heroBannerOverridden );
-
     $fields = [
       [
         'key'       => 'field_ll_bag_archive_settings_tab',
@@ -64,44 +79,6 @@ class SettingsPage {
         'instructions'  => 'The page used for the "View All Before & Afters" link on the category archive.',
       ],
     ];
-
-
-    // Themes can inject additional fields into the Archive Settings tab via this filter.
-    // Fields are inserted after the plugin's own archive fields and before the next tab.
-    $fields = apply_filters( 'll_bag/settings_archive_fields', $fields );
-
-    if ( $heroBannerFieldsEnabled ) {
-      $fields[] = [
-        'key'        => 'field_ll_ba_hero_banner',
-        'label'      => 'Hero Banner',
-        'name'       => 'll_ba_hero_banner',
-        'type'       => 'group',
-        'layout'     => 'block',
-        'sub_fields' => [
-          [
-            'key'     => 'field_ll_ba_hero_banner_content',
-            'label'   => 'Content',
-            'name'    => 'content',
-            'type'    => 'wysiwyg',
-            'wrapper' => [ 'class' => 'll-ba-hero-banner-preview' ],
-          ],
-          [
-            'key'           => 'field_ll_ba_hero_banner_link',
-            'label'         => 'Link',
-            'name'          => 'link',
-            'type'          => 'link',
-            'return_format' => 'array',
-          ],
-          [
-            'key'           => 'field_ll_ba_hero_banner_image',
-            'label'         => 'Image',
-            'name'          => 'image',
-            'type'          => 'image',
-            'return_format' => 'id',
-          ],
-        ],
-      ];
-    }
 
     $fields = array_merge( $fields, [
       [
@@ -325,6 +302,68 @@ class SettingsPage {
     }
 
     return $field;
+  }
+
+  public function registerArchivePageFields(): void {
+    $page_id = (int) get_option('options_' . self::FIELD_POSTS_PAGE);
+    if (!$page_id) return;
+
+    $heroBannerOverridden    = TemplateLoader::resolve( 'partials/archive-hero-banner.php' )
+      !== LL_BAG_PATH . 'templates/partials/archive-hero-banner.php';
+    $heroBannerFieldsEnabled = apply_filters( 'll_bag/hero_banner_fields_enabled', !$heroBannerOverridden );
+
+    $fields = [];
+
+    if ($heroBannerFieldsEnabled) {
+      $fields[] = [
+        'key'        => 'field_ll_ba_hero_banner',
+        'label'      => 'Hero Banner',
+        'name'       => 'll_ba_hero_banner',
+        'type'       => 'group',
+        'layout'     => 'block',
+        'sub_fields' => [
+          [
+            'key'     => 'field_ll_ba_hero_banner_content',
+            'label'   => 'Content',
+            'name'    => 'content',
+            'type'    => 'wysiwyg',
+            'wrapper' => [ 'class' => 'll-ba-hero-banner-preview' ],
+          ],
+          [
+            'key'           => 'field_ll_ba_hero_banner_link',
+            'label'         => 'Link',
+            'name'          => 'link',
+            'type'          => 'link',
+            'return_format' => 'array',
+          ],
+          [
+            'key'           => 'field_ll_ba_hero_banner_image',
+            'label'         => 'Image',
+            'name'          => 'image',
+            'type'          => 'image',
+            'return_format' => 'id',
+          ],
+        ],
+      ];
+    }
+
+    $fields = apply_filters('ll_bag/before_after_archive_fields', $fields);
+    if (empty($fields)) return;
+
+    acf_add_local_field_group([
+      'key'      => 'group_ll_ba_archive_page_fields',
+      'title'    => 'Before & After Archive',
+      'fields'   => $fields,
+      'location' => [
+        [
+          [
+            'param'    => 'post',
+            'operator' => '==',
+            'value'    => $page_id,
+          ],
+        ],
+      ],
+    ]);
   }
 
   /**
