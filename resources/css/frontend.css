@@ -22,11 +22,3 @@
     width: 100%;
   }
 }
-
-.ll-ba__mfp-popup {
-  position: relative;
-  max-width: 600px;
-  padding: 80px;
-  margin: 0 auto;
-  background-color: var(--popup-fill);
-}

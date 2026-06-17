@@ -53,3 +53,38 @@
   }
 }
 
+.ba_btn-secondary--back {
+  color: var(--general-heading);
+  font-size: 16px; 
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%;
+  display: flex;
+  align-items: center;
+  svg:last-of-type {
+    width: 0;
+    height: 12px;
+    transition: all .3s;
+    color: var(--general-heading);
+    margin-left: 8px;
+    flex: none;
+  }
+  svg:first-of-type {
+    height: 12px;
+    width: 12px;
+    transition: all .3s;
+    color: var(--general-heading);
+    margin-right: 8px;
+    flex: none;
+  }
+  &:hover {
+    svg:last-of-type {
+      width: 12px;
+      margin-left: 8px;
+    }
+    svg:first-of-type {
+      width: 0;
+      margin-right: 0;
+    }
+  }
+}

@@ -9,6 +9,7 @@
 
 defined('ABSPATH') || exit;
 
+use LiftedLogic\LLBag\Admin\SettingsPage;
 use LiftedLogic\LLBag\Filters\FilterManager;
 use LiftedLogic\LLBag\Frontend\TemplateLoader;
 
@@ -42,6 +43,13 @@ $filters = (new FilterManager())->getEnabled();
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" width="16" height="16"><path d="M10 18h4v-2h-4v2zm-7-8v2h18v-2H3zm3-6v2h12V4H6z"/></svg>
         Filters
       </button>
+      <div class="ll-ba-hidden ll-ba-filters__active ll-ba-filters__active--mobile" id="ll-ba-active-bar-mobile">
+        <div class="ll-ba-filters__active-inner">
+          <span class="ll-ba-filters__active-label">Filtered by:</span>
+          <button type="button" id="ll-ba-clear-all-mobile" class="ll-ba-filters__clear-all">Clear All</button>
+        </div>
+        <ul class="ll-ba-filters__active-tags" id="ll-ba-active-tags-mobile"></ul>
+      </div>
       <aside class="ll-ba-sidebar" id="ll-ba-sidebar">
         <?php TemplateLoader::get('partials/filters.php', ['filters' => $filters]); ?>
       </aside>
@@ -66,3 +74,15 @@ $filters = (new FilterManager())->getEnabled();
     </div>
   </div>
 </div>
+<?php
+if ( locate_template( 'templates/partials/components.php' ) ) {
+  $posts_page_id = (int) get_field( SettingsPage::FIELD_POSTS_PAGE, 'option' );
+  if ( $posts_page_id ) {
+    global $post;
+    $post = get_post( $posts_page_id );
+    setup_postdata( $post );
+    get_template_part( 'templates/partials/components' );
+    wp_reset_postdata();
+  }
+}
+?>

@@ -598,6 +598,19 @@ input[type="search"]::-webkit-search-decoration {
   display: none;
 }
 
+/* Mobile active filter bar (below trigger, outside popup)
+   ========================================================================== */
+
+.ll-ba-filters__active--mobile {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .ll-ba-filters__active--mobile:not(.ll-ba-hidden) {
+    display: block;
+  }
+}
+
 /* Mobile filter flyout
    ========================================================================== */
 

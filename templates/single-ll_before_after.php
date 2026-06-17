@@ -81,7 +81,7 @@ if ( !empty($images_field) ) {
     <div class="ll-ba-single__sidebar">
 
         <div class="ll-ba-single__top">
-            <div class="ll-ba-single__back">
+            <div class="ll-ba-single__back ba_btn-secondary--back">
                 <?= Hooks::bag_back_button_markup() ?>
             </div>
     
@@ -148,11 +148,12 @@ if ( !empty($images_field) ) {
                                 <?= wp_kses_post( $section_content['content'] ) ?>
                                 <?php if ( !empty($section_content['read_more_content']) ) : ?>
                                     <div class="ll-ba-single__detail-read-more">
-                                        <button class="ll-ba-single__detail-read-more-trigger" data-mfp-src="#<?= $section_content['read_more_id'] ?>">
+                                        <button class="ll-ba-single__detail-read-more-trigger ba_btn-secondary" data-mfp-src="#<?= $section_content['read_more_id'] ?>">
+                                            <svg class="icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
                                             Read More
-                                            <svg class="ll-ba-single__detail-read-more-icon icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
+                                            <svg class="icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
                                         </button>
-                                        <div class="mfp-hide ll-ba-single__read-more-popup ll-ba__mfp-popup" id="<?= $section_content['read_more_id'] ?>">
+                                        <div class="mfp-hide ll-ba-single__read-more-popup ll-ba-popup-modal" id="<?= $section_content['read_more_id'] ?>">
                                             <div class="wysiwyg">
                                                 <?= wp_kses_post( $section_content['read_more_content'] ) ?>
                                             </div>

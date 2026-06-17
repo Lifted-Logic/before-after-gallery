@@ -15,18 +15,8 @@
 }
 
 .ll-ba-nsfw-modal__panel {
-  position: relative;
-  max-width: 620px;
-  width: 100%;
-  padding: 40px;
-  background-color: var(--popup-fill);
   color: var(--popup-heading);
-  border-radius: var(--site-options-radius-cards, 0px);
   text-align: center;
-
-  @media screen and (min-width: 1024px) {
-    padding: 80px;
-  }
 }
 
 .ll-ba-nsfw-modal__close {

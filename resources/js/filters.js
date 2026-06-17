@@ -77,7 +77,7 @@ export function initFilters() {
 
   // ── Active tag removal ───────────────────────────────────────────────────────
 
-  document.getElementById('ll-ba-active-tags')?.addEventListener('click', (e) => {
+  const handleTagRemoval = (e) => {
     const btn = e.target.closest('.ll-ba-tag-remove');
     if (!btn) return;
 
@@ -91,7 +91,10 @@ export function initFilters() {
 
     currentPage = 1;
     applyFilters();
-  });
+  };
+
+  document.getElementById('ll-ba-active-tags')?.addEventListener('click', handleTagRemoval);
+  document.getElementById('ll-ba-active-tags-mobile')?.addEventListener('click', handleTagRemoval);
 
   // ── Sensitive images mode ────────────────────────────────────────────────────
 
@@ -110,12 +113,15 @@ export function initFilters() {
 
   // ── Clear all ────────────────────────────────────────────────────────────────
 
-  document.getElementById('ll-ba-clear-all')?.addEventListener('click', () => {
+  const handleClearAll = () => {
     filtersEl.querySelectorAll('.ll-ba-checkbox-filter').forEach(el => { el.checked = false; });
     filtersEl.querySelectorAll('.ll-ba-dropdown-filter').forEach(el => { el.value = ''; });
     currentPage = 1;
     applyFilters();
-  });
+  };
+
+  document.getElementById('ll-ba-clear-all')?.addEventListener('click', handleClearAll);
+  document.getElementById('ll-ba-clear-all-mobile')?.addEventListener('click', handleClearAll);
 
   // ── Mobile flyout ────────────────────────────────────────────────────────────
 
@@ -197,11 +203,15 @@ export function initFilters() {
   }
 
   function updateActiveTags(active) {
-    const bar  = document.getElementById('ll-ba-active-bar');
-    const tags = document.getElementById('ll-ba-active-tags');
+    const bar       = document.getElementById('ll-ba-active-bar');
+    const tags      = document.getElementById('ll-ba-active-tags');
+    const barMobile = document.getElementById('ll-ba-active-bar-mobile');
+    const tagsMobile = document.getElementById('ll-ba-active-tags-mobile');
+
     if (!bar || !tags) return;
 
     tags.innerHTML = '';
+    if (tagsMobile) tagsMobile.innerHTML = '';
 
     for (const [key, value] of Object.entries(active)) {
       const group  = filtersEl.querySelector(`[data-meta-key="${key}"]`);
@@ -211,15 +221,25 @@ export function initFilters() {
       values.forEach(v => {
         const checkbox    = group?.querySelector(`.ll-ba-checkbox-filter[value="${v}"]`);
         const displayName = checkbox?.dataset.termName ?? v;
+        const tagHtml     = `<button type="button" class="ll-ba-tag-remove" data-meta-key="${escAttr(key)}" data-value="${escAttr(v)}" aria-label="Remove filter">${escHtml(displayName)}<svg class='icon icon-exit' aria-hidden='true'><use xlink:href='#icon-exit'></use></svg></button>`;
 
         const tag = document.createElement('li');
         tag.className = 'll-ba-tag';
-        tag.innerHTML = `<button type="button" class="ll-ba-tag-remove" data-meta-key="${escAttr(key)}" data-value="${escAttr(v)}" aria-label="Remove filter">${escHtml(displayName)}<svg class='icon icon-exit' aria-hidden='true'><use xlink:href='#icon-exit'></use></svg></button>`;
+        tag.innerHTML = tagHtml;
         tags.appendChild(tag);
+
+        if (tagsMobile) {
+          const tagMobile = document.createElement('li');
+          tagMobile.className = 'll-ba-tag';
+          tagMobile.innerHTML = tagHtml;
+          tagsMobile.appendChild(tagMobile);
+        }
       });
     }
 
-    bar.classList.toggle('ll-ba-hidden', tags.children.length === 0);
+    const isEmpty = tags.children.length === 0;
+    bar.classList.toggle('ll-ba-hidden', isEmpty);
+    barMobile?.classList.toggle('ll-ba-hidden', isEmpty);
   }
 
   function updateUrl(active) {

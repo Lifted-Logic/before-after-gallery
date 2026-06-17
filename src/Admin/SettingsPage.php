@@ -177,14 +177,14 @@ class SettingsPage {
       ],
       [
         'key'       => 'field_ll_bag_category_settings_tab',
-        'label'     => 'Category Settings',
+        'label'     => 'Taxonomy Archive Settings',
         'type'      => 'tab',
         'placement' => 'left',
         'endpoint'  => 0,
       ],
       [
         'key'           => 'field_ll_bag_use_category_archive',
-        'label'         => 'Use category archive?',
+        'label'         => 'Use Taxonomy Archive?',
         'name'          => 'll_bag_use_category_archive',
         'type'          => 'true_false',
         'default_value' => 1,
@@ -194,7 +194,7 @@ class SettingsPage {
       ],
       [
         'key'           => 'field_ll_bag_category_taxonomy',
-        'label'         => 'Category Taxonomy',
+        'label'         => 'Featured Taxonomy',
         'name'          => 'll_bag_category_taxonomy',
         'type'          => 'select',
         'choices'       => [],
@@ -210,7 +210,7 @@ class SettingsPage {
       ],
       [
         'key'           => 'field_ll_bag_category_archive_slug',
-        'label'         => 'Category Archive Slug',
+        'label'         => 'Taxonomy Archive Slug',
         'name'          => 'll_bag_category_archive_slug',
         'type'          => 'text',
         'default_value' => 'categories',
@@ -229,7 +229,7 @@ class SettingsPage {
       ],
       [
         'key'    => 'field_ll_ba_category_archive_hero',
-        'label'  => 'Category Archive Hero',
+        'label'  => 'Taxonomy Archive Hero',
         'name'   => 'll_ba_category_archive_hero',
         'type'   => 'group',
         'layout' => 'block',
@@ -262,7 +262,7 @@ class SettingsPage {
       ],
       [
         'key'           => 'field_ll_ba_categories_subtitle',
-        'label'         => 'Categories Subtitle',
+        'label'         => 'Taxonomy Archive Subtitle',
         'name'          => 'll_ba_categories_subtitle',
         'type'          => 'text',
         'default_value' => 'Select a category below to start exploring.',

@@ -40,7 +40,7 @@ class Hooks {
 
     $href   = esc_url( $refUrl ?: $archiveUrl );
     $markup = <<<HTML
-      <a href="$href" class="$classes"><svg class='icon icon-arrow-right' aria-hidden='true'><use xlink:href='#icon-arrow-right'></use></svg>$text</a>
+      <a href="$href" class="$classes"><svg class='icon icon-arrow-left' aria-hidden='true'><use xlink:href='#icon-arrow-left'></use></svg>$text<svg class='icon icon-arrow-left' aria-hidden='true'><use xlink:href='#icon-arrow-left'></use></svg></a>
     HTML;
 
     return apply_filters( 'lifted_logic/bag/bag_back_button_markup', $markup, $classes, $text, $href );
@@ -87,7 +87,7 @@ class Hooks {
 
     $markup = <<<HTML
       <div class="ll-ba-nsfw-modal ll-ba-hidden" id="ll-ba-nsfw-modal" role="dialog" aria-modal="true" aria-label="Sensitive content">
-          <div class="ll-ba-nsfw-modal__panel">
+          <div class="ll-ba-nsfw-modal__panel ll-ba-popup-modal">
               <button type="button" class="ll-ba-nsfw-modal__close" data-nsfw-action="leave" data-fallback-url="$fallback_url" aria-label="Go back">
                   <svg class="icon icon-exit" aria-hidden="true"><use xlink:href="#icon-exit"></use></svg>
               </button>
