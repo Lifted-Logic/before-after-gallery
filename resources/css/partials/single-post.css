@@ -132,6 +132,7 @@
     border-bottom-width: 1px;
     border-bottom-style: solid;
     border-color: var(--detail-tabs-stroke);
+    font-weight: 500;
   }
 
   .ll-ba-single__detail-trigger:hover {
@@ -158,7 +159,7 @@
   .ll-ba-single__cta-card {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 2.5rem;
     padding: 1.25rem;
     border-radius: var(--cta-card-radius, 0px);
     background-color: var(--cta-card-background);
@@ -174,6 +175,9 @@
     color: var(--cta-card-heading);
   }
 
+  .ll-ba-single__cta-button {
+    flex: none;
+  }
 
   /* CTA
      ========================================================================== */

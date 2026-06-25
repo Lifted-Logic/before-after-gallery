@@ -76,7 +76,6 @@ class SettingsPage {
         'post_type'     => ['page'],
         'return_format' => 'id',
         'allow_null'    => 1,
-        'instructions'  => 'The page used for the "View All Before & Afters" link on the category archive.',
       ],
     ];
 

@@ -51,7 +51,10 @@
       margin-left: 0;
     }
   }
-  [class*="theme-"] & {
+  .theme-one &,
+  .theme-two &,
+  .theme-three &,
+  .theme-four & {
     color: var(--secondary-button-default);
     svg {
       color: var(--secondary-button-default);
@@ -93,7 +96,10 @@
       margin-right: 0;
     }
   }
-  [class*="theme-"] & {
+  .theme-one &,
+  .theme-two &,
+  .theme-three &,
+  .theme-four & {
     color: var(--secondary-button-default);
     svg {
       color: var(--secondary-button-default);

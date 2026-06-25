@@ -135,6 +135,140 @@
   min-width: 0;
 }
 
+/* ── How To page ─────────────────────────────────────────────────────────── */
+
+.ll-bag-how-to {
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+  margin-top: 24px;
+}
+
+.ll-bag-how-to__nav {
+  flex-shrink: 0;
+  width: 180px;
+  position: sticky;
+  top: 52px;
+}
+
+.ll-bag-how-to__nav-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-left: 2px solid #dcdcde;
+}
+
+.ll-bag-how-to__nav-list li {
+  margin: 0;
+}
+
+.ll-bag-how-to__nav-link {
+  display: block;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #50575e;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  margin-left: -2px;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover {
+    color: #2271b1;
+  }
+
+  &.is-active {
+    color: #2271b1;
+    border-left-color: #2271b1;
+    font-weight: 600;
+  }
+}
+
+.ll-bag-how-to__content {
+  flex: 1;
+  min-width: 0;
+  padding-right: 40px;
+}
+
+.ll-bag-how-to__section {
+  padding-bottom: 48px;
+  margin-bottom: 48px;
+  border-bottom: 1px solid #dcdcde;
+
+  &:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  h2 {
+    margin-top: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+  }
+
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+    margin-top: 28px;
+    margin-bottom: 8px;
+  }
+
+  p, li, dd {
+    font-size: 13px;
+    color: #50575e;
+    line-height: 1.6;
+  }
+}
+
+.ll-bag-how-to__screenshot {
+  display: block;
+  width: 100%;
+  max-width: 860px;
+  height: auto;
+  margin: 20px 0 28px;
+  border: 1px solid #dcdcde;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
+}
+
+.ll-bag-how-to__def-list {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 4px 20px;
+  align-items: baseline;
+
+  dt {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+    padding: 6px 0;
+  }
+
+  dd {
+    margin: 0;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f1;
+  }
+
+  dt:last-of-type + dd,
+  dt:nth-last-of-type(1) ~ dd:last-child {
+    border-bottom: none;
+  }
+}
+
+.ll-bag-how-to__steps {
+  margin: 0;
+  padding-left: 20px;
+
+  li {
+    margin-bottom: 6px;
+  }
+}
+
+/* ── Posts list table ────────────────────────────────────────────────────── */
+
 .ll-ba-related-checklist {
   margin: 0;
   padding: 8px 0;

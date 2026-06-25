@@ -104,6 +104,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // ── How To page: active nav link on scroll ────────────────────────────────
+  const howToSections = document.querySelectorAll('.ll-bag-how-to__section');
+  if (howToSections.length) {
+    const navLinks = document.querySelectorAll('.ll-bag-how-to__nav-link');
+
+    const setActive = (id) => {
+      navLinks.forEach((link) => {
+        link.classList.toggle('is-active', link.getAttribute('href') === `#${id}`);
+      });
+    };
+
+    // Set first section active on load
+    if (howToSections[0]) setActive(howToSections[0].id);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      },
+      { rootMargin: '-20% 0px -70% 0px' }
+    );
+
+    howToSections.forEach((section) => observer.observe(section));
+  }
+
   const tbody  = document.getElementById('ll-bag-filter-tbody');
   const addBtn = document.getElementById('ll-bag-add-filter');
 

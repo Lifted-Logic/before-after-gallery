@@ -5,6 +5,7 @@ namespace LiftedLogic\LLBag;
 use Illuminate\Container\Container;
 use LiftedLogic\LLBag\Admin\AdminMenu;
 use LiftedLogic\LLBag\Admin\FilterSettingsPage;
+use LiftedLogic\LLBag\Admin\HowToPage;
 use LiftedLogic\LLBag\Admin\SettingsPage;
 use LiftedLogic\LLBag\Filters\FilterManager;
 use LiftedLogic\LLBag\Frontend\AjaxHandler;
@@ -40,8 +41,13 @@ class Plugin {
       return new FilterSettingsPage($this->container->make(FilterManager::class));
     });
 
+    $this->container->singleton(HowToPage::class);
+
     $this->container->singleton(AdminMenu::class, function () {
-      return new AdminMenu($this->container->make(FilterSettingsPage::class));
+      return new AdminMenu(
+        $this->container->make(FilterSettingsPage::class),
+        $this->container->make(HowToPage::class),
+      );
     });
   }
 

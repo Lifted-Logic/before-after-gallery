@@ -317,21 +317,7 @@ class ThemeComponentInjector {
       'layout'     => 'block',
       'min'        => '',
       'max'        => '',
-      'sub_fields' => [
-        [
-          'key'           => 'field_ll_ba_bag_grid_posts',
-          'label'         => 'Before & After Posts',
-          'name'          => 'll_ba_grid_posts',
-          '_name'         => 'll_ba_grid_posts',
-          'type'          => 'relationship',
-          'post_type'     => [ 'll_before_after' ],
-          'filters'       => [ 'search' ],
-          'elements'      => [],
-          'return_format' => 'object',
-          'min'           => '',
-          'max'           => '',
-        ],
-      ],
+      'sub_fields' => $sub_fields,
     ];
   }
 }

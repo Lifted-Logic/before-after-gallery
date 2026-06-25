@@ -33,6 +33,24 @@ class Vite {
   }
 
   private static function enqueueHotEntry(string $entry, string $handle): void {
+    // Load built CSS as a render-blocking baseline to prevent FOUC.
+    // Vite's HMR client will hot-update changed styles on top during active dev.
+    try {
+      $data = self::manifestEntry($entry);
+      if (!empty($data['css'])) {
+        foreach ($data['css'] as $i => $cssFile) {
+          wp_enqueue_style(
+            $handle . '-css-' . $i,
+            self::$buildUrl . '/' . $cssFile,
+            [],
+            LL_BAG_VERSION
+          );
+        }
+      }
+    } catch (\RuntimeException $e) {
+      // No built assets yet — styles will come from Vite HMR only
+    }
+
     $base = rtrim((string) file_get_contents(self::$hotFile), "\n");
 
     wp_enqueue_script($handle . '-vite', $base . '/@vite/client', [], null, false);
