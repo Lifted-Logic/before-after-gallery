@@ -12,6 +12,11 @@ defined('ABSPATH') || exit;
     <nav class="ll-bag-how-to__nav" aria-label="<?php esc_attr_e('Page sections', 'll-bag'); ?>">
       <ul class="ll-bag-how-to__nav-list">
         <li>
+          <a href="#quick-start" class="ll-bag-how-to__nav-link">
+            <?php esc_html_e('Quick Start', 'll-bag'); ?>
+          </a>
+        </li>
+        <li>
           <a href="#setting-up-filters" class="ll-bag-how-to__nav-link">
             <?php esc_html_e('Setting up Filters', 'll-bag'); ?>
           </a>
@@ -35,6 +40,29 @@ defined('ABSPATH') || exit;
     </nav>
 
     <div class="ll-bag-how-to__content">
+
+      <section id="quick-start" class="ll-bag-how-to__section">
+        <h2><?php esc_html_e('Quick Start', 'll-bag'); ?></h2>
+        <p><?php esc_html_e('New to the plugin? Follow these steps to get your gallery up and running. Each step links to the detailed instructions further down this page.', 'll-bag'); ?></p>
+        <ol class="ll-bag-how-to__steps">
+          <li>
+            <strong><a href="#archive-page"><?php esc_html_e('Create your gallery page.', 'll-bag'); ?></a></strong>
+            <?php esc_html_e('Make a new WordPress page, then assign it under Before & Afters → Settings → Archive Settings. Save your permalinks afterward (Settings → Permalinks → Save Changes).', 'll-bag'); ?>
+          </li>
+          <li>
+            <strong><a href="#setting-up-filters"><?php esc_html_e('Set up your filters.', 'll-bag'); ?></a></strong>
+            <?php esc_html_e('Go to Before & Afters → Filter Settings and add the filters visitors will use to browse the gallery — things like treatment type, body area, or provider.', 'll-bag'); ?>
+          </li>
+          <li>
+            <strong><a href="#adding-posts"><?php esc_html_e('Add your first post.', 'll-bag'); ?></a></strong>
+            <?php esc_html_e('Go to Before & Afters → Add New Before & After. Upload your images, fill in the details, and assign the post to the filters you just created.', 'll-bag'); ?>
+          </li>
+          <li>
+            <strong><?php esc_html_e('Visit your gallery page.', 'll-bag'); ?></strong>
+            <?php esc_html_e('Your post will now appear in the gallery. From here, keep adding posts and use the sections below any time you need a refresher.', 'll-bag'); ?>
+          </li>
+        </ol>
+      </section>
 
       <section id="setting-up-filters" class="ll-bag-how-to__section">
         <h2><?php esc_html_e('Setting up Filters', 'll-bag'); ?></h2>
@@ -105,7 +133,7 @@ defined('ABSPATH') || exit;
           <dd><?php esc_html_e('Upload a single image — typically a combined before/after photo in one frame. The image will display in its original proportions.', 'll-bag'); ?></dd>
 
           <dt><?php esc_html_e('Two Images', 'll-bag'); ?></dt>
-          <dd><?php esc_html_e('Upload a separate before and after image. You\'ll also choose a crop ratio so both images align correctly, and optionally enable a comparison slider so visitors can drag to compare the two.', 'll-bag'); ?></dd>
+          <dd><?php esc_html_e('Upload a separate before and after image. You\'ll also choose a crop ratio so both images align correctly, and optionally enable a comparison slider so visitors can drag to compare the two. The slider only appears on the single post page — on gallery cards the two images sit side by side. For best results, use images cropped the same way with the subject in the same position in both photos.', 'll-bag'); ?></dd>
 
           <dt><?php esc_html_e('Video', 'll-bag'); ?></dt>
           <dd><?php esc_html_e('Paste in a video URL and add a short title for accessibility. The video will be embedded in place of an image.', 'll-bag'); ?></dd>
@@ -113,10 +141,20 @@ defined('ABSPATH') || exit;
 
         <h3><?php esc_html_e('Settings Tab', 'll-bag'); ?></h3>
         <p><?php esc_html_e('Sensitive Images', 'll-bag'); ?></p>
-        <p><?php esc_html_e('Toggle this on if the post contains sensitive before & after content. Visitors will see the images blurred by default and be given the option to reveal them. This applies to both the gallery card, the single post page, and the Before and After components.', 'll-bag'); ?></p>
+        <p><?php esc_html_e('Toggle this on if the post contains sensitive before & after content. Visitors will see the images blurred by default and be given the option to reveal them. This applies to both the gallery card, the single post page, and the Before and After components. The text shown inside that popup can be customized under Before & Afters → Settings → NSFW Popup.', 'll-bag'); ?></p>
 
         <h3><?php esc_html_e('Categorizing Your Post', 'll-bag'); ?></h3>
         <p><?php esc_html_e('On the right side of the edit screen you\'ll see panels for each of your active filters — things like Categories, Providers, or any custom filters you\'ve set up. Check the terms that apply to this post. These are what visitors use to filter the gallery, and they also power the "Related Before & Afters" suggestions on the single post page.', 'll-bag'); ?></p>
+
+        <h3><?php esc_html_e('Provider Settings', 'll-bag'); ?></h3>
+        <p><?php esc_html_e('If Providers is one of your active filters, each provider term has two extra fields available when you edit it — go to Before & Afters → Providers and click on a provider to see them.', 'll-bag'); ?></p>
+        <dl class="ll-bag-how-to__def-list">
+          <dt><?php esc_html_e('Link', 'll-bag'); ?></dt>
+          <dd><?php esc_html_e('A URL for this provider — typically a link to their bio or profile page. This appears on single post pages where that provider has been assigned.', 'll-bag'); ?></dd>
+
+          <dt><?php esc_html_e('Image', 'll-bag'); ?></dt>
+          <dd><?php esc_html_e('A photo of the provider, also shown on single post pages alongside the link.', 'll-bag'); ?></dd>
+        </dl>
 
         <h3><?php esc_html_e('Related Before & After Posts', 'll-bag'); ?></h3>
         <p><?php esc_html_e('Near the bottom of the edit screen you\'ll find a "Related Before & After Posts" box. This controls which posts are suggested to visitors after they view this one.', 'll-bag'); ?></p>
@@ -140,6 +178,9 @@ defined('ABSPATH') || exit;
 
           <dt><?php esc_html_e('Related Treatments Slider Title', 'll-bag'); ?></dt>
           <dd><?php esc_html_e('The heading shown above the row of related before & after posts at the bottom of the single post page. Set it to whatever fits your site — something like "More Before & Afters" or "You Might Also Like".', 'll-bag'); ?></dd>
+
+          <dt><?php esc_html_e('Card Background Color', 'll-bag'); ?></dt>
+          <dd><?php esc_html_e('The background color visible behind each gallery card. Found under Before & Afters → Settings → Card Background Color.', 'll-bag'); ?></dd>
         </dl>
       </section>
 
