@@ -6,7 +6,8 @@
  * which strips the layout name prefix from field names. Sub-fields must be
  * named '{layout_name}_{field_name}' so they arrive here as $component_data['{field_name}'].
  *
- * Override: place this file at {theme}/ll-before-after/components/BeforeAndAfterSlider/before-and-after-slider.php
+ * Override: use add_filter( 'll_bag/inject_component_fields/ll_ba_slider', '__return_false' )
+ * to disable this component entirely and handle it from the theme.
  */
 
 defined('ABSPATH') || exit;

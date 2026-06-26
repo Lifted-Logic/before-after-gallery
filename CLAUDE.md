@@ -67,7 +67,7 @@ All ACF field groups are registered programmatically via `acf_add_local_field_gr
 
 **`get_option()` vs `get_field()` in early hooks:** Never call `get_field()` inside a `pre_get_posts` callback. ACF's `get_field()` calls `get_posts()` internally to look up field registration, which fires `pre_get_posts` again → infinite recursion → fatal error. The same `get_option('options_{field_name}')` pattern is also used for `init`-hooked logic that needs an options-page field before templates load — ACF's options fields aren't reliably available that early either. Use `get_option('options_{field_name}')` instead — it reads directly from the options table with no query. Examples: `get_option('options_ll_bag_use_category_archive')` in `registerRewriteRules()` / `scopeCategoryArchive()`, and `get_option('options_' . SettingsPage::FIELD_POSTS_PAGE)` in `BeforeAfterPostType::getRewriteSlug()` (called from `registerPostType()`/`registerRewriteRules()` on `init`). `TemplateLoader::loadTemplate()` (on `template_include`) is safe to use `get_field()` since it fires much later.
 
-**Archive page fields** (`SettingsPage.php`, `registerArchivePageFields()`, hooked on `acf/init`): When a page is assigned via `FIELD_POSTS_PAGE`, the plugin registers ACF fields directly on that page's edit screen under a "Before & After Archive" meta box (`group_ll_ba_archive_page_fields`). Hero banner fields (`ll_ba_hero_banner` group — content/link/image) are included unless the theme has overridden `archive-hero-banner.php`. All fields pass through `apply_filters('ll_bag/before_after_archive_fields', $fields)` — use this filter in `functions.php` to inject additional fields onto the archive page. The block editor and classic editor are also disabled on this page: `disableBlockEditorForArchivePage()` filters `use_block_editor_for_post` to return `false`; `disableArchivePageEditor()` runs on `admin_init` and calls `remove_post_type_support('page', 'editor')` when `$_GET['post']` matches the archive page ID. Both use `get_option()` rather than `get_field()` because they fire before ACF options fields are available.
+**Archive page fields** (`SettingsPage.php`, `registerArchivePageFields()`, hooked on `acf/init`): When a page is assigned via `FIELD_POSTS_PAGE`, the plugin registers ACF fields directly on that page's edit screen under a "Before & After Archive" meta box (`group_ll_ba_archive_page_fields`). Hero banner fields (`ll_ba_hero_banner` group — content/link/image) are included unless the theme has overridden `archive-hero-banner.php`. Themes that need additional fields on the archive page should register their own `acf_add_local_field_group()` in `functions.php` on `acf/init`, using `get_option('options_ll_bag_posts_page')` for the page ID and `'param' => 'post'` location rule. The block editor and classic editor are also disabled on this page: `disableBlockEditorForArchivePage()` filters `use_block_editor_for_post` to return `false`; `disableArchivePageEditor()` runs on `admin_init` and calls `remove_post_type_support('page', 'editor')` when `$_GET['post']` matches the archive page ID. Both use `get_option()` rather than `get_field()` because they fire before ACF options fields are available.
 
 The images repeater field (`ll_ba_images`) is the core data structure for the single post. Each row has:
 - `ll_ba_image_options` — `one-image` | `two-images` | `video`
@@ -177,16 +177,21 @@ if ( $theme_field = $this->themePickerSubField( 'field_my_component_theme', 'll_
 **Disabling components (must be in `functions.php`, checked on `after_setup_theme`):**
 
 ```php
-// Disable one component
-add_filter( 'll_bag/register_component/ll_ba_slider', '__return_false' );
-add_filter( 'll_bag/register_component/ll_ba_grid',   '__return_false' );
-add_filter( 'll_bag/register_component/ll_ba_related_bna', '__return_false' );
-
 // Disable all components (master switch)
 add_filter( 'll_bag/register_components', '__return_false' );
+
+// Disable one component
+add_filter( 'll_bag/register_component/ll_ba_related_bna', '__return_false' );
+add_filter( 'll_bag/register_component/ll_ba_grid',        '__return_false' );
+add_filter( 'll_bag/register_component/ll_ba_slider',      '__return_false' );
+
+// Disable one component when the theme owns it entirely
+add_filter( 'll_bag/inject_component_fields/ll_ba_related_bna', '__return_false' );
+add_filter( 'll_bag/inject_component_fields/ll_ba_grid',        '__return_false' );
+add_filter( 'll_bag/inject_component_fields/ll_ba_slider',      '__return_false' );
 ```
 
-Disabling a component removes it from `injectLayouts()`, `maybeRegisterHooks()`, and `registerLocalFields()` — layout, template serving, format_data filter, and AJAX field are all gated by the same filter check.
+`ll_bag/register_component/{layout_name}` and `ll_bag/inject_component_fields/{layout_name}` have identical effects — both fully disable a component (removed from `injectLayouts()`, `maybeRegisterHooks()`, and `registerLocalFields()`; layout, template serving, format_data filter, and AJAX field all gated). Use `inject_component_fields` as the semantic convention when a theme is registering its own version of a component and needs the plugin's copy out of the way.
 
 **Current components** (all in `ThemeComponentInjector`):
 

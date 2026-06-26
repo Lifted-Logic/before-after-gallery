@@ -6,7 +6,8 @@
  * which strips the layout name prefix from field names. Sub-fields must be
  * named '{layout_name}_{field_name}' so they arrive here as $component_data['{field_name}'].
  *
- * Override: place this file at {theme}/ll-before-after/components/BeforeAndAftersGrid/before-and-afters-grid.php
+ * Override: use add_filter( 'll_bag/inject_component_fields/ll_ba_grid', '__return_false' )
+ * to disable this component entirely and handle it from the theme.
  */
 
 defined('ABSPATH') || exit;
@@ -20,7 +21,7 @@ if ( empty( $posts ) ) return;
 $extra_classes = implode( ' ', array_map( 'sanitize_html_class', apply_filters( 'lifted_logic/bag/grid_classes', [] ) ) );
 ?>
 
-<div class="ll-ba-bag-grid ba_grid-cols-container<?= $extra_classes ? ' ' . $extra_classes : '' ?>">
+<div class="ll-ba-bag-grid ba_grid-cols-container component-spacing<?= $extra_classes ? ' ' . $extra_classes : '' ?>">
   <div class="ll-ba-bag-grid__sensitive-bar ll-ba-sensitive-bar ll-ba-hidden">
     <span class="ll-ba-sensitive-bar__label">Sensitive Images</span>
     <div class="ll-ba-sensitive-bar__options" role="group" aria-label="Sensitive image display mode">

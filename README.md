@@ -87,6 +87,33 @@ The categories listing lives at `/{archive-slug}/categories/` and is controlled 
 
 Category cards link directly to the main archive pre-filtered by category (`?category={slug}`). There are no individual per-category archive pages — the archive's filter/restore URL logic handles the rest.
 
+#### Adding fields to the Taxonomy Archive Settings tab
+
+Register your own field group on `acf/init` targeting the `'ll-bag-settings'` options page slug. Multiple groups can coexist on the same page.
+
+```php
+// In your theme's functions.php
+add_action( 'acf/init', function() {
+    acf_add_local_field_group( [
+        'key'      => 'group_my_bag_settings',   // must be unique to your theme
+        'title'    => 'My Custom Settings',
+        'fields'   => [
+            [
+                'key'   => 'field_my_custom_field',
+                'label' => 'My Custom Field',
+                'name'  => 'my_custom_field',
+                'type'  => 'text',
+            ],
+        ],
+        'location' => [
+            [ [ 'param' => 'options_page', 'operator' => '==', 'value' => 'll-bag-settings' ] ],
+        ],
+    ] );
+} );
+```
+
+Read the value in any template with `get_field( 'my_custom_field', 'option' )`.
+
 #### Independent hero banners
 
 The archive page (`archive-ll_before_after.php`) and the categories page (`archive-ll_before_after_categories.php`) each have their own hero banner partial:
@@ -102,7 +129,7 @@ A theme can override either file independently. `categories-hero-banner.php` is 
 
 The plugin registers ACF fields for `archive-hero-banner.php` directly on the page set as the archive in **B&A Posts → Settings → Archive Settings → All Posts Archive Page**. They appear as a "Before & After Archive" meta box on that page's edit screen. When a theme overrides that partial, those fields are automatically removed from the admin — the plugin detects the override at registration time and skips them.
 
-**When you override the partial, inject your own fields via the `ll_bag/before_after_archive_fields` filter** (see [Archive page ACF fields](#archive-page-acf-fields) below). Read values in your template with `get_field( 'my_theme_hero_heading', $page_id )`, where `$page_id = (int) get_field( 'll_bag_posts_page', 'option' )`.
+When you override the partial, register your own fields on the archive page using the approach described in [Archive page ACF fields](#archive-page-acf-fields) below. Read values in your template with `get_field( 'my_theme_hero_heading', $page_id )`, where `$page_id = (int) get_field( 'll_bag_posts_page', 'option' )`.
 
 To force the plugin's default hero banner fields to register even when your override file is present:
 
@@ -112,22 +139,33 @@ add_filter( 'll_bag/hero_banner_fields_enabled', '__return_true' );
 
 #### Archive page ACF fields
 
-Use the `ll_bag/before_after_archive_fields` filter to register ACF fields directly on the page selected as the B&A archive (set in **B&A Posts → Settings → Archive Settings → All Posts Archive Page**). The field group is created automatically by the plugin using the page ID stored in settings — no need to write `acf_add_local_field_group` yourself.
+Register your own field group on the archive page by reading the archive page ID from the plugin's stored option and passing it as a `post` location rule.
 
 ```php
 // In your theme's functions.php
-add_filter( 'll_bag/before_after_archive_fields', function ( array $fields ): array {
-    $fields[] = [
-        'key'   => 'field_my_theme_archive_heading',
-        'label' => 'Archive Heading',
-        'name'  => 'my_theme_archive_heading',
-        'type'  => 'text',
-    ];
-    return $fields;
+add_action( 'acf/init', function() {
+    $page_id = (int) get_option( 'options_ll_bag_posts_page' );
+    if ( !$page_id ) return;
+
+    acf_add_local_field_group( [
+        'key'      => 'group_my_archive_fields',   // must be unique to your theme
+        'title'    => 'My Custom Archive Fields',
+        'fields'   => [
+            [
+                'key'   => 'field_my_archive_custom_field',
+                'label' => 'My Custom Field',
+                'name'  => 'my_archive_custom_field',
+                'type'  => 'text',
+            ],
+        ],
+        'location' => [
+            [ [ 'param' => 'post', 'operator' => '==', 'value' => $page_id ] ],
+        ],
+    ] );
 } );
 ```
 
-Read values in your template with `get_field( 'my_theme_archive_heading', $page_id )`, where `$page_id` is the ID stored in `get_field( 'll_bag_posts_page', 'option' )`. The field group only registers when a page has been selected in settings and at least one field is returned by the filter.
+Read values in your template with `get_field( 'my_archive_custom_field', $page_id )`, where `$page_id = (int) get_field( 'll_bag_posts_page', 'option' )`.
 
 ### CSS
 
@@ -303,24 +341,7 @@ Overrides the sensitive-content confirmation modal shown on single posts where t
 
 `$message` comes from the **NSFW Popup → NSFW Popup Text** field on the **B&A Posts → Settings** options page (defaults to "This before and after contains sensitive content." if empty). `$archive_url` is the Before & After post type archive link, used as the close button's fallback URL.
 
-The filter also receives `$actions` — the `.ll-ba-nsfw-modal__actions` button group HTML — as its own string, since themes will most often want to swap out just the buttons while leaving the rest of the modal (icon, message, panel chrome) untouched.
-
-**Default markup:**
-
-```html
-<div class="ll-ba-nsfw-modal ll-ba-hidden" id="ll-ba-nsfw-modal" role="dialog" aria-modal="true" aria-label="Sensitive content">
-  <div class="ll-ba-nsfw-modal__panel">
-    <button type="button" class="ll-ba-nsfw-modal__close" data-nsfw-action="leave" data-fallback-url="{archive-url}" aria-label="Go back">
-      <svg class="icon icon-exit" aria-hidden="true"><use xlink:href="#icon-exit"></use></svg>
-    </button>
-    <p class="ll-ba-nsfw-modal__message">{message}</p>
-    <div class="ll-ba-nsfw-modal__actions">
-      <button type="button" class="ll-ba-nsfw-modal__btn ba_btn-primary" data-nsfw-action="unblur-once">Unblur This Only</button>
-      <button type="button" class="ll-ba-nsfw-modal__btn ll-ba-nsfw-modal__btn--secondary" data-nsfw-action="unblur-all">Unblur All</button>
-    </div>
-  </div>
-</div>
-```
+The filter also receives `$actions` — the `.ll-ba-nsfw-modal__actions` button group HTML — as its own string, since themes will most often want to swap out just the buttons while leaving the rest of the modal untouched.
 
 **Parameters passed to the filter:**
 | # | Variable | Type | Description |
@@ -330,13 +351,50 @@ The filter also receives `$actions` — the `.ll-ba-nsfw-modal__actions` button 
 | 3 | `$archive_url` | `string` | B&A archive URL, used as the close button's fallback |
 | 4 | `$actions` | `string` | `.ll-ba-nsfw-modal__actions` button group HTML only |
 
-The example below replaces only the action buttons, reusing the rest of the default modal:
+The example below reproduces the plugin default exactly — copy, paste into your theme, then modify:
+
+```php
+add_filter( 'lifted_logic/bag/nsfw_modal_markup', function( $markup, $message, $archive_url, $actions ) {
+    $fallback_url = esc_url( $archive_url );
+    $message_html = esc_html( $message );
+
+    $actions = '
+      <div class="ll-ba-nsfw-modal__actions">
+          <button type="button" class="ll-ba-nsfw-modal__btn ba_btn-primary" data-nsfw-action="unblur-once">Unblur This Only</button>
+          <button type="button" class="ll-ba-nsfw-modal__btn ll-ba-nsfw-modal__btn--secondary" data-nsfw-action="unblur-all">
+            <svg class="icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
+            Unblur All
+            <svg class="icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
+          </button>
+      </div>
+    ';
+
+    return '
+      <div class="ll-ba-nsfw-modal ll-ba-hidden" id="ll-ba-nsfw-modal" role="dialog" aria-modal="true" aria-label="Sensitive content">
+          <div class="ll-ba-nsfw-modal__panel ll-ba-popup-modal">
+              <button type="button" class="ll-ba-nsfw-modal__close" data-nsfw-action="leave" data-fallback-url="' . $fallback_url . '" aria-label="Go back">
+                  <svg class="icon icon-exit" aria-hidden="true"><use xlink:href="#icon-exit"></use></svg>
+              </button>
+              <p class="ll-ba-nsfw-modal__message">' . $message_html . '</p>
+              ' . $actions . '
+          </div>
+      </div>
+    ';
+}, 10, 4 );
+```
+
+To replace only the action buttons while keeping the rest of the modal untouched:
 
 ```php
 add_filter( 'lifted_logic/bag/nsfw_modal_markup', function( $markup, $message, $archive_url, $actions ) {
     $custom_actions = '
       <div class="ll-ba-nsfw-modal__actions">
-        <button type="button" class="ll-ba-nsfw-modal__btn ba_btn-primary" data-nsfw-action="unblur-all">Show Sensitive Content</button>
+          <button type="button" class="ll-ba-nsfw-modal__btn ba_btn-primary" data-nsfw-action="unblur-once">Unblur This Only</button>
+          <button type="button" class="ll-ba-nsfw-modal__btn ll-ba-nsfw-modal__btn--secondary" data-nsfw-action="unblur-all">
+            <svg class="icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
+            Unblur All
+            <svg class="icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
+          </button>
       </div>
     ';
 
@@ -599,13 +657,31 @@ All injection logic lives in `src/Integration/ThemeComponentInjector.php`. For e
 
 ### Disabling plugin components on a specific theme
 
-All component injection is gated by the `ll_bag/register_components` filter. To prevent the plugin from injecting any components into the theme's flexible content field, add this to the theme's `functions.php`:
+All filters below must be added to the theme's `functions.php`. They are checked on `after_setup_theme`, so they must be registered before that hook fires.
+
+**Disable all components (master switch):**
 
 ```php
 add_filter( 'll_bag/register_components', '__return_false' );
 ```
 
-This must be in `functions.php` (not a later hook) so it runs before `after_setup_theme` fires, which is when the plugin checks the filter.
+**Disable one component:**
+
+```php
+add_filter( 'll_bag/register_component/ll_ba_related_bna', '__return_false' );
+add_filter( 'll_bag/register_component/ll_ba_grid',        '__return_false' );
+add_filter( 'll_bag/register_component/ll_ba_slider',      '__return_false' );
+```
+
+**Disable a component and take full ownership from the theme:**
+
+```php
+add_filter( 'll_bag/inject_component_fields/ll_ba_related_bna', '__return_false' );
+add_filter( 'll_bag/inject_component_fields/ll_ba_grid',        '__return_false' );
+add_filter( 'll_bag/inject_component_fields/ll_ba_slider',      '__return_false' );
+```
+
+`ll_bag/inject_component_fields/{layout_name}` is a semantic alias for per-component disable — it has the identical effect as `ll_bag/register_component/{layout_name}`. Use it when the theme is registering its own version of a component (layout definition, ACF fields, and template) and needs the plugin's copy out of the way entirely. When this filter returns false, the plugin does not inject the layout into the "Add Component" dropdown, does not register any ACF sub-fields, does not hook into the `_files` template lookup, and does not register a `format_data` mapping.
 
 ---
 

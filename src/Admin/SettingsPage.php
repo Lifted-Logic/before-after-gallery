@@ -60,6 +60,9 @@ class SettingsPage {
   }
 
   public function registerFields(): void {
+    $categoriesHeroBannerOverridden = TemplateLoader::resolve( 'partials/categories-hero-banner.php' )
+      !== LL_BAG_PATH . 'templates/partials/categories-hero-banner.php';
+
     $fields = [
       [
         'key'       => 'field_ll_bag_archive_settings_tab',
@@ -203,7 +206,10 @@ class SettingsPage {
           [ [ 'field' => 'field_ll_bag_use_category_archive', 'operator' => '==', 'value' => '1' ] ],
         ],
       ],
-      [
+    ] );
+
+    if ( !$categoriesHeroBannerOverridden ) {
+      $fields[] = [
         'key'    => 'field_ll_ba_category_archive_hero',
         'label'  => 'Taxonomy Archive Hero',
         'name'   => 'll_ba_category_archive_hero',
@@ -235,19 +241,20 @@ class SettingsPage {
             'return_format' => 'id',
           ],
         ],
+      ];
+    }
+
+    $fields[] = [
+      'key'           => 'field_ll_ba_categories_subtitle',
+      'label'         => 'Taxonomy Archive Subtitle',
+      'name'          => 'll_ba_categories_subtitle',
+      'type'          => 'text',
+      'default_value' => 'Select a category below to start exploring.',
+      'instructions'  => 'Text shown above the category grid.',
+      'conditional_logic' => [
+        [ [ 'field' => 'field_ll_bag_use_category_archive', 'operator' => '==', 'value' => '1' ] ],
       ],
-      [
-        'key'           => 'field_ll_ba_categories_subtitle',
-        'label'         => 'Taxonomy Archive Subtitle',
-        'name'          => 'll_ba_categories_subtitle',
-        'type'          => 'text',
-        'default_value' => 'Select a category below to start exploring.',
-        'instructions'  => 'Text shown above the category grid.',
-        'conditional_logic' => [
-          [ [ 'field' => 'field_ll_bag_use_category_archive', 'operator' => '==', 'value' => '1' ] ],
-        ],
-      ],
-    ] );
+    ];
 
     acf_add_local_field_group( [
       'key'      => 'group_ll_ba_settings',
@@ -346,7 +353,6 @@ class SettingsPage {
       ];
     }
 
-    $fields = apply_filters('ll_bag/before_after_archive_fields', $fields);
     if (empty($fields)) return;
 
     acf_add_local_field_group([
