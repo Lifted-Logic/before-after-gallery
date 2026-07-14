@@ -78,6 +78,29 @@
   vertical-align: middle;
 }
 
+.ll-bag-tag-label-wrap {
+  margin-top: 8px;
+  text-align: left;
+
+  label {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 0.75rem;
+  }
+
+  &.ll-bag-hidden {
+    display: none;
+  }
+}
+
+.ll-bag-tag-label-input {
+  width: 100%;
+}
+
+.ll-bag-hidden {
+  display: none;
+}
+
 /* ── Posts list table ────────────────────────────────────────────────────── */
 
 .post-type-ll_before_after .wp-list-table {

@@ -3,18 +3,21 @@ import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import fullReload from 'vite-plugin-full-reload';
+import basicSsl from '@vitejs/plugin-basic-ssl';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const hotFile   = resolve(__dirname, 'hot');
+const __dirname  = dirname(fileURLToPath(import.meta.url));
+const hotFile    = resolve(__dirname, 'hot');
+const useHttps   = process.env.VITE_DEV_HTTPS === 'true';
 
 function wordPressHMR() {
     return {
         name: 'wordpress-hmr',
         configureServer(server) {
             server.httpServer?.once('listening', () => {
-                const address = server.httpServer.address();
-                const port    = typeof address === 'object' ? address?.port : 5173;
-                fs.writeFileSync(hotFile, `http://localhost:${port}`);
+                const address  = server.httpServer.address();
+                const port     = typeof address === 'object' ? address?.port : 5173;
+                const protocol = useHttps ? 'https' : 'http';
+                fs.writeFileSync(hotFile, `${protocol}://localhost:${port}`);
 
                 const cleanup = () => {
                     if (fs.existsSync(hotFile)) fs.rmSync(hotFile);
@@ -34,6 +37,7 @@ export default defineConfig({
     plugins: [
         wordPressHMR(),
         fullReload(['templates/**/*.php']),
+        ...(useHttps ? [basicSsl()] : []),
     ],
 
     build: {

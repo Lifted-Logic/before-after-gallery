@@ -74,6 +74,22 @@ $isBuiltin = !empty($filter['builtin']);
       class="ll-bag-card-display"
       <?php checked($cardTaxonomy ?? '', $filter['meta_key']); ?>
     >
+
+    <?php $showTagLabel = ($cardTaxonomy ?? '') === $filter['meta_key']; ?>
+    <div class="ll-bag-tag-label-wrap<?= $showTagLabel ? '' : ' ll-bag-hidden'; ?>">
+      <label>
+        Tag Label
+        <span class="ll-bag-field-tooltip dashicons dashicons-editor-help" tabindex="0" aria-label="This is the text that will show after &quot;Multiple&quot; on the card pills to tell the user &quot;this before and after uses multiple...&quot;">
+          <span class="ll-bag-field-tooltip__bubble">This is the text that will show after "Multiple" on the card pills to tell the user "this before and after uses multiple..."</span>
+        </span>
+      </label>
+      <input
+        type="text"
+        name="ll_bag_filters[<?= esc_attr($id); ?>][tag_label]"
+        value="<?= esc_attr($filter['tag_label'] ?? ''); ?>"
+        class="ll-bag-tag-label-input"
+      >
+    </div>
   </td>
 
   <td>

@@ -56,7 +56,8 @@
 .ll-ba-slider-card {
   position: relative;
   overflow: hidden;
-  background-color: var(--ll-ba-card-bg, #B8C2B0);
+  background-color: var(--cards-background, #B8C2B0);
+  background-image: var(--cards-background-image, none);
   display: flex;
   align-items: center;
   height: 100%;
@@ -258,6 +259,7 @@
 
 .ll-ba-slider-card--sensitive.is-blurred .ll-ba-slider-card__visual {
   filter: blur(20px);
+  backdrop-filter: blur(20px);
 }
 
 .ll-ba-slider-card.is-hidden {

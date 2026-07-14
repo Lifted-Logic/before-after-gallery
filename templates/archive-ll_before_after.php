@@ -40,10 +40,6 @@ $filters = (new FilterManager())->getEnabled();
       </div>
     </div>
     <?php if ($filters->isNotEmpty()) : ?>
-      <button type="button" id="ll-ba-filter-trigger" class="ll-ba-filter-trigger" aria-expanded="false" aria-controls="ll-ba-sidebar">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" width="16" height="16"><path d="M10 18h4v-2h-4v2zm-7-8v2h18v-2H3zm3-6v2h12V4H6z"/></svg>
-        Filters
-      </button>
       <div class="ll-ba-hidden ll-ba-filters__active ll-ba-filters__active--mobile" id="ll-ba-active-bar-mobile">
         <div class="ll-ba-filters__active-inner">
           <span class="ll-ba-filters__active-label">Filtered by:</span>
@@ -54,6 +50,10 @@ $filters = (new FilterManager())->getEnabled();
       <aside class="ll-ba-sidebar" id="ll-ba-sidebar">
         <?php TemplateLoader::get('partials/filters.php', ['filters' => $filters]); ?>
       </aside>
+      <button type="button" id="ll-ba-filter-trigger" class="ll-ba-filter-trigger" aria-expanded="false" aria-controls="ll-ba-sidebar">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" width="16" height="16"><path d="M10 18h4v-2h-4v2zm-7-8v2h18v-2H3zm3-6v2h12V4H6z"/></svg>
+        Filters
+      </button>
     <?php endif; ?>
 
     <div class="ll-ba-content">

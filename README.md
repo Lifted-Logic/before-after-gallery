@@ -184,6 +184,19 @@ Overrideable CSS files:
 |------|---------|
 | `ba-colors.css` | CSS custom properties for UI colors |
 
+### Card Background Image
+
+Give every archive card (`.ll-ba-card`) a background image instead of the flat `--cards-background` color by placing an image at `your-theme/ll-before-after/images/card-background.{ext}`:
+
+```
+your-theme/
+└── ll-before-after/
+    └── images/
+        └── card-background.webp   # or .jpg / .jpeg / .png
+```
+
+The plugin checks for `webp`, `jpg`, `jpeg`, then `png` (first match wins) and, if found, sets the image as a `background-size: cover` background behind the card content. If no file is present at any of those extensions, cards keep rendering with the plain `--cards-background` color — no configuration required either way.
+
 ### Header & Footer
 
 By default the archive templates call `get_header()` and `get_footer()`. Use these filters to swap the template name or skip them entirely:

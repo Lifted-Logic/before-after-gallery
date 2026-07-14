@@ -5,12 +5,14 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
+        "dev:https": "VITE_DEV_HTTPS=true vite",
         "build": "vite build"
     },
     "devDependencies": {
+        "@vitejs/plugin-basic-ssl": "^2.3.0",
+        "magnific-popup": "^1.1.0",
         "vite": "^6.2",
-        "vite-plugin-full-reload": "^1.2.0",
-        "magnific-popup": "^1.1.0"
+        "vite-plugin-full-reload": "^1.2.0"
     },
     "dependencies": {
         "@splidejs/splide": "^4.1.4"

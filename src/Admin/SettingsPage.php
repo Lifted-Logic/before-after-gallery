@@ -140,21 +140,6 @@ class SettingsPage {
         'default_value' => 'This before and after contains sensitive content.',
       ],
       [
-        'key'       => 'field_ll_bag_archive_settings_tab_2',
-        'label'     => 'Card Background Color',
-        'type'      => 'tab',
-        'placement' => 'left',
-        'endpoint'  => 0,
-      ],
-      [
-        'key'           => 'field_ll_ba_card_bg_color',
-        'label'         => 'Card Background Color',
-        'name'          => 'll_ba_card_bg_color',
-        'type'          => 'color_picker',
-        'default_value' => '#B8C2B0',
-        'instructions'  => 'Background color shown behind the Before and After post cards.',
-      ],
-      [
         'key'       => 'field_ll_bag_category_settings_tab',
         'label'     => 'Taxonomy Archive Settings',
         'type'      => 'tab',

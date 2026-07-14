@@ -59,7 +59,11 @@
 .ll-ba-card {
   position: relative;
   overflow: hidden;
-  background-color: var(--ll-ba-card-bg, #B8C2B0);
+  background-color: var(--cards-background, #B8C2B0);
+  background-image: var(--cards-background-image, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   display: flex;
   align-items: center;
   height: 100%;
@@ -265,7 +269,6 @@
 .ll-ba-filters__active-label {
   font-size: 16px;
   font-style: normal;
-  font-weight: 600;
   line-height: 150%;
   color: var(--general-heading);
 }
@@ -328,6 +331,20 @@
     font-weight: 600;
     line-height: 150%;
     display: contents;
+    transition: all 300ms;
+  }
+  svg {
+    transition: all 300ms;
+    color: var(--filter-accordions-text);
+  }
+  &[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+  }
+  &:hover {
+    span,
+    svg {
+      color: var(--filter-accordions-text-hover);
+    }
   }
 }
 
@@ -384,6 +401,10 @@
 
 .ll-ba-option-search {
   background-color: var(--filter-accordions-search-fill);
+  width: 89%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ll-ba-option-search:focus {
@@ -549,6 +570,7 @@ input[type="search"]::-webkit-search-decoration {
 
 .ll-ba-card--sensitive.is-blurred .ll-ba-card__visual {
   filter: blur(20px);
+  backdrop-filter: blur(20px); 
 }
 
 .ll-ba-card.is-hidden {
@@ -654,6 +676,7 @@ input[type="search"]::-webkit-search-decoration {
   .ll-ba-filters {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     min-height: 100%;
     padding: 80px 32px 0px;
     @media (min-width: 768px) {

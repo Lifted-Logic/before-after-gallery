@@ -39,13 +39,20 @@ class PostTerms {
    * @return array{terms: \WP_Term[], visible: \WP_Term[], overflow: int, label: string, taxonomy: string}
    */
   public static function forCard(int $postId, int $limit = 5): array {
-    $taxonomy = (new FilterManager())->getCardTaxonomy();
+    $filterManager = new FilterManager();
+    $taxonomy      = $filterManager->getCardTaxonomy();
 
     if (!$taxonomy) {
       return ['terms' => [], 'visible' => [], 'overflow' => 0, 'label' => '', 'taxonomy' => ''];
     }
 
     $result = self::get($postId, $taxonomy, $limit);
+
+    // Prefer the admin-configured "Tag Label" over the taxonomy's registered name.
+    $tagLabel = $filterManager->getCardTagLabel();
+    if ($tagLabel !== '') {
+      $result['label'] = $tagLabel;
+    }
 
     // Prepend a synthetic NSFW pill as the first visible term when applicable.
     // Template checks $term->is_nsfw to render the info icon instead of a text label.

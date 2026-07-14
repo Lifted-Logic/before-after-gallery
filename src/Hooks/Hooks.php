@@ -104,8 +104,8 @@ class Hooks {
   public static function bag_filter_actions_markup(): string {
     $markup = <<<HTML
       <div class="ll-ba-filter-actions">
-        <button type="button" id="ll-ba-filter-clear-mobile" class="ll-ba-filter-clear-mobile">Clear</button>
-        <button type="button" id="ll-ba-filter-apply" class="ll-ba-filter-apply">Apply</button>
+        <button type="button" id="ll-ba-filter-clear-mobile" class="ll-ba-filter-clear-mobile">Clear All Filters</button>
+        <button type="button" id="ll-ba-filter-apply" class="ll-ba-filter-apply">Apply Filters</button>
       </div>
     HTML;
 

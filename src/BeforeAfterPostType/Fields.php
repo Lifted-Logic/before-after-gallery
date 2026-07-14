@@ -201,7 +201,7 @@ class Fields {
           'type' => 'repeater',
           'layout' => 'block',
           'button_label' => 'Add Detail Section',
-          'instructions' => 'If more than one Detail Section is used, Details will show in tabs.',
+          'instructions' => 'If more than one Detail Section is used, Details will show in tabs. If only one detail field is used, the Detail Title will not show.',
           'max' => 3,
           'sub_fields' => [
             [
@@ -409,7 +409,7 @@ class Fields {
         ],
         [
           'key'       => 'field_ll_settings_tab',
-          'label'     => 'Settings',
+          'label'     => 'NSFW Settings',
           'type'      => 'tab',
           'placement' => 'left',
           'endpoint'  => 0,

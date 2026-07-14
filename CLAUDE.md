@@ -5,10 +5,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev       # Vite dev server with HMR (writes a `hot` file; Vite::enqueueFrontendAssets() detects it)
-npm run build     # Production build to public/build/ with manifest
-composer install  # PHP autoloader (PSR-4 via illuminate/container)
+npm run dev        # Vite dev server with HMR (writes a `hot` file; Vite::enqueueFrontendAssets() detects it)
+npm run dev:https  # Same, but serves the dev server over HTTPS (self-signed cert) — use when the local WP site itself runs on HTTPS (e.g. a Local site with SSL enabled), since an http:// dev server gets mixed-content blocked on an https:// page
+npm run build      # Production build to public/build/ with manifest
+composer install   # PHP autoloader (PSR-4 via illuminate/container)
 ```
+
+While `npm run dev`/`dev:https` is running, `Vite::enqueueHotEntry()` (`src/Support/Vite.php`) serves CSS/JS exclusively from the live Vite dev server — it deliberately does NOT also enqueue the built `public/build/assets` CSS as a "baseline," since a stale built stylesheet can silently outrank live-edited styles in the cascade. Only `enqueueBuiltEntry()` (used when the dev server isn't running) reads from `public/build`.
 
 There are no test commands. No linter is configured.
 

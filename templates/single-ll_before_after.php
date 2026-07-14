@@ -127,22 +127,24 @@ if ( !empty($images_field) ) {
         <div class="ll-ba-single__info">
             <?php if ( !empty($detail_sections) ) : ?>
                 <div class="ll-ba-single__details">
-                    <div class="ll-ba-single__detail-triggers">
-                        <?php foreach ( $detail_sections as $key => $section_trigger ) : ?>
-                            <<?= $section_trigger['tag'] ?>
-                                class="ll-ba-single__detail-trigger"
-                                <?php if ( $section_trigger['is_tab'] ) : ?>
-                                    data-toggle-target="#<?= $section_trigger['tab_id'] ?>"
-                                    data-toggle-class="ll-ba-is-active"
-                                    data-toggle-radio-group="ll-ba-single-page-detail-sections"
-                                    aria-expanded="false"
-                                    <?= $key === 0 ? 'data-toggle-is-active' : '' ?>
-                                <?php endif; ?>
-                            >
-                                <?= esc_html( $section_trigger['title'] ) ?>
-                            </<?= $section_trigger['tag'] ?>>
-                        <?php endforeach; ?>
-                    </div>
+                    <?php if( count($detail_sections) > 1 ) : ?>                    
+                        <div class="ll-ba-single__detail-triggers">
+                            <?php foreach ( $detail_sections as $key => $section_trigger ) : ?>
+                                <<?= $section_trigger['tag'] ?>
+                                    class="ll-ba-single__detail-trigger"
+                                    <?php if ( $section_trigger['is_tab'] ) : ?>
+                                        data-toggle-target="#<?= $section_trigger['tab_id'] ?>"
+                                        data-toggle-class="ll-ba-is-active"
+                                        data-toggle-radio-group="ll-ba-single-page-detail-sections"
+                                        aria-expanded="false"
+                                        <?= $key === 0 ? 'data-toggle-is-active' : '' ?>
+                                    <?php endif; ?>
+                                >
+                                    <?= esc_html( $section_trigger['title'] ) ?>
+                                </<?= $section_trigger['tag'] ?>>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                     <div class="ll-ba-single__detail-panels">
                         <?php foreach ( $detail_sections as $section_content ) : ?>
                             <div id="<?= $section_content['tab_id'] ?>" class="ll-ba-single__detail-panel wysiwyg <?= $section_content['is_tab'] ? ' ll-ba-single__detail-panel--tab' : '' ?>">

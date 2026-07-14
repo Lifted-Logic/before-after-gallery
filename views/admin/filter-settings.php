@@ -64,6 +64,7 @@ $filter = [
   'display'    => 'checkbox',
   'enabled'    => false,
   'searchable' => false,
+  'tag_label'  => '',
 ];
 ?>
 <template id="ll-bag-filter-template">

@@ -1,7 +1,7 @@
 .ba_btn-primary {
   color: black;
-  background-color: var(--ll-ba-card-bg, black);
-  border: 1px solid var(--ll-ba-card-bg, black);
+  background-color: var(--cards-background, black);
+  border: 1px solid var(--cards-background, black);
   padding: 0.75em 1.5em;
   font-size: 1rem;
   cursor: pointer;
@@ -10,6 +10,7 @@
   gap: 0.5em;
   border-radius: var(--cta-card-radius);
   transition: all .3s;
+  width: fit-content;
 }
 
 .ba_btn-primary:hover {
@@ -25,12 +26,12 @@
   line-height: 150%;
   display: flex;
   align-items: center;
+
   svg:first-of-type {
     width: 0;
     height: 12px;
     transition: all .3s;
     color: var(--general-heading);
-    margin-left: 8px;
     flex: none;
   }
   svg:last-of-type {

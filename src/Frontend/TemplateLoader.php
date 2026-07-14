@@ -56,8 +56,8 @@ class TemplateLoader {
       wp_enqueue_style($handle, $url, $deps, LL_BAG_VERSION);
       $deps = [$handle];
     }
-    $cardBgColor = get_field('ll_ba_card_bg_color', 'option') ?: '#000000';
-    wp_add_inline_style('ll-bag-ba-colors', ':root { --ll-ba-card-bg: ' . sanitize_hex_color($cardBgColor) . '; }');
+
+    $this->enqueueCardBackgroundImage();
 
     wp_localize_script('ll-bag-frontend', 'llBag', [
       'ajaxUrl'       => admin_url('admin-ajax.php'),
@@ -66,6 +66,25 @@ class TemplateLoader {
       'relatedAction' => AjaxHandler::RELATED_ACTION,
       'relatedNonce'  => wp_create_nonce(AjaxHandler::RELATED_ACTION),
     ]);
+  }
+
+  private function enqueueCardBackgroundImage(): void {
+    $extensions = ['webp', 'jpg', 'jpeg', 'png'];
+
+    foreach ($extensions as $ext) {
+      $themeFile = get_stylesheet_directory() . '/ll-before-after/images/card-background.' . $ext;
+
+      if (file_exists($themeFile)) {
+        $url = get_stylesheet_directory_uri() . '/ll-before-after/images/card-background.' . $ext;
+
+        wp_add_inline_style(
+          'll-bag-ba-colors',
+          ':root { --cards-background-image: url(' . esc_url($url) . '); }'
+        );
+
+        return;
+      }
+    }
   }
 
   public function loadTemplate(string $template): string {

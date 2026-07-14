@@ -34,6 +34,7 @@ class FilterSettingsPage {
       $display    = 'checkbox';
       $enabled    = !empty($data['enabled']);
       $searchable = !empty($data['searchable']);
+      $tagLabel   = sanitize_text_field($data['tag_label'] ?? '');
 
       $builtin = !empty($data['builtin']);
 
@@ -47,6 +48,7 @@ class FilterSettingsPage {
         'enabled'    => $enabled,
         'searchable' => $searchable,
         'builtin'    => $builtin,
+        'tag_label'  => $tagLabel,
       ];
     }
 

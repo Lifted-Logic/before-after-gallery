@@ -2,11 +2,15 @@
 
 namespace LiftedLogic\LLBag\Integration;
 
+use LiftedLogic\LLBag\Filters\FilterManager;
+
 class ThemeComponentInjector {
 
   // The LL theme's 'components' flexible content field key.
   // Identical across PHP-ComponentProvider sites and older JSON/DB sites.
   const COMPONENTS_FC_KEY = 'field_5d0d37adc1475';
+
+  public function __construct( private readonly FilterManager $filterManager ) {}
 
   public function register(): void {
     add_action( 'after_setup_theme', [$this, 'maybeRegisterHooks'] );
@@ -53,7 +57,7 @@ class ThemeComponentInjector {
         '_name'         => 'll_ba_related_bna_posts',
         'type'          => 'relationship',
         'post_type'     => [ 'll_before_after' ],
-        'filters'       => [ 'search' ],
+        'filters'       => [ 'search', 'taxonomy' ],
         'elements'      => [],
         'return_format' => 'object',
         'min'           => '',
@@ -70,7 +74,7 @@ class ThemeComponentInjector {
         '_name'         => 'll_ba_grid_posts',
         'type'          => 'relationship',
         'post_type'     => [ 'll_before_after' ],
-        'filters'       => [ 'search' ],
+        'filters'       => [ 'search', 'taxonomy' ],
         'elements'      => [],
         'return_format' => 'object',
         'min'           => '',
@@ -87,7 +91,7 @@ class ThemeComponentInjector {
         '_name'         => 'll_ba_slider_posts',
         'type'          => 'relationship',
         'post_type'     => [ 'll_before_after' ],
-        'filters'       => [ 'search' ],
+        'filters'       => [ 'search', 'taxonomy' ],
         'elements'      => [],
         'return_format' => 'object',
         'min'           => '',
@@ -102,7 +106,7 @@ class ThemeComponentInjector {
     // 'll_ba_related_bna_content'; when not (empty-string fallback), use $data[''].
     $new_data['content'] = $data['ll_ba_related_bna_content'] ?? $data[''] ?? '';
     $new_data['link']    = $data['ll_ba_related_bna_link']    ?? null;
-    $new_data['posts']   = $data['ll_ba_related_bna_posts']   ?? [];
+    $new_data['posts']   = $this->resolvePosts( $data, 'll_ba_related_bna_posts', 'll_ba_related_bna_selection_method', 'll_ba_related_bna_filter_terms', 3 );
     $new_data['color_theme'] = $data['ll_ba_related_bna_color_theme'] ?? 'theme-one';
     return $new_data;
   }
@@ -153,6 +157,107 @@ class ThemeComponentInjector {
     ];
   }
 
+  // Choices for the "Filter by Taxonomy Term(s)" select — every term across
+  // every configured filter taxonomy, keyed "{taxonomy}:{term_id}".
+  private function taxonomyTermChoices(): array {
+    $choices = [];
+
+    foreach ( $this->filterManager->all() as $filter ) {
+      $taxonomy = $filter['meta_key'] ?? '';
+      if ( $taxonomy === '' ) continue;
+
+      $tax_object = get_taxonomy( $taxonomy );
+      if ( !$tax_object ) continue;
+
+      $terms = get_terms( [ 'taxonomy' => $taxonomy, 'hide_empty' => false ] );
+      if ( is_wp_error( $terms ) || empty( $terms ) ) continue;
+
+      foreach ( $terms as $term ) {
+        $choices["{$taxonomy}:{$term->term_id}"] = "{$tax_object->label} — {$term->name}";
+      }
+    }
+
+    return $choices;
+  }
+
+  private function postSelectionMethodSubField( string $key, string $name ): array {
+    return [
+      'key'           => $key,
+      'label'         => 'Post Selection',
+      'name'          => $name,
+      '_name'         => $name,
+      'type'          => 'button_group',
+      'choices'       => [
+        'manual'   => 'Manually Pick Posts',
+        'taxonomy' => 'Use Selected Taxonomy',
+      ],
+      'default_value' => 'manual',
+      'layout'        => 'horizontal',
+      'return_format' => 'value',
+    ];
+  }
+
+  private function filterTermsSubField( string $key, string $name, string $selection_method_key ): array {
+    return [
+      'key'           => $key,
+      'label'         => 'Filter by Taxonomy Term(s)',
+      'name'          => $name,
+      '_name'         => $name,
+      'type'          => 'select',
+      'choices'       => $this->taxonomyTermChoices(),
+      'multiple'      => 1,
+      'ui'            => 1,
+      'allow_null'    => 1,
+      'return_format' => 'value',
+      'conditional_logic' => [
+        [
+          [ 'field' => $selection_method_key, 'operator' => '==', 'value' => 'taxonomy' ],
+        ],
+      ],
+    ];
+  }
+
+  // Resolve the final posts array for a component: manually-picked relationship
+  // value, or a live taxonomy-term query when "Use Selected Taxonomy" is chosen.
+  private function resolvePosts( array $data, string $posts_key, string $selection_method_key, string $filter_terms_key, int $limit ): array {
+    $selection_method = $data[$selection_method_key] ?? 'manual';
+
+    if ( $selection_method !== 'taxonomy' ) {
+      return $data[$posts_key] ?? [];
+    }
+
+    $filter_terms = $data[$filter_terms_key] ?? [];
+    if ( empty( $filter_terms ) ) {
+      return [];
+    }
+
+    $grouped = [];
+    foreach ( $filter_terms as $value ) {
+      [ $taxonomy, $term_id ] = array_pad( explode( ':', $value, 2 ), 2, null );
+      if ( !$taxonomy || !$term_id ) continue;
+      $grouped[$taxonomy][] = (int) $term_id;
+    }
+
+    if ( empty( $grouped ) ) {
+      return [];
+    }
+
+    $tax_query = [ 'relation' => 'OR' ];
+    foreach ( $grouped as $taxonomy => $term_ids ) {
+      $tax_query[] = [
+        'taxonomy' => $taxonomy,
+        'field'    => 'term_id',
+        'terms'    => $term_ids,
+      ];
+    }
+
+    return get_posts( [
+      'post_type'      => 'll_before_after',
+      'posts_per_page' => $limit,
+      'tax_query'      => $tax_query,
+    ] );
+  }
+
   public function injectLayouts( array $field ): array {
     if ( $field['key'] !== self::COMPONENTS_FC_KEY ) {
       return $field;
@@ -198,6 +303,9 @@ class ThemeComponentInjector {
       'return_format' => 'array',
     ];
 
+    $selection_method_key = 'field_ll_ba_rba_selection_method';
+    $sub_fields[] = $this->postSelectionMethodSubField( $selection_method_key, 'll_ba_related_bna_selection_method' );
+
     $sub_fields[] = [
       'key'           => 'field_ll_ba_rba_posts',
       'label'         => 'Before & After Posts',
@@ -205,12 +313,19 @@ class ThemeComponentInjector {
       '_name'         => 'll_ba_related_bna_posts',
       'type'          => 'relationship',
       'post_type'     => [ 'll_before_after' ],
-      'filters'       => [ 'search' ],
+      'filters'       => [ 'search', 'taxonomy' ],
       'elements'      => [],
       'return_format' => 'object',
       'min'           => '',
       'max'           => '3',
+      'conditional_logic' => [
+        [
+          [ 'field' => $selection_method_key, 'operator' => '==', 'value' => 'manual' ],
+        ],
+      ],
     ];
+
+    $sub_fields[] = $this->filterTermsSubField( 'field_ll_ba_rba_filter_terms', 'll_ba_related_bna_filter_terms', $selection_method_key );
 
     return [
       'key'        => 'layout_ll_ba_related_bna',
@@ -232,8 +347,7 @@ class ThemeComponentInjector {
   }
 
   public function formatBeforeAndAftersGridData( array $new_data, string $component_name, array $data ): array {
-    $new_data['posts']       = $data['ll_ba_grid_posts']       ?? [];
-    $new_data['color_theme'] = $data['ll_ba_grid_color_theme'] ?? 'theme-one';
+    $new_data['posts'] = $this->resolvePosts( $data, 'll_ba_grid_posts', 'll_ba_grid_selection_method', 'll_ba_grid_filter_terms', -1 );
     return $new_data;
   }
 
@@ -247,7 +361,7 @@ class ThemeComponentInjector {
     $new_data['color_theme'] = $data['ll_ba_slider_color_theme'] ?? 'theme-one';
     $new_data['layout']      = $data['ll_ba_slider_layout']      ?? 'content-image';
     $new_data['content']     = $data['ll_ba_slider_content']     ?? '';
-    $new_data['posts']       = $data['ll_ba_slider_posts']       ?? [];
+    $new_data['posts']       = $this->resolvePosts( $data, 'll_ba_slider_posts', 'll_ba_slider_selection_method', 'll_ba_slider_filter_terms', -1 );
     return $new_data;
   }
 
@@ -281,6 +395,9 @@ class ThemeComponentInjector {
       'type'  => 'wysiwyg',
     ];
 
+    $selection_method_key = 'field_ll_ba_slider_selection_method';
+    $sub_fields[] = $this->postSelectionMethodSubField( $selection_method_key, 'll_ba_slider_selection_method' );
+
     $sub_fields[] = [
       'key'           => 'field_ll_ba_slider_posts',
       'label'         => 'Before & After Posts',
@@ -288,12 +405,19 @@ class ThemeComponentInjector {
       '_name'         => 'll_ba_slider_posts',
       'type'          => 'relationship',
       'post_type'     => [ 'll_before_after' ],
-      'filters'       => [ 'search' ],
+      'filters'       => [ 'search', 'taxonomy' ],
       'elements'      => [],
       'return_format' => 'object',
       'min'           => '',
       'max'           => '',
+      'conditional_logic' => [
+        [
+          [ 'field' => $selection_method_key, 'operator' => '==', 'value' => 'manual' ],
+        ],
+      ],
     ];
+
+    $sub_fields[] = $this->filterTermsSubField( 'field_ll_ba_slider_filter_terms', 'll_ba_slider_filter_terms', $selection_method_key );
 
     return [
       'key'        => 'layout_ll_ba_slider',
@@ -311,9 +435,8 @@ class ThemeComponentInjector {
   private function beforeAndAftersGridLayout(): array {
     $sub_fields = [];
 
-    if ( $theme_field = $this->themePickerSubField( 'field_ll_ba_grid_theme', 'll_ba_grid_color_theme' ) ) {
-      $sub_fields[] = $theme_field;
-    }
+    $selection_method_key = 'field_ll_ba_bag_grid_selection_method';
+    $sub_fields[] = $this->postSelectionMethodSubField( $selection_method_key, 'll_ba_grid_selection_method' );
 
     $sub_fields[] = [
       'key'           => 'field_ll_ba_bag_grid_posts',
@@ -322,12 +445,19 @@ class ThemeComponentInjector {
       '_name'         => 'll_ba_grid_posts',
       'type'          => 'relationship',
       'post_type'     => [ 'll_before_after' ],
-      'filters'       => [ 'search' ],
+      'filters'       => [ 'search', 'taxonomy' ],
       'elements'      => [],
       'return_format' => 'object',
       'min'           => '',
       'max'           => '',
+      'conditional_logic' => [
+        [
+          [ 'field' => $selection_method_key, 'operator' => '==', 'value' => 'manual' ],
+        ],
+      ],
     ];
+
+    $sub_fields[] = $this->filterTermsSubField( 'field_ll_ba_bag_grid_filter_terms', 'll_ba_grid_filter_terms', $selection_method_key );
 
     return [
       'key'        => 'layout_ll_ba_grid',

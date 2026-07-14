@@ -24,6 +24,14 @@ function syncSearchable(row) {
   if (!enabled) searchable.checked = false;
 }
 
+function syncTagLabel(row) {
+  const cardDisplay = row.querySelector('.ll-bag-card-display');
+  const tagLabelWrap = row.querySelector('.ll-bag-tag-label-wrap');
+  if (!cardDisplay || !tagLabelWrap) return;
+
+  tagLabelWrap.classList.toggle('ll-bag-hidden', !cardDisplay.checked);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 
   // Convert ACF field instructions stored in data-tooltip into hover tooltips
@@ -48,13 +56,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Init searchable disabled state for all existing rows
   document.querySelectorAll('.ll-bag-filter-row').forEach(syncSearchable);
 
+  // Init tag label visibility for all existing rows
+  document.querySelectorAll('.ll-bag-filter-row').forEach(syncTagLabel);
+
   document.getElementById('ll-bag-filter-tbody')?.addEventListener('change', (e) => {
     // Keep card display as a radio group (only one selected at a time)
     const checked = e.target.closest('.ll-bag-card-display');
-    if (checked?.checked) {
-      document.querySelectorAll('.ll-bag-card-display').forEach(cb => {
-        if (cb !== checked) cb.checked = false;
-      });
+    if (checked) {
+      if (checked.checked) {
+        document.querySelectorAll('.ll-bag-card-display').forEach(cb => {
+          if (cb !== checked) cb.checked = false;
+        });
+      }
+      document.querySelectorAll('.ll-bag-filter-row').forEach(syncTagLabel);
     }
 
     // Sync searchable when filterable changes

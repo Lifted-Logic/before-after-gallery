@@ -88,6 +88,9 @@ defined('ABSPATH') || exit;
 
           <dt><?php esc_html_e('Show on Cards', 'll-bag'); ?></dt>
           <dd><?php esc_html_e('When checked, this filter\'s tags will appear as small labels on each gallery card. Only one filter can have this enabled at a time — selecting a new one will automatically uncheck the previous one.', 'll-bag'); ?></dd>
+
+          <dt><?php esc_html_e('Tag Label', 'll-bag'); ?></dt>
+          <dd><?php esc_html_e('Appears once "Show on Cards" is checked. When a card has more than one tag, the card shows a single "Multiple" pill instead of listing every tag — this field sets the word that follows "Multiple" (e.g. "Categories"), telling visitors this before and after uses multiple of that tag type.', 'll-bag'); ?></dd>
         </dl>
 
         <h3><?php esc_html_e('Adding a new filter', 'll-bag'); ?></h3>
@@ -102,7 +105,15 @@ defined('ABSPATH') || exit;
         <p><?php esc_html_e('Grab the dotted handle on the far left of any row and drag it up or down to change the order filters appear in the sidebar. Click "Save Filters" to keep the new order.', 'll-bag'); ?></p>
 
         <h3><?php esc_html_e('Removing a filter', 'll-bag'); ?></h3>
-        <p><?php esc_html_e('Click the "Remove" button on the right side of the row, then click "Save Filters". Note that built-in filters like Categories and Tags do not have a Remove button — these are managed through WordPress directly.', 'll-bag'); ?></p>
+        <p><?php esc_html_e('Click the "Remove" button on the right side of the row, then click "Save Filters". Note that the built-in Categories filter does not have a Remove button — it is managed through WordPress directly.', 'll-bag'); ?></p>
+
+        <h3><?php esc_html_e('Setting up Categories', 'll-bag'); ?></h3>
+        <p><?php echo wp_kses_post(sprintf(
+          /* translators: %s: link to the Taxonomy Archive section */
+          __('Whichever filter you designate as the <strong>Featured Taxonomy</strong> — under Before & Afters → Settings → Taxonomy Archive Settings — gains extra fields once you\'ve made that selection. Go to that filter\'s term list (e.g. Before & Afters → Treatments) and edit any term: you\'ll now see a Background Image field. This needs to be filled in for each term so it displays correctly as a card on the Taxonomy Archive page. See %s for the full setup.', 'll-bag'),
+          '<a href="#category-page">' . esc_html__('Taxonomy Archive', 'll-bag') . '</a>'
+        )); ?></p>
+        <p><?php esc_html_e('Note that this is a separate setting from "Show on Cards" in the table above — a filter can be used for gallery card pills, the Featured Taxonomy, both, or neither, independently of one another.', 'll-bag'); ?></p>
       </section>
 
       <section id="adding-posts" class="ll-bag-how-to__section">

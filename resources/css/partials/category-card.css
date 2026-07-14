@@ -66,3 +66,14 @@
     opacity: 1;
   }
 }
+
+@media (max-width: 767px) {
+  .ll-ba-category-card__hover-text {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+    gap: 8px;
+    height: 24px;
+    opacity: 1;
+  }
+}

@@ -117,6 +117,7 @@ $provider_link   = $provider_term ? get_field( 'll_ba_provider_link',  'term_' .
           <?php endif; ?>
       <?php endif; ?>
     <?php endif; ?>
+    <div class="backdrop-blur-[20px] absolute inset-0"></div>
   </div>
 
   <?php if ( $is_nsfw ) : ?>

@@ -15,15 +15,23 @@ import Splide from '@splidejs/splide';
 import '@splidejs/splide/css';
 
 ( function setHeaderHeight() {
-  const header = document.querySelector( 'header' );
-  if ( !header ) return;
-  const adminBar = document.getElementById( 'wpadminbar' );
-  const update = () => {
-    const height = header.offsetHeight + ( adminBar ? adminBar.offsetHeight : 0 );
-    document.documentElement.style.setProperty( '--ba-header-height', height + 'px' );
+  const run = () => {
+    const header = document.querySelector( 'header' );
+    if ( !header ) return;
+    const adminBar = document.getElementById( 'wpadminbar' );
+    const update = () => {
+      const height = header.offsetHeight + ( adminBar ? adminBar.offsetHeight : 0 );
+      document.documentElement.style.setProperty( '--ba-header-height', height + 'px' );
+    };
+    update();
+    window.addEventListener( 'resize', update );
   };
-  update();
-  window.addEventListener( 'resize', update );
+
+  if ( document.readyState === 'loading' ) {
+    document.addEventListener( 'DOMContentLoaded', run );
+  } else {
+    run();
+  }
 } )();
 
 import { initCardLinks }    from './card.js';
@@ -82,6 +90,11 @@ document.querySelectorAll( '.ll-ba-related-slider' ).forEach( el => {
     perPage: 2,
     gap: '32px',
     pagination: false,
+    breakpoints: {
+      768: {
+        gap: '12px',
+      },
+    },
   } ).mount();
 } );
 
