@@ -24,6 +24,16 @@ if ($filters->isEmpty()) {
       <svg class='icon icon-exit' aria-hidden='true'><use xlink:href='#icon-exit'></use></svg>
     </button>
   
+    <!-- Filtered by tags (FRA-108: sits above the filter groups) -->
+    <div class="ll-ba-hidden ll-ba-filters__active" id="ll-ba-active-bar">
+      <div class="ll-ba-filters__active-inner">
+        <span class="ll-ba-filters__active-label">Filtered by:</span>
+      </div>
+      <ul class="ll-ba-filters__active-tags" id="ll-ba-active-tags">
+        <!-- Tags are managed by updateActiveTags() in resources/js/filters.js -->
+      </ul>
+    </div>
+
     <!-- Filter groups -->
     <ul id="ll-ba-filter-groups">
       <?php foreach ($filters as $filter) :
@@ -87,15 +97,6 @@ if ($filters->isEmpty()) {
   </div>
   
   <div>
-      <!-- Filtered by tags -->
-    <div class="ll-ba-hidden ll-ba-filters__active" id="ll-ba-active-bar">
-      <div class="ll-ba-filters__active-inner">
-        <span class="ll-ba-filters__active-label">Filtered by:</span>
-      </div>
-      <ul class="ll-ba-filters__active-tags" id="ll-ba-active-tags">
-        <!-- Tags are managed by updateActiveTags() in frontend.js -->
-      </ul>
-    </div>
     <?= Hooks::bag_filter_actions_markup() ?>
   </div>
 
