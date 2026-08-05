@@ -3,7 +3,8 @@
  * Partial: Before & After post card
  *
  * Available variables:
- *   $post  WP_Post  The post object
+ *   $post           WP_Post  The post object
+ *   $hide_provider  bool     Optional. Suppress the provider photo (FRA-112). Defaults to false.
  *
  * Override: place this file at {theme}/ll-before-after/partials/post-card.php
  */
@@ -14,6 +15,7 @@ use LiftedLogic\LLBag\BeforeAfterPostType\BeforeAfterPostType;
 use LiftedLogic\LLBag\Support\PostTerms;
 
 $permalink = get_permalink($post->ID);
+$hide_provider = $hide_provider ?? false;
 
 // Resolve card images from the first row of the ACF images repeater
 $firstRow = (get_field('ll_ba_images', $post->ID) ?: [])[0] ?? [];
@@ -131,7 +133,7 @@ $provider_link   = $provider_term ? get_field( 'll_ba_provider_link',  'term_' .
 
   <a href="<?= esc_url($permalink); ?>" class="ll-ba-card__link" aria-label="<?= esc_attr(get_the_title($post)); ?>"></a>
 
-  <?php if ( $provider_term && $provider_image ) : ?>
+  <?php if ( $provider_term && $provider_image && !$hide_provider ) : ?>
     <?php $provider_img = wp_get_attachment_image( $provider_image, 'thumbnail', false, [
       'class' => 'll-ba-card__provider-image',
       'alt'   => esc_attr( $provider_term->name ),

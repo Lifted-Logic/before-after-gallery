@@ -3,7 +3,8 @@
  * Partial: Before & After Slider post card
  *
  * Available variables:
- *   $post  WP_Post  The post object
+ *   $post           WP_Post  The post object
+ *   $hide_provider  bool     Optional. Suppress the provider photo (FRA-112). Defaults to false.
  *
  * Override: place this file at {theme}/ll-before-after/partials/before-after-slider-post-card.php
  */
@@ -15,6 +16,7 @@ use LiftedLogic\LLBag\Hooks\Hooks;
 use LiftedLogic\LLBag\Support\PostTerms;
 
 $postID = $post->ID;
+$hide_provider = $hide_provider ?? false;
 $permalink = get_permalink($postID);
 $post_treatment_title = get_field('ll_ba_title', $postID) ?? '';
 
@@ -131,7 +133,7 @@ $provider_link   = $provider_term ? get_field( 'll_ba_provider_link',  'term_' .
 
   <a href="<?= esc_url($permalink); ?>" class="ll-ba-slider-card__link" aria-label="<?= esc_attr(get_the_title($post)); ?>"></a>
 
-  <?php if ( $provider_term && $provider_image ) : ?>
+  <?php if ( $provider_term && $provider_image && !$hide_provider ) : ?>
     <?php $provider_img = wp_get_attachment_image( $provider_image, 'thumbnail', false, [
       'class' => 'll-ba-slider-card__provider-image',
       'alt'   => esc_attr( $provider_term->name ),

@@ -18,6 +18,7 @@ $content = $component_data['content'] ?? '';
 $link    = $component_data['link']    ?? [];
 $posts   = $component_data['posts']   ?? [];
 $color_theme = $component_data['color_theme'] ?? '';
+$hide_provider = !empty( $component_data['hide_provider'] );
 ?>
 
 <div class="ll-ba-related-bna <?= esc_attr( $color_theme ) ?> component-spacing ba_grid-cols-container">
@@ -40,7 +41,7 @@ $color_theme = $component_data['color_theme'] ?? '';
     <?php if( !empty($posts) ) : ?>    
       <div class="ll-ba-related-bna__card-grid">
         <?php foreach( $posts as $post ) : ?>
-          <?php TemplateLoader::get('partials/post-card.php', ['post' => $post]); ?>
+          <?php TemplateLoader::get('partials/post-card.php', ['post' => $post, 'hide_provider' => $hide_provider]); ?>
         <?php endforeach; ?>
       </div>
     <?php endif; ?>

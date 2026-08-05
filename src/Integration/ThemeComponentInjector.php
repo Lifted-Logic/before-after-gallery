@@ -108,6 +108,7 @@ class ThemeComponentInjector {
     $new_data['link']    = $data['ll_ba_related_bna_link']    ?? null;
     $new_data['posts']   = $this->resolvePosts( $data, 'll_ba_related_bna_posts', 'll_ba_related_bna_selection_method', 'll_ba_related_bna_filter_terms', 3 );
     $new_data['color_theme'] = $data['ll_ba_related_bna_color_theme'] ?? 'theme-one';
+    $new_data['hide_provider'] = !empty( $data['ll_ba_related_bna_hide_provider'] );
     return $new_data;
   }
 
@@ -178,6 +179,36 @@ class ThemeComponentInjector {
     }
 
     return $choices;
+  }
+
+  private function archiveUrlForFilterTerms( array $filter_terms ): string {
+    $base = get_post_type_archive_link( 'll_before_after' ) ?: home_url( '/' );
+
+    $pairs = [];
+    foreach ( $filter_terms as $value ) {
+      [ $taxonomy, $term_id ] = array_pad( explode( ':', (string) $value, 2 ), 2, null );
+      if ( !$taxonomy || !$term_id ) continue;
+      $term = get_term( (int) $term_id, $taxonomy );
+      if ( !$term || is_wp_error( $term ) ) continue;
+      $pairs[] = rawurlencode( $taxonomy ) . '=' . rawurlencode( $term->slug );
+    }
+
+    if ( empty( $pairs ) ) return $base;
+
+    return $base . ( str_contains( $base, '?' ) ? '&' : '?' ) . implode( '&', $pairs );
+  }
+
+  private function hideProviderSubField( string $key, string $name ): array {
+    return [
+      'key'           => $key,
+      'label'         => 'Hide Provider Photos',
+      'name'          => $name,
+      '_name'         => $name,
+      'type'          => 'true_false',
+      'ui'            => 1,
+      'default_value' => 0,
+      'instructions'  => 'Hides the provider photo on each card. Useful on a provider page, where every card would otherwise show the same photo.',
+    ];
   }
 
   private function postSelectionMethodSubField( string $key, string $name ): array {
@@ -327,6 +358,8 @@ class ThemeComponentInjector {
 
     $sub_fields[] = $this->filterTermsSubField( 'field_ll_ba_rba_filter_terms', 'll_ba_related_bna_filter_terms', $selection_method_key );
 
+    $sub_fields[] = $this->hideProviderSubField( 'field_ll_ba_rba_hide_provider', 'll_ba_related_bna_hide_provider' );
+
     return [
       'key'        => 'layout_ll_ba_related_bna',
       'name'       => 'll_ba_related_bna',
@@ -348,6 +381,33 @@ class ThemeComponentInjector {
 
   public function formatBeforeAndAftersGridData( array $new_data, string $component_name, array $data ): array {
     $new_data['posts'] = $this->resolvePosts( $data, 'll_ba_grid_posts', 'll_ba_grid_selection_method', 'll_ba_grid_filter_terms', -1 );
+
+    $columns = (int) ( $data['ll_ba_grid_columns'] ?? 3 );
+    $new_data['columns']       = in_array( $columns, [ 2, 3, 4 ], true ) ? $columns : 3;
+    $new_data['hide_provider'] = !empty( $data['ll_ba_grid_hide_provider'] );
+
+    // A link with neither a label nor a URL means "no button".
+    $link = $data['ll_ba_grid_view_all_link'] ?? null;
+    $new_data['view_all'] = null;
+
+    if ( is_array( $link ) && ( !empty( $link['url'] ) || !empty( $link['title'] ) ) ) {
+      $carry = !empty( $data['ll_ba_grid_view_all_filtered'] )
+            && ( $data['ll_ba_grid_selection_method'] ?? 'manual' ) === 'taxonomy';
+
+      if ( $carry ) {
+        $link['url'] = $this->archiveUrlForFilterTerms( $data['ll_ba_grid_filter_terms'] ?? [] );
+      }
+
+      if ( empty( $link['url'] ) ) {
+        $link['url'] = get_post_type_archive_link( 'll_before_after' ) ?: home_url( '/' );
+      }
+      if ( empty( $link['title'] ) ) {
+        $link['title'] = 'View All';
+      }
+
+      $new_data['view_all'] = $link;
+    }
+
     return $new_data;
   }
 
@@ -362,6 +422,7 @@ class ThemeComponentInjector {
     $new_data['layout']      = $data['ll_ba_slider_layout']      ?? 'content-image';
     $new_data['content']     = $data['ll_ba_slider_content']     ?? '';
     $new_data['posts']       = $this->resolvePosts( $data, 'll_ba_slider_posts', 'll_ba_slider_selection_method', 'll_ba_slider_filter_terms', -1 );
+    $new_data['hide_provider'] = !empty( $data['ll_ba_slider_hide_provider'] );
     return $new_data;
   }
 
@@ -419,6 +480,8 @@ class ThemeComponentInjector {
 
     $sub_fields[] = $this->filterTermsSubField( 'field_ll_ba_slider_filter_terms', 'll_ba_slider_filter_terms', $selection_method_key );
 
+    $sub_fields[] = $this->hideProviderSubField( 'field_ll_ba_slider_hide_provider', 'll_ba_slider_hide_provider' );
+
     return [
       'key'        => 'layout_ll_ba_slider',
       'name'       => 'll_ba_slider',
@@ -458,6 +521,48 @@ class ThemeComponentInjector {
     ];
 
     $sub_fields[] = $this->filterTermsSubField( 'field_ll_ba_bag_grid_filter_terms', 'll_ba_grid_filter_terms', $selection_method_key );
+
+    $sub_fields[] = [
+      'key'           => 'field_ll_ba_bag_grid_columns',
+      'label'         => 'Columns',
+      'name'          => 'll_ba_grid_columns',
+      '_name'         => 'll_ba_grid_columns',
+      'type'          => 'button_group',
+      'choices'       => [ '2' => '2', '3' => '3', '4' => '4' ],
+      'default_value' => '3',
+      'return_format' => 'value',
+      'allow_null'    => 0,
+      'layout'        => 'horizontal',
+      'instructions'  => 'How many cards wide before the grid wraps, on desktop. Tablet and mobile are unchanged.',
+    ];
+
+    $sub_fields[] = [
+      'key'           => 'field_ll_ba_bag_grid_view_all_link',
+      'label'         => 'View All Button',
+      'name'          => 'll_ba_grid_view_all_link',
+      '_name'         => 'll_ba_grid_view_all_link',
+      'type'          => 'link',
+      'return_format' => 'array',
+      'instructions'  => 'Leave empty for no button. Leave the URL empty to link to the gallery archive.',
+    ];
+
+    $sub_fields[] = [
+      'key'           => 'field_ll_ba_bag_grid_view_all_filtered',
+      'label'         => 'Carry These Filters Into the Archive',
+      'name'          => 'll_ba_grid_view_all_filtered',
+      '_name'         => 'll_ba_grid_view_all_filtered',
+      'type'          => 'true_false',
+      'ui'            => 1,
+      'default_value' => 1,
+      'instructions'  => 'Sends the button to the archive pre-filtered by the terms above — e.g. a grid of Botox before &amp; afters opens the archive already filtered to Botox.',
+      'conditional_logic' => [
+        [
+          [ 'field' => $selection_method_key, 'operator' => '==', 'value' => 'taxonomy' ],
+        ],
+      ],
+    ];
+
+    $sub_fields[] = $this->hideProviderSubField( 'field_ll_ba_bag_grid_hide_provider', 'll_ba_grid_hide_provider' );
 
     return [
       'key'        => 'layout_ll_ba_grid',

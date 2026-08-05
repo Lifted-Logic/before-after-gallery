@@ -18,6 +18,7 @@ $color_theme = $component_data['color_theme'] ?? '';
 $content     = $component_data['content']     ?? '';
 $posts       = $component_data['posts']       ?? [];
 $layout       = $component_data['layout']       ?? 'content-image';
+$hide_provider = !empty( $component_data['hide_provider'] );
 
 if ( empty( $posts ) ) return;
 ?>
@@ -36,7 +37,7 @@ if ( empty( $posts ) ) return;
         <ul class="splide__list">
           <?php foreach ( $posts as $post ) : ?>
             <li class="splide__slide">
-              <?php TemplateLoader::get( 'partials/before-after-slider-post-card.php', ['post' => $post] ); ?>
+              <?php TemplateLoader::get( 'partials/before-after-slider-post-card.php', ['post' => $post, 'hide_provider' => $hide_provider] ); ?>
             </li>
           <?php endforeach; ?>
         </ul>
