@@ -46,7 +46,7 @@
 .ll-ba-single {
   .ll-ba-single__sidebar {
     padding: 3rem 2rem;
-    
+
     @media (min-width: 1024px) {
       min-height: calc(100vh - var(--ba-header-height, 0px));
       padding: 4rem;
@@ -199,6 +199,7 @@
   .ll-ba-single__related .splide__track {
     overflow: visible;
   }
+
   .ll-ba-single__related-header {
     display: flex;
     align-items: center;
@@ -220,11 +221,14 @@
       justify-content: flex-end;
     }
   }
+
   .ll-ba-single__related {
     overflow: hidden;
   }
+
   .ll-ba-related-slider {
     overflow: visible;
+
     @media (min-width: 1024px) {
       display: grid;
       grid-template-areas:
@@ -261,7 +265,7 @@
     border-radius: 9999px;
     transition-duration: 300ms;
     transition-timing-function: ease-in-out;
-    background-color:  var(--cards-background, white);
+    background-color: var(--cards-background, white);
 
     &.splide__arrow--prev {
       left: 0;
@@ -297,6 +301,7 @@
     .splide__arrow--prev {
       left: 0px;
     }
+
     .splide__arrow--next {
       right: 0px;
     }
@@ -392,6 +397,7 @@
   }
 
   .ll-ba-single__gallery--sensitive.is-blurred {
+
     .ll-ba-single-page-slider,
     .ll-ba-single-page-slider-nav {
       filter: blur(20px);
@@ -487,6 +493,11 @@
   /* Nav slider thumbnails
      ========================================================================== */
 
+  .ll-ba-single-page-slider-nav .splide__track {
+    max-width: 424px;
+    margin-inline: auto;
+  }
+
   .ll-ba-single__nav-slide {
     position: relative;
     aspect-ratio: 1 / 1;
@@ -542,6 +553,7 @@
 
       &:hover {
         opacity: 1;
+
         svg {
           fill: var(--additional-images-chevron-hover);
           opacity: 1;
@@ -627,10 +639,24 @@
     display: contents;
   }
 
-  .ll-ba-single__top     { order: 1; padding: 2rem; }
-  .ll-ba-single__gallery { order: 2; }
-  .ll-ba-single__info    { order: 3; padding: 2rem; }
-  .ll-ba-single__related { order: 4; padding: 0 2rem 2rem; }
+  .ll-ba-single__top {
+    order: 1;
+    padding: 2rem;
+  }
+
+  .ll-ba-single__gallery {
+    order: 2;
+  }
+
+  .ll-ba-single__info {
+    order: 3;
+    padding: 2rem;
+  }
+
+  .ll-ba-single__related {
+    order: 4;
+    padding: 0 2rem 2rem;
+  }
 }
 
 /* Read more modal
