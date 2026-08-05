@@ -23,7 +23,8 @@ class Hooks {
   // Back button
   public static function bag_back_button_markup(): string {
     $classes    = 'bag_back-text bag-inline-block';
-    $text       = 'Back to Gallery';
+    $label      = function_exists( 'get_field' ) ? get_field( 'll_ba_global_back_label', 'options' ) : '';
+    $text       = esc_html( $label ?: 'Back to Gallery' );
     $archiveUrl = get_post_type_archive_link('ll_before_after') ?: site_url('/');
     $refUrl     = isset($_GET['ba_ref']) ? wp_validate_redirect(wp_unslash($_GET['ba_ref']), '') : '';
 

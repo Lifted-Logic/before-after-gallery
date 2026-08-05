@@ -100,6 +100,15 @@ class SettingsPage {
         ],
       ],
       [
+        'key'  => 'field_ll_bag_global_back_label',
+        'label' => 'Back to Gallery Label',
+        'name' => 'll_ba_global_back_label',
+        'type' => 'text',
+        'wrapper' => [
+          'data-tooltip' => 'If left empty the link will default to "Back to Gallery"',
+        ],
+      ],
+      [
         'key'     => 'field_ll_bag_cta_message',
         'type'    => 'message',
         'message' => 'Leave CTA fields blank to omit CTA on single pages',
