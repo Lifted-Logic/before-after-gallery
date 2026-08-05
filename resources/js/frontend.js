@@ -25,6 +25,18 @@ import '@splidejs/splide/css';
     };
     update();
     window.addEventListener( 'resize', update );
+    window.addEventListener( 'load', update );
+    window.addEventListener( 'pageshow', update );
+
+    if ( document.fonts && document.fonts.ready ) {
+      document.fonts.ready.then( update );
+    }
+
+    if ( 'ResizeObserver' in window ) {
+      const observer = new ResizeObserver( update );
+      observer.observe( header );
+      if ( adminBar ) observer.observe( adminBar );
+    }
   };
 
   if ( document.readyState === 'loading' ) {
@@ -34,10 +46,10 @@ import '@splidejs/splide/css';
   }
 } )();
 
-import { initCardLinks }    from './card.js';
+import { initCardLinks } from './card.js';
 import { initRelatedSlider } from './related-posts.js';
-import { initFilters }      from './filters.js';
-import { initNsfwModal }    from './nsfw-modal.js';
+import { initFilters } from './filters.js';
+import { initNsfwModal } from './nsfw-modal.js';
 
 // ── Splide: single post gallery + thumbnails ───────────────────────────────────
 
@@ -101,13 +113,13 @@ document.querySelectorAll( '.ll-ba-related-slider' ).forEach( el => {
 // ── Splide: comparison slider ──────────────────────────────────────────────────
 
 document.querySelectorAll( '.ll-ba-comparison-slider' ).forEach( el => {
-  const after   = el.querySelector( '.ll-ba-comparison-slider__after' );
+  const after = el.querySelector( '.ll-ba-comparison-slider__after' );
   const divider = el.querySelector( '.ll-ba-comparison-slider__divider' );
-  let dragging  = false;
+  let dragging = false;
 
   const setPosition = ( pct ) => {
-    after.style.clipPath = `inset(0 ${ ( 1 - pct ) * 100 }% 0 0)`;
-    divider.style.left   = `${ pct * 100 }%`;
+    after.style.clipPath = `inset(0 ${( 1 - pct ) * 100}% 0 0)`;
+    divider.style.left = `${pct * 100}%`;
   };
 
   setPosition( 0.5 );
@@ -134,7 +146,7 @@ document.querySelectorAll( '.ll-ba-comparison-slider' ).forEach( el => {
 initCardLinks();
 initRelatedSlider();
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener( 'DOMContentLoaded', () => {
   const $ = window.jQuery;
   if ( $ && $.fn.magnificPopup ) {
     $( document ).on( 'click', '.ll-ba-single__detail-read-more-trigger', function ( e ) {
@@ -148,4 +160,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initFilters();
   initNsfwModal();
-});
+} );
