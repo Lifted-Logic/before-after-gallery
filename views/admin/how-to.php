@@ -101,6 +101,15 @@ defined('ABSPATH') || exit;
           <li><?php esc_html_e('Click "Save Filters" when you\'re done. Your changes won\'t be applied until you save.', 'll-bag'); ?></li>
         </ol>
 
+        <h3><?php esc_html_e('Adding options to a filter', 'll-bag'); ?></h3>
+        <p><?php esc_html_e('Setting up a filter only creates the heading visitors see in the sidebar — it starts out empty. The choices underneath it (the checkboxes) are the individual terms, and you add those from the left-hand menu, not from this page.', 'll-bag'); ?></p>
+        <ol class="ll-bag-how-to__steps">
+          <li><?php esc_html_e('In the left-hand admin menu, go to Before & Afters and click the filter you want to fill in — each filter you enable gets its own entry there (e.g. Before & Afters → Treatments).', 'll-bag'); ?></li>
+          <li><?php esc_html_e('Add one term per choice you want visitors to be able to filter by, using the "Add New" form on the left of that screen.', 'll-bag'); ?></li>
+          <li><?php esc_html_e('Repeat for each filter. A filter with no terms, or whose terms are not used by any published post, is hidden from the gallery sidebar automatically.', 'll-bag'); ?></li>
+        </ol>
+        <p><?php esc_html_e('Terms are assigned to individual before & after posts on the post edit screen — see Adding Posts below. Only terms actually used by a post appear as filter options.', 'll-bag'); ?></p>
+
         <h3><?php esc_html_e('Reordering filters', 'll-bag'); ?></h3>
         <p><?php esc_html_e('Grab the dotted handle on the far left of any row and drag it up or down to change the order filters appear in the sidebar. Click "Save Filters" to keep the new order.', 'll-bag'); ?></p>
 
