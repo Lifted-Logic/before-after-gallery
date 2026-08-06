@@ -16,6 +16,7 @@
   right: 0;
   bottom: 0;
   background-repeat: no-repeat;
+  overflow: hidden;
 
   img {
     height: 100%;

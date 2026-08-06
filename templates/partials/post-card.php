@@ -44,22 +44,41 @@ $images_field = get_field('field_ll_ba_images', $post->ID);
 $ba_gallery_image = [];
 if ( !empty($images_field) ) {
     foreach ( $images_field as $image ) {
+        // Same fallback as the single template: the ratio field was hidden on one-image
+        // rows until now, so they saved '' while the select displays its first choice.
+        // Resolving it differently here would give a row one shape on its own page and
+        // another on its card, against a crop value calibrated for only one of them.
+        $ratio_key = $image['ll_ba_image_ratio'];
+        if ( $ratio_key === '' && $image['ll_ba_image_options'] === 'one-image' ) {
+            $ratio_key = 'wide';
+        }
+
         $ratio_class = 'll-ba-single__ratio--square';
-        if ( $image['ll_ba_image_ratio'] === 'wide' ) {
+        if ( $ratio_key === 'wide' ) {
             $ratio_class = 'll-ba-single__ratio--wide';
-        } elseif ( $image['ll_ba_image_ratio'] === 'panorama' ) {
+        } elseif ( $ratio_key === 'panorama' ) {
             $ratio_class = 'll-ba-single__ratio--panorama';
-        } elseif ( $image['ll_ba_image_ratio'] === 'vertical' ) {
+        } elseif ( $ratio_key === 'vertical' ) {
             $ratio_class = 'll-ba-single__ratio--vertical';
         }
+        $ratio_value = 1.0;
+        if ( $ratio_key === 'wide' )          $ratio_value = 16 / 9;
+        elseif ( $ratio_key === 'panorama' )  $ratio_value = 3.0;
+        elseif ( $ratio_key === 'vertical' )  $ratio_value = 0.8;
+
         $ba_gallery_image[] = [
             'option'           => $image['ll_ba_image_options'],
             'ratio'            => $ratio_class,
+            'ratio_value'      => $ratio_value,
             'single_image_id'  => $image['ll_ba_single_image'],
             'before_image_id'  => $image['ll_ba_before_image'],
             'after_image_id'   => $image['ll_ba_after_image'],
             'video_url'        => $image['ll_ba_video_url'] ?? '',
             'video_title'      => $image['ll_ba_video_title'] ?? '',
+            'before_focal'     => $image['ll_ba_before_focal'] ?? '',
+            'after_focal'      => $image['ll_ba_after_focal']  ?? '',
+            // '' = legacy, render the untouched markup; otherwise "X Y Z" in this frame.
+            'single_focal'     => bag_single_crop_value( $image, $ratio_value ),
         ];
     }
 }
@@ -82,8 +101,21 @@ $provider_link   = $provider_term ? get_field( 'll_ba_provider_link',  'term_' .
   <div class="ll-ba-card__visual">
     <?php if ( $card_image ) : ?>
       <?php if ( $card_image['option'] === 'one-image' && $card_image['single_image_id'] ) : ?>
-        <div class="ll-ba-card__image ll-ba-card__single-image">
-          <?php echo wp_get_attachment_image( $card_image['single_image_id'], 'large', "", [ "class" => "" ]); ?>
+        <?php $card_single_focal = (string) ( $card_image['single_focal'] ?? '' ); ?>
+        <div class="ll-ba-card__image ll-ba-card__single-image<?= $card_single_focal !== '' ? ' ' . $card_image['ratio'] : '' ?>">
+          <?php if ( $card_single_focal !== '' ) : ?>
+            <?php bag_include_partial( 'fit-image', [
+              'image_id'       => $card_image['single_image_id'],
+              'thumbnail_size' => 'large',
+              'fit'            => 'object-cover',
+              'position'       => 'object-center',
+              'frame_ratio'    => $card_image['ratio_value'] ?? 0,
+              'focal'          => $card_single_focal,
+              'loading'        => true,
+            ] ); ?>
+          <?php else : ?>
+            <?php echo wp_get_attachment_image( $card_image['single_image_id'], 'large', "", [ "class" => "" ]); ?>
+          <?php endif; ?>
         </div>
 
       <?php elseif ( $card_image['option'] === 'two-images' ) : ?>
@@ -95,6 +127,8 @@ $provider_link   = $provider_term ? get_field( 'll_ba_provider_link',  'term_' .
                 'thumbnail_size' => 'large',
                 'fit'            => 'object-cover',
                 'position'       => 'object-center',
+                'frame_ratio'    => $card_image['ratio_value'] ?? 0,
+                'focal'          => $card_image['before_focal'] ?? '',
                 'loading'        => true,
               ] ); ?>
             </div>
@@ -106,6 +140,8 @@ $provider_link   = $provider_term ? get_field( 'll_ba_provider_link',  'term_' .
                 'thumbnail_size' => 'large',
                 'fit'            => 'object-cover',
                 'position'       => 'object-center',
+                'frame_ratio'    => $card_image['ratio_value'] ?? 0,
+                'focal'          => $card_image['after_focal'] ?? '',
                 'loading'        => true,
               ] ); ?>
             </div>

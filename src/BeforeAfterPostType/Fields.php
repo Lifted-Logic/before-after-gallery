@@ -260,7 +260,7 @@ class Fields {
               'label' => 'Image Ratio',
               'name' => 'll_ba_image_ratio_message',
               'type' => 'message',
-              'message' => 'When not using multiple images, the image will be used in the ratio / crop it is uploaded with.',
+              'message' => 'The video thumbnail is used in the ratio / crop it is uploaded with.',
               'wrapper' => [
                 'width' => '50%',
               ],
@@ -268,8 +268,8 @@ class Fields {
                 [
                   [
                     'field' => 'field_ll_ba_image_options',
-                    'operator' => '!=',
-                    'value' => 'two-images',
+                    'operator' => '==',
+                    'value' => 'video',
                   ],
                 ],
               ],
@@ -289,7 +289,7 @@ class Fields {
               'return_format' => 'value',
               'wrapper' => [
                 'width' => '50%',
-                'data-tooltip' => 'Both images will automatically crop to the selected image ratio then be placed next to one another on the post card',
+                'data-tooltip' => 'The frame images are cropped to.',
               ],
               'conditional_logic' => [
                 [
@@ -297,6 +297,13 @@ class Fields {
                     'field' => 'field_ll_ba_image_options',
                     'operator' => '==',
                     'value' => 'two-images',
+                  ],
+                ],
+                [
+                  [
+                    'field' => 'field_ll_ba_image_options',
+                    'operator' => '==',
+                    'value' => 'one-image',
                   ],
                 ],
               ],
@@ -316,6 +323,68 @@ class Fields {
                   ],
                 ],
               ],
+            ],
+            [
+              'key' => 'field_ll_ba_single_crop_accordion',
+              'label' => 'Crop & Zoom',
+              'type' => 'accordion',
+              'open' => 0,
+              'multi_expand' => 1,
+              'endpoint' => 0,
+              'conditional_logic' => [
+                [
+                  [
+                    'field' => 'field_ll_ba_image_options',
+                    'operator' => '!=',
+                    'value' => 'two-images',
+                  ],
+                ],
+              ],
+            ],
+            [
+              'key' => 'field_ll_ba_single_fill',
+              'label' => 'Cropped',
+              'name' => 'll_ba_single_fill',
+              'type' => 'true_false',
+              'ui' => 1,
+              'default_value' => 0,
+              'instructions' => '',
+              'wrapper' => [
+                'class' => 'll-ba-internal-field',
+              ],
+              'conditional_logic' => [
+                [
+                  [
+                    'field' => 'field_ll_ba_image_options',
+                    'operator' => '!=',
+                    'value' => 'two-images',
+                  ],
+                ],
+              ],
+            ],
+            [
+              'key' => 'field_ll_ba_single_focal',
+              'label' => 'Focal Point',
+              'name' => 'll_ba_single_focal',
+              'type' => 'text',
+              'default_value' => '',
+              'instructions' => '',
+              'wrapper' => [ 'class' => 'll-ba-crop-input' ],
+              'conditional_logic' => [
+                [
+                  [
+                    'field' => 'field_ll_ba_image_options',
+                    'operator' => '!=',
+                    'value' => 'two-images',
+                  ],
+                ],
+              ],
+            ],
+            [
+              'key' => 'field_ll_ba_single_crop_accordion_end',
+              'label' => '',
+              'type' => 'accordion',
+              'endpoint' => 1,
             ],
             [
               'key' => 'field_ll_ba_before_image',
@@ -354,6 +423,66 @@ class Fields {
               'wrapper' => [
                 'width' => '50%',
               ],
+            ],
+            [
+              'key' => 'field_ll_ba_crop_accordion',
+              'label' => 'Crop & Zoom',
+              'type' => 'accordion',
+              'open' => 0,
+              'multi_expand' => 1,
+              'endpoint' => 0,
+              'instructions' => '',
+              'conditional_logic' => [
+                [
+                  [
+                    'field' => 'field_ll_ba_image_options',
+                    'operator' => '==',
+                    'value' => 'two-images',
+                  ],
+                ],
+              ],
+            ],
+            [
+              'key' => 'field_ll_ba_before_focal',
+              'label' => 'Before Crop',
+              'name' => 'll_ba_before_focal',
+              'type' => 'text',
+              'default_value' => '',
+              'instructions' => '',
+              'wrapper' => [ 'class' => 'll-ba-crop-input' ],
+              'conditional_logic' => [
+                [
+                  [
+                    'field' => 'field_ll_ba_image_options',
+                    'operator' => '==',
+                    'value' => 'two-images',
+                  ],
+                ],
+              ],
+            ],
+            [
+              'key' => 'field_ll_ba_after_focal',
+              'label' => 'After Crop',
+              'name' => 'll_ba_after_focal',
+              'type' => 'text',
+              'default_value' => '',
+              'instructions' => '',
+              'wrapper' => [ 'class' => 'll-ba-crop-input' ],
+              'conditional_logic' => [
+                [
+                  [
+                    'field' => 'field_ll_ba_image_options',
+                    'operator' => '==',
+                    'value' => 'two-images',
+                  ],
+                ],
+              ],
+            ],
+            [
+              'key' => 'field_ll_ba_crop_accordion_end',
+              'label' => '',
+              'type' => 'accordion',
+              'endpoint' => 1,
             ],
             [
               'key' => 'field_ll_ba_comparison_slider',
