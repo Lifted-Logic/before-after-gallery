@@ -16,6 +16,7 @@ class SettingsPage {
     add_action('acf/init',     [$this, 'registerOptionsPage']);
     add_action('acf/init',     [$this, 'registerFields']);
     add_action('acf/init',     [$this, 'registerArchivePageFields']);
+    add_action('acf/init',     [$this, 'registerTermCtaFields']);
     add_action('acf/save_post', [$this, 'maybeFlushRewriteRules']);
     add_action('admin_init',   [$this, 'disableArchivePageEditor']);
     add_filter('use_block_editor_for_post', [$this, 'disableBlockEditorForArchivePage'], 10, 2);
@@ -176,10 +177,7 @@ class SettingsPage {
         'ui'            => 1,
         'return_format' => 'value',
         'placeholder'   => 'Select a taxonomy…',
-        'instructions'  => 'The taxonomy whose terms are used as to fill out the Category Archive page.',
-        'conditional_logic' => [
-          [ [ 'field' => 'field_ll_bag_use_category_archive', 'operator' => '==', 'value' => '1' ] ],
-        ],
+        'instructions'  => 'The taxonomy treated as the post\'s category. Its terms fill out the Taxonomy Archive page, and each term can carry its own CTA that overrides the global one below.',
       ],
       [
         'key'           => 'field_ll_bag_category_archive_slug',
@@ -302,6 +300,47 @@ class SettingsPage {
     }
 
     return $field;
+  }
+
+  public function registerTermCtaFields(): void {
+    $taxonomy = (string) ( get_option('options_ll_bag_category_taxonomy') ?: 'category' );
+    if ($taxonomy === '') return;
+
+    acf_add_local_field_group( [
+      'key'    => 'group_ll_ba_term_cta',
+      'title'  => 'Before & After CTA',
+      'fields' => [
+        [
+          'key'     => 'field_ll_ba_term_cta_message',
+          'type'    => 'message',
+          'message' => 'Overrides the global CTA for posts whose primary term is this one. Leave the link blank to keep using the global CTA.',
+        ],
+        [
+          'key'     => 'field_ll_ba_term_cta_title',
+          'label'   => 'CTA Title',
+          'name'    => 'll_ba_term_cta_title',
+          'type'    => 'text',
+          'wrapper' => [ 'width' => '50%' ],
+        ],
+        [
+          'key'           => 'field_ll_ba_term_cta_link',
+          'label'         => 'CTA Link',
+          'name'          => 'll_ba_term_cta_link',
+          'type'          => 'link',
+          'return_format' => 'array',
+          'wrapper'       => [ 'width' => '50%' ],
+        ],
+      ],
+      'location' => [
+        [
+          [
+            'param'    => 'taxonomy',
+            'operator' => '==',
+            'value'    => $taxonomy,
+          ],
+        ],
+      ],
+    ] );
   }
 
   public function registerArchivePageFields(): void {
