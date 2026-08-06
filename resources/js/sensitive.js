@@ -1,6 +1,6 @@
 import { CookieUtil } from './cookieUtil.js';
 
-const COOKIE_KEY   = 'll-ba-sensitive-mode';
+const COOKIE_KEY = 'll-ba-sensitive-mode';
 const DEFAULT_MODE = 'blur';
 
 export function getSensitiveMode() {
@@ -34,6 +34,7 @@ export function applySensitiveMode( container, mode ) {
  */
 export function updateSensitiveBar( bar, container ) {
   if ( !bar ) return;
-  const hasSensitive = container.querySelectorAll( '.ll-ba-card--sensitive, .ll-ba-slider-card--sensitive' ).length > 0;
+  const hasSensitive = [...container.querySelectorAll( '.ll-ba-card--sensitive, .ll-ba-slider-card--sensitive' )]
+    .some( card => card.style.display !== 'none' );
   bar.classList.toggle( 'll-ba-hidden', !hasSensitive );
 }

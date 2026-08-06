@@ -63,8 +63,7 @@ class AjaxHandler {
       'post_status'    => 'publish',
       'posts_per_page' => $perPage,
       'paged'          => $paged,
-      'orderby'        => 'date',
-      'order'          => 'DESC',
+      'orderby'        => ['menu_order' => 'ASC', 'date' => 'DESC'],
     ];
 
     if (count($taxQuery) > 1) {

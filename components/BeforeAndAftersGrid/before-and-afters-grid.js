@@ -50,6 +50,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
         card.style.display = ( i >= start && i < start + PAGE_SIZE ) ? '' : 'none';
       } );
       applySensitiveMode( grid, mode );
+      updateSensitiveBar( bar, grid );
       renderPagination( paginationEl, totalPages, page, showPage );
     };
 

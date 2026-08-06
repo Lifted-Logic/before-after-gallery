@@ -19,6 +19,10 @@ class TemplateLoader {
     if (isset($_GET['paged']) && is_numeric($_GET['paged'])) {
       $query->set('paged', max(1, (int) $_GET['paged']));
     }
+
+    if (apply_filters('lifted_logic/bag/order_archive_by_menu_order', true)) {
+      $query->set('orderby', ['menu_order' => 'ASC', 'date' => 'DESC']);
+    }
   }
 
   public function enqueueAssets(): void {

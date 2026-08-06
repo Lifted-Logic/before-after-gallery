@@ -15,6 +15,7 @@ defined('ABSPATH') || exit;
 use LiftedLogic\LLBag\Frontend\TemplateLoader;
 
 $posts         = $component_data['posts'] ?? [];
+$content       = $component_data['content'] ?? '';
 $columns       = (int) ( $component_data['columns'] ?? 3 );
 $view_all      = $component_data['view_all'] ?? null;
 $hide_provider = !empty( $component_data['hide_provider'] );
@@ -27,6 +28,11 @@ $extra_classes = implode( ' ', array_map( 'sanitize_html_class', apply_filters( 
 ?>
 
 <div class="ll-ba-bag-grid ba_grid-cols-container component-spacing<?= $extra_classes ? ' ' . $extra_classes : '' ?>">
+  <?php if ( $content ) : ?>
+    <div class="ll-ba-bag-grid__heading wysiwyg">
+      <?= wp_kses_post( $content ) ?>
+    </div>
+  <?php endif; ?>
   <div class="ll-ba-bag-grid__header">
     <div class="ll-ba-bag-grid__sensitive-bar ll-ba-sensitive-bar ll-ba-hidden">
       <span class="ll-ba-sensitive-bar__label">Sensitive Images</span>

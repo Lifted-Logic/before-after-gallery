@@ -286,6 +286,7 @@ class ThemeComponentInjector {
       'post_type'      => 'll_before_after',
       'posts_per_page' => $limit,
       'tax_query'      => $tax_query,
+      'orderby'        => [ 'menu_order' => 'ASC', 'date' => 'DESC' ],
     ] );
   }
 
@@ -380,7 +381,8 @@ class ThemeComponentInjector {
   }
 
   public function formatBeforeAndAftersGridData( array $new_data, string $component_name, array $data ): array {
-    $new_data['posts'] = $this->resolvePosts( $data, 'll_ba_grid_posts', 'll_ba_grid_selection_method', 'll_ba_grid_filter_terms', -1 );
+    $new_data['posts']   = $this->resolvePosts( $data, 'll_ba_grid_posts', 'll_ba_grid_selection_method', 'll_ba_grid_filter_terms', -1 );
+    $new_data['content'] = $data['ll_ba_grid_content'] ?? '';
 
     $columns = (int) ( $data['ll_ba_grid_columns'] ?? 3 );
     $new_data['columns']       = in_array( $columns, [ 2, 3, 4 ], true ) ? $columns : 3;
@@ -521,6 +523,15 @@ class ThemeComponentInjector {
     ];
 
     $sub_fields[] = $this->filterTermsSubField( 'field_ll_ba_bag_grid_filter_terms', 'll_ba_grid_filter_terms', $selection_method_key );
+
+    $sub_fields[] = [
+      'key'          => 'field_ll_ba_bag_grid_content',
+      'label'        => 'Heading',
+      'name'         => 'll_ba_grid_content',
+      '_name'        => 'll_ba_grid_content',
+      'type'         => 'wysiwyg',
+      'instructions' => 'Optional. Appears above the grid. Leave empty for no heading.',
+    ];
 
     $sub_fields[] = [
       'key'           => 'field_ll_ba_bag_grid_columns',
