@@ -148,6 +148,47 @@ initRelatedSlider();
 
 document.addEventListener( 'DOMContentLoaded', () => {
   const $ = window.jQuery;
+  if ( $ && $.magnificPopup ) {
+    const openLightbox = ( trigger ) => {
+      const host = trigger.closest( '[data-ba-gallery]' );
+      if ( !host ) return;
+
+      let items;
+      try {
+        items = JSON.parse( host.getAttribute( 'data-ba-gallery' ) || '[]' );
+      } catch ( err ) {
+        return;
+      }
+      if ( !items.length ) return;
+
+      const index = Math.min( parseInt( trigger.dataset.baIndex || '0', 10 ) || 0, items.length - 1 );
+
+      $.magnificPopup.open( {
+        items,
+        type: 'image',
+        gallery: { enabled: items.length > 1, navigateByImgClick: false },
+        mainClass: 'll-ba-mfp',
+        closeBtnInside: true,
+        image: { titleSrc: 'title' },
+      }, index );
+    };
+
+    document.addEventListener( 'click', e => {
+      const trigger = e.target.closest( '[data-ba-open]' );
+      if ( !trigger ) return;
+      e.preventDefault();
+      openLightbox( trigger );
+    } );
+
+    document.addEventListener( 'keydown', e => {
+      if ( e.key !== 'Enter' && e.key !== ' ' ) return;
+      const trigger = e.target.closest( '[data-ba-open]' );
+      if ( !trigger || trigger.tagName === 'BUTTON' ) return;
+      e.preventDefault();
+      openLightbox( trigger );
+    } );
+  }
+
   if ( $ && $.fn.magnificPopup ) {
     $( document ).on( 'click', '.ll-ba-single__detail-read-more-trigger', function ( e ) {
       e.preventDefault();
@@ -161,3 +202,52 @@ document.addEventListener( 'DOMContentLoaded', () => {
   initFilters();
   initNsfwModal();
 } );
+
+( function clampFocalOrigins() {
+  const apply = () => {
+    document.querySelectorAll( '.fit-image' ).forEach( box => {
+      const img = box.querySelector( 'img' );
+      if ( !img || !img.naturalWidth || !img.naturalHeight ) return;
+
+      const style = img.getAttribute( 'style' ) || '';
+      const scale = style.match( /scale\(([\d.]+)\)/ );
+      if ( !scale ) return;
+      const z = parseFloat( scale[1] );
+      if ( !( z > 1 ) ) return;
+
+      if ( !img.dataset.baOrigin ) {
+        const m = style.match( /transform-origin:\s*([\d.]+)%\s+([\d.]+)%/ );
+        img.dataset.baOrigin = m ? m[1] + ' ' + m[2] : '50 50';
+      }
+      const [wantX, wantY] = img.dataset.baOrigin.split( ' ' ).map( Number );
+
+      const fw = box.clientWidth, fh = box.clientHeight;
+      if ( !fw || !fh ) return;
+
+      const a = img.naturalWidth / img.naturalHeight;
+      const fa = fw / fh;
+      const cw = a >= fa ? fw : fh * a;
+      const ch = a >= fa ? fw / a : fh;
+
+      const axis = ( len, content, want ) => {
+        if ( z * content < len ) return 50;
+        const lo = ( ( ( len - content ) / 2 ) * z ) / ( z - 1 );
+        const hi = ( ( ( len + content ) / 2 ) * z - len ) / ( z - 1 );
+        return Math.min( Math.max( want, ( lo / len ) * 100 ), ( hi / len ) * 100 );
+      };
+
+      img.style.transformOrigin =
+        axis( fw, cw, wantX ).toFixed( 2 ) + '% ' + axis( fh, ch, wantY ).toFixed( 2 ) + '%';
+    } );
+  };
+
+  const run = () => { apply(); requestAnimationFrame( apply ); };
+
+  if ( document.readyState === 'loading' ) document.addEventListener( 'DOMContentLoaded', run );
+  else run();
+  window.addEventListener( 'load', run );
+  window.addEventListener( 'resize', run );
+  document.addEventListener( 'load', e => {
+    if ( e.target?.tagName === 'IMG' ) apply();
+  }, true );
+} )();

@@ -14,8 +14,8 @@ use LiftedLogic\LLBag\Support\PostTerms;
 $post_treatment_title = get_field('ll_ba_title');
 $global_treatment_title = get_field('ll_ba_global_default_single_page_label', 'options');
 $treatment_title = $post_treatment_title ?: ( $global_treatment_title ?: 'Treatments Used:' );
-$global_cta_title = get_field('ll_ba_global_cta_title', 'options') ?? '';
-$global_cta_link = get_field('ll_ba_global_cta_link', 'options') ?? '';
+// FRA-115: primary term's CTA, else first assigned term's, else the global pair.
+$cta = bag_resolve_cta( get_the_ID() );
 
 $card_terms  = PostTerms::forCard( get_the_ID() );
 $archive_url = get_post_type_archive_link( BeforeAfterPostType::SLUG );
@@ -49,24 +49,40 @@ $images_field = get_field('field_ll_ba_images');
 $ba_images = [];
 if ( !empty($images_field) ) {
     foreach ( $images_field as $image ) {
+        $ratio_key = $image['ll_ba_image_ratio'];
+
+        if ( $ratio_key === '' && $image['ll_ba_image_options'] === 'one-image' ) {
+            $ratio_key = 'wide';
+        }
+
         $ratio_class = 'll-ba-single__ratio--square';
-        if ( $image['ll_ba_image_ratio'] === 'wide' ) {
+        if ( $ratio_key === 'wide' ) {
             $ratio_class = 'll-ba-single__ratio--wide';
-        } elseif ( $image['ll_ba_image_ratio'] === 'panorama' ) {
+        } elseif ( $ratio_key === 'panorama' ) {
             $ratio_class = 'll-ba-single__ratio--panorama';
-        } elseif ( $image['ll_ba_image_ratio'] === 'vertical' ) {
+        } elseif ( $ratio_key === 'vertical' ) {
             $ratio_class = 'll-ba-single__ratio--vertical';
         }
+
+        $ratio_value = 1.0;
+        if ( $ratio_key === 'wide' )          $ratio_value = 16 / 9;
+        elseif ( $ratio_key === 'panorama' )  $ratio_value = 3.0;
+        elseif ( $ratio_key === 'vertical' )  $ratio_value = 0.8;
 
         $ba_images[] = [
             'option'           => $image['ll_ba_image_options'],
             'ratio'            => $ratio_class,
+            'ratio_value'      => $ratio_value,
             'single_image_id'  => $image['ll_ba_single_image'],
             'before_image_id'  => $image['ll_ba_before_image'],
             'after_image_id'   => $image['ll_ba_after_image'],
             'video_url'        => $image['ll_ba_video_url'],
             'video_title'      => $image['ll_ba_video_title'],
             'comparison_slider'=> $image['ll_ba_comparison_slider'],
+            // '' means legacy-untouched; anything else is "X Y Z" in the declared frame.
+            'single_focal'     => bag_single_crop_value( $image, $ratio_value ),
+            'before_focal'     => $image['ll_ba_before_focal'] ?? '',
+            'after_focal'      => $image['ll_ba_after_focal']  ?? '',
         ];
     }
 }
@@ -170,9 +186,9 @@ if ( !empty($images_field) ) {
             <?php endif; ?>
     
             <!-- Link Card -->
-            <?php if ( is_array($global_cta_link) ) : ?>
+            <?php if ( is_array($cta['link']) ) : ?>
                 <div class="ll-ba-single__cta">
-                    <?= Hooks::bag_link_card_markup( $global_cta_title, $global_cta_link ) ?>
+                    <?= Hooks::bag_link_card_markup( $cta['title'], $cta['link'] ) ?>
                 </div>
             <?php endif; ?>
         </div>
@@ -207,9 +223,25 @@ if ( !empty($images_field) ) {
 
                                 <?php if ( $image['option'] === 'one-image' && $image['single_image_id'] ) : ?>
                                     <li class="splide__slide">
-                                        <div class="ll-ba-single__slide-inner">
-                                            <div class="ll-ba-single__slide-image">
-                                                <?php echo wp_get_attachment_image( $image['single_image_id'], 'large', "", [ "class" => "" ]); ?>
+                                        <div class="ll-ba-single__slide-inner" data-ba-gallery="<?= Hooks::bag_lightbox_items( [ $image['single_image_id'] ] ) ?>">
+                                            <?php
+                                                $single_focal    = $image['single_focal'] ?? '';
+                                                $single_has_crop = $single_focal !== '';
+                                            ?>
+                                            <div class="ll-ba-single__slide-image ll-ba-single__zoomable<?= $single_has_crop ? ' ll-ba-single__slide-image--cropped ' . $image['ratio'] : '' ?>" data-ba-open data-ba-index="0" role="button" tabindex="0" aria-label="View full size">
+                                                <?php if ( $single_has_crop ) : ?>
+                                                    <?php bag_include_partial( 'fit-image', [
+                                                        'image_id'       => $image['single_image_id'],
+                                                        'thumbnail_size' => 'large',
+                                                        'fit'            => 'object-cover',
+                                                        'position'       => 'object-center',
+                                                        'frame_ratio'    => $image['ratio_value'] ?? 0,
+                                                        'focal'          => $single_focal,
+                                                        'loading'        => true,
+                                                    ] ); ?>
+                                                <?php else : ?>
+                                                    <?php echo wp_get_attachment_image( $image['single_image_id'], 'large', "", [ "class" => "" ]); ?>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     </li>
@@ -217,7 +249,8 @@ if ( !empty($images_field) ) {
                                 <?php elseif ( $image['option'] === 'two-images' ) : ?>
                                     <?php if ( $image['comparison_slider'] ) : ?>
                                         <li class="splide__slide">
-                                            <div class="ll-ba-single__slide-inner">
+                                            <div class="ll-ba-single__slide-inner" data-ba-gallery="<?= Hooks::bag_lightbox_items( [ $image['before_image_id'], $image['after_image_id'] ] ) ?>">
+                                                <?= Hooks::bag_lightbox_expand_markup( 0 ) ?>
                                                 <div class="ll-ba-comparison-slider <?= $image['ratio'] ?>">
                                                     <div class="ll-ba-comparison-slider__before">
                                                         <?php bag_include_partial( 'fit-image', [
@@ -225,6 +258,8 @@ if ( !empty($images_field) ) {
                                                             'thumbnail_size' => 'large',
                                                             'fit'            => 'object-cover',
                                                             'position'       => 'object-center',
+                                                            'frame_ratio'    => $image['ratio_value'] ?? 0,
+                                                            'focal'          => $image['before_focal'],
                                                             'loading'        => true,
                                                         ] ); ?>
                                                     </div>
@@ -234,6 +269,8 @@ if ( !empty($images_field) ) {
                                                             'thumbnail_size' => 'large',
                                                             'fit'            => 'object-cover',
                                                             'position'       => 'object-center',
+                                                            'frame_ratio'    => $image['ratio_value'] ?? 0,
+                                                            'focal'          => $image['after_focal'],
                                                             'loading'        => true,
                                                         ] ); ?>
                                                     </div>
@@ -249,26 +286,30 @@ if ( !empty($images_field) ) {
                                         </li>
                                     <?php else : ?>
                                         <li class="splide__slide">
-                                            <div class="ll-ba-single__slide-inner">
+                                            <div class="ll-ba-single__slide-inner" data-ba-gallery="<?= Hooks::bag_lightbox_items( [ $image['before_image_id'], $image['after_image_id'] ] ) ?>">
                                                 <div class="ll-ba-single__side-by-side <?= $image['ratio'] === 'll-ba-single__ratio--wide' || $image['ratio'] === 'll-ba-single__ratio--panorama' ? 'll-ba-single__side-by-side--stacked' : '' ?>">
                                                     <?php if ( $image['before_image_id'] ) : ?>
-                                                        <div class="ll-ba-single__side-by-side-image <?= $image['ratio'] ?>">
+                                                        <div class="ll-ba-single__side-by-side-image ll-ba-single__zoomable <?= $image['ratio'] ?>" data-ba-open data-ba-index="0" role="button" tabindex="0" aria-label="View full size">
                                                             <?php bag_include_partial( 'fit-image', [
                                                                 'image_id'       => $image['before_image_id'],
                                                                 'thumbnail_size' => 'large',
                                                                 'fit'            => 'object-cover',
                                                                 'position'       => 'object-center',
+                                                                'frame_ratio'    => $image['ratio_value'] ?? 0,
+                                                                'focal'          => $image['before_focal'],
                                                                 'loading'        => true,
                                                             ] ); ?>
                                                         </div>
                                                     <?php endif; ?>
                                                     <?php if ( $image['after_image_id'] ) : ?>
-                                                        <div class="ll-ba-single__side-by-side-image <?= $image['ratio'] ?>">
+                                                        <div class="ll-ba-single__side-by-side-image ll-ba-single__zoomable <?= $image['ratio'] ?>" data-ba-open data-ba-index="<?= $image['before_image_id'] ? 1 : 0 ?>" role="button" tabindex="0" aria-label="View full size">
                                                             <?php bag_include_partial( 'fit-image', [
                                                                 'image_id'       => $image['after_image_id'],
                                                                 'thumbnail_size' => 'large',
                                                                 'fit'            => 'object-cover',
                                                                 'position'       => 'object-center',
+                                                                'frame_ratio'    => $image['ratio_value'] ?? 0,
+                                                                'focal'          => $image['after_focal'],
                                                                 'loading'        => true,
                                                             ] ); ?>
                                                         </div>
@@ -315,6 +356,7 @@ if ( !empty($images_field) ) {
                                                 'thumbnail_size' => 'medium',
                                                 'fit'            => 'object-cover',
                                                 'position'       => 'object-center',
+                                                'frame_ratio'    => $image['ratio_value'] ?? 0,
                                                 'loading'        => true,
                                             ] ); ?>
                                             <?php if ( $image['option'] === 'video' ) : ?>

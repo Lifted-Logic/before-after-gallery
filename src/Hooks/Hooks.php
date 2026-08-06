@@ -47,6 +47,35 @@ class Hooks {
     return apply_filters( 'lifted_logic/bag/bag_back_button_markup', $markup, $classes, $text, $href );
   }
 
+  public static function bag_lightbox_items( array $image_ids ): string {
+    $items = [];
+
+    foreach ( $image_ids as $id ) {
+      if ( !$id ) continue;
+      $src = wp_get_attachment_image_url( $id, 'full' );
+      if ( !$src ) continue;
+      $items[] = [
+        'src'   => $src,
+        'title' => wp_get_attachment_caption( $id ) ?: '',
+      ];
+    }
+
+    $items = apply_filters( 'lifted_logic/bag/lightbox_items', $items, $image_ids );
+
+    return $items ? esc_attr( (string) wp_json_encode( $items ) ) : '';
+  }
+
+  public static function bag_lightbox_expand_markup( int $index = 0 ): string {
+    $markup = <<<HTML
+      <button type="button" class="ll-ba-single__expand" data-ba-open data-ba-index="$index">
+        <svg class="ll-ba-single__expand-icon icon icon-expand" aria-hidden="true"><use xlink:href="#icon-expand"></use></svg>
+        <span class="sr-only">View these images full size</span>
+      </button>
+    HTML;
+
+    return apply_filters( 'lifted_logic/bag/lightbox_expand_markup', $markup, $index );
+  }
+
   // Related slider arrows
   public static function bag_related_slider_arrows_markup(): string {
     $prev = <<<HTML

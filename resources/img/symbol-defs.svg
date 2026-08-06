@@ -1,5 +1,9 @@
 <svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <defs>
+  <symbol id="icon-expand" viewBox="0 0 32 32">
+    <path d="M12 2H3a1 1 0 0 0-1 1v9a1 1 0 0 0 2 0V5.41l7.29 7.3a1 1 0 0 0 1.42-1.42L5.41 4H12a1 1 0 0 0 0-2z"></path>
+    <path d="M29 19a1 1 0 0 0-1 1v6.59l-7.29-7.3a1 1 0 0 0-1.42 1.42L26.59 28H20a1 1 0 0 0 0 2h9a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1z"></path>
+  </symbol>
   <symbol id="icon-arrow-right" viewBox="0 0 32 32">
     <path d="M0 16.604c0-0.587 0.476-1.062 1.062-1.062h29.876c0.587 0 1.062 0.476 1.062 1.062s-0.476 1.062-1.062 1.062h-29.876c-0.587 0-1.062-0.476-1.062-1.062z"></path>
     <path d="M16.245 1.911c0.415-0.415 1.087-0.415 1.502 0l13.942 13.942c0.415 0.415 0.415 1.087 0 1.502l-13.942 13.942c-0.415 0.415-1.088 0.415-1.502 0s-0.415-1.087 0-1.502l13.191-13.191-13.191-13.191c-0.415-0.415-0.415-1.087 0-1.502z"></path>
