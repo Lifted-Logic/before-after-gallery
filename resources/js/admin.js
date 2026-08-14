@@ -213,6 +213,67 @@ document.addEventListener( 'DOMContentLoaded', () => {
   } );
 } );
 
+( function postListOrder() {
+  const cfg = window.llBagOrder;
+  const body = document.body;
+  if ( !cfg || !cfg.enabled ) return;
+  if ( !body.classList.contains( 'edit-php' ) || !body.classList.contains( 'post-type-ll_before_after' ) ) return;
+
+  const list = document.getElementById( 'the-list' );
+  if ( !list ) return;
+
+  const rows = () => [...list.querySelectorAll( 'tr[id^="post-"]' )];
+  if ( rows().length < 2 ) return;
+
+  rows().forEach( r => r.classList.add( 'll-bag-orderable' ) );
+
+  let dragged = null;
+  let before = '';
+
+  list.addEventListener( 'mousedown', ( e ) => {
+    const handle = e.target.closest( '.ll-bag-drag-handle' );
+    const row = handle?.closest( 'tr[id^="post-"]' );
+    if ( row ) row.draggable = true;
+  } );
+  document.addEventListener( 'mouseup', () => {
+    rows().forEach( r => { r.draggable = false; } );
+  } );
+
+  list.addEventListener( 'dragstart', ( e ) => {
+    dragged = e.target.closest( 'tr[id^="post-"]' );
+    before = rows().map( r => r.id ).join();
+    setTimeout( () => dragged?.classList.add( 'opacity-50' ), 0 );
+  } );
+
+  list.addEventListener( 'dragover', ( e ) => {
+    e.preventDefault();
+    const target = e.target.closest( 'tr[id^="post-"]' );
+    if ( !target || !dragged || target === dragged ) return;
+    const rect = target.getBoundingClientRect();
+    list.insertBefore( dragged, e.clientY < rect.top + rect.height / 2 ? target : target.nextSibling );
+  } );
+
+  list.addEventListener( 'dragend', () => {
+    dragged?.classList.remove( 'opacity-50' );
+    dragged = null;
+    const order = rows().map( r => r.id );
+    if ( order.join() === before ) return;
+
+    const fd = new FormData();
+    fd.append( 'action', cfg.action );
+    fd.append( 'nonce', cfg.nonce );
+    fd.append( 'offset', cfg.offset );
+    order.forEach( id => fd.append( 'ids[]', id.replace( 'post-', '' ) ) );
+
+    list.style.opacity = '0.5';
+    fetch( cfg.ajaxUrl, { method: 'POST', body: fd } )
+      .then( r => r.json() )
+      .then( d => { if ( !d.success ) throw new Error( 'save rejected' ); } )
+      .catch( () => alert( 'Reordering failed to save — reload the page and try again.' ) )
+      .finally( () => { list.style.opacity = ''; } );
+  } );
+} )();
+
 ( function cropPanels() {
   const RATIOS = { wide: 16 / 9, square: 1, panorama: 3, vertical: 4 / 5, '': 1 };
   const STACKED = ['wide', 'panorama'];

@@ -4,6 +4,7 @@ namespace LiftedLogic\LLBag;
 
 use Illuminate\Container\Container;
 use LiftedLogic\LLBag\Admin\AdminMenu;
+use LiftedLogic\LLBag\Admin\PostOrderController;
 use LiftedLogic\LLBag\Admin\FilterSettingsPage;
 use LiftedLogic\LLBag\Admin\HowToPage;
 use LiftedLogic\LLBag\Admin\SettingsPage;
@@ -42,6 +43,7 @@ class Plugin {
     });
 
     $this->container->singleton(HowToPage::class);
+    $this->container->singleton(PostOrderController::class);
 
     $this->container->singleton(AdminMenu::class, function () {
       return new AdminMenu(
@@ -63,6 +65,7 @@ class Plugin {
 
     if (is_admin()) {
       $this->container->make(AdminMenu::class)->register();
+      $this->container->make(PostOrderController::class)->register();
     }
   }
 }

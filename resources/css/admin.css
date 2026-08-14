@@ -522,3 +522,36 @@
 .acf-field.ll-ba-internal-field {
   display: none !important;
 }
+
+table.wp-list-table .column-ll_bag_order_handle {
+  width: 18px;
+  padding: 0;
+}
+
+#the-list td.column-ll_bag_order_handle {
+  padding: 11px 2px 0 0;
+  vertical-align: top;
+}
+
+.ll-bag-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 16px;
+  color: #a7aaad;
+  cursor: grab;
+  visibility: hidden;
+}
+
+tr.ll-bag-orderable .ll-bag-drag-handle {
+  visibility: visible;
+}
+
+.ll-bag-drag-handle:hover {
+  color: #50575e;
+}
+
+.ll-bag-drag-handle:active {
+  cursor: grabbing;
+}
