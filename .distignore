@@ -1,0 +1,20 @@
+# Excluded from the release zip. Everything not listed here SHIPS —
+# resources/ deliberately ships whole: primitives.css, ba-colors.css,
+# symbol-defs.svg and vendor/magnific-popup are read at runtime, not bundled
+# by Vite. Trimming resources/css out of a zip is what broke staging once.
+.git
+.gitignore
+.vscode
+.nvmrc
+.distignore
+CLAUDE.md
+README.md
+node_modules
+hot
+package.json
+package-lock.json
+vite.config.js
+composer.json
+composer.lock
+scripts
+dist

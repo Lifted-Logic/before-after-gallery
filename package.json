@@ -6,7 +6,8 @@
     "scripts": {
         "dev": "vite",
         "dev:https": "VITE_DEV_HTTPS=true vite",
-        "build": "vite build"
+        "build": "vite build",
+        "dist": "node scripts/dist.mjs"
     },
     "devDependencies": {
         "@vitejs/plugin-basic-ssl": "^2.3.0",
