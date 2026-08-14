@@ -28,13 +28,14 @@ $extra_classes = implode( ' ', array_map( 'sanitize_html_class', apply_filters( 
 ?>
 
 <div class="ll-ba-bag-grid ba_grid-cols-container component-spacing<?= $extra_classes ? ' ' . $extra_classes : '' ?>">
-  <?php if ( $content ) : ?>
-    <div class="ll-ba-bag-grid__heading wysiwyg">
-      <?= wp_kses_post( $content ) ?>
-    </div>
-  <?php endif; ?>
   <div class="ll-ba-bag-grid__header">
-    <div class="ll-ba-bag-grid__sensitive-bar ll-ba-sensitive-bar ll-ba-hidden">
+    <div class="ll-ba-bag-grid__header-stack">
+      <?php if ( $content ) : ?>
+        <div class="ll-ba-bag-grid__heading wysiwyg">
+          <?= wp_kses_post( $content ) ?>
+        </div>
+      <?php endif; ?>
+      <div class="ll-ba-bag-grid__sensitive-bar ll-ba-sensitive-bar ll-ba-hidden">
       <span class="ll-ba-sensitive-bar__label">Sensitive Images</span>
       <div class="ll-ba-sensitive-bar__options" role="group" aria-label="Sensitive image display mode">
         <button type="button" class="ll-ba-sensitive-btn" data-mode="blur">
@@ -49,6 +50,7 @@ $extra_classes = implode( ' ', array_map( 'sanitize_html_class', apply_filters( 
           <svg class='icon icon-check-mark' aria-hidden='true'><use xlink:href='#icon-check-mark'></use></svg>
           Hide
         </button>
+      </div>
       </div>
     </div>
     <?php if ( $view_all ) : ?>
