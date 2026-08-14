@@ -731,6 +731,10 @@
   opacity: 1;
 }
 
+.ll-ba-mfp.mfp-bg.mfp-ready {
+  opacity: 1;
+}
+
 .ll-ba-mfp .mfp-title {
   padding: 12px 0 0;
   font-size: 14px;
