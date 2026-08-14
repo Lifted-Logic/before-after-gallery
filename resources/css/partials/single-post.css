@@ -415,6 +415,14 @@
     width: 100%;
   }
 
+  /* FRA-118: a narrower-than-slide image (portrait, uncropped) is a block element in a
+     full-width wrapper, so it sat flush left with all the slack on the right. */
+  .ll-ba-single__slide-image img,
+  .ll-ba-single__video img {
+    display: block;
+    margin-inline: auto;
+  }
+
   /* Side-by-side (two-images, no comparison)
      ========================================================================== */
 
@@ -677,10 +685,49 @@
   }
 }
 
+.ll-ba-mfp .mfp-arrow.ll-ba-mfp-arrow {
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 9999px;
+  background-color: var(--cards-background, white);
+  opacity: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 300ms ease-in-out;
+}
+
+.ll-ba-mfp .mfp-arrow.ll-ba-mfp-arrow:before,
+.ll-ba-mfp .mfp-arrow.ll-ba-mfp-arrow:after {
+  display: none;
+}
+
+.ll-ba-mfp .ll-ba-mfp-arrow--left {
+  left: 24px;
+}
+
+.ll-ba-mfp .ll-ba-mfp-arrow--right {
+  right: 24px;
+}
+
+.ll-ba-mfp .ll-ba-mfp-arrow--left .ll-ba-mfp-arrow-icon {
+  transform: rotate(180deg);
+}
+
+.ll-ba-mfp .ll-ba-mfp-arrow-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
 .ll-ba-mfp.mfp-bg {
   background-color: rgb(0 0 0 / 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   opacity: 1;
 }
 

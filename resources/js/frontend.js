@@ -166,7 +166,13 @@ document.addEventListener( 'DOMContentLoaded', () => {
       $.magnificPopup.open( {
         items,
         type: 'image',
-        gallery: { enabled: items.length > 1, navigateByImgClick: false },
+        gallery: {
+          enabled: items.length > 1,
+          navigateByImgClick: false,
+          arrowMarkup: '<button title="%title%" type="button" class="mfp-arrow mfp-arrow-%dir% ll-ba-mfp-arrow ll-ba-mfp-arrow--%dir% mfp-prevent-close">' +
+            '<svg class="ll-ba-mfp-arrow-icon icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>' +
+            '</button>',
+        },
         mainClass: 'll-ba-mfp',
         closeBtnInside: true,
         image: { titleSrc: 'title' },
