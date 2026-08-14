@@ -18,8 +18,14 @@ class AjaxHandler {
     add_action('wp_ajax_'        . self::RELATED_ACTION, [$this, 'handleRelated']);
   }
 
+  private function verifyNonce(string $action): void {
+    if (is_user_logged_in()) {
+      check_ajax_referer($action, 'nonce');
+    }
+  }
+
   public function handle(): void {
-    check_ajax_referer(self::ACTION, 'nonce');
+    $this->verifyNonce(self::ACTION);
 
     $submitted = isset($_POST['filters']) && is_array($_POST['filters'])
                  ? $_POST['filters']
@@ -86,7 +92,7 @@ class AjaxHandler {
   }
 
   public function handleRelated(): void {
-    check_ajax_referer(self::RELATED_ACTION, 'nonce');
+    $this->verifyNonce(self::RELATED_ACTION);
 
     $excludeId = isset($_POST['exclude_id']) ? (int) $_POST['exclude_id'] : 0;
     $postDate  = $excludeId ? get_post_field('post_date', $excludeId) : '';
