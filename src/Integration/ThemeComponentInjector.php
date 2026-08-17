@@ -388,11 +388,14 @@ class ThemeComponentInjector {
     $new_data['columns']       = in_array( $columns, [ 2, 3, 4 ], true ) ? $columns : 3;
     $new_data['hide_provider'] = !empty( $data['ll_ba_grid_hide_provider'] );
 
-    // A link with neither a label nor a URL means "no button".
     $link = $data['ll_ba_grid_view_all_link'] ?? null;
     $new_data['view_all'] = null;
 
-    if ( is_array( $link ) && ( !empty( $link['url'] ) || !empty( $link['title'] ) ) ) {
+    $show = !empty( $data['ll_ba_grid_view_all'] )
+         || ( is_array( $link ) && ( !empty( $link['url'] ) || !empty( $link['title'] ) ) );
+
+    if ( $show ) {
+      if ( ! is_array( $link ) ) $link = [];
       $carry = !empty( $data['ll_ba_grid_view_all_filtered'] )
             && ( $data['ll_ba_grid_selection_method'] ?? 'manual' ) === 'taxonomy';
 
@@ -400,7 +403,7 @@ class ThemeComponentInjector {
         $link['url'] = $this->archiveUrlForFilterTerms( $data['ll_ba_grid_filter_terms'] ?? [] );
       }
 
-      if ( empty( $link['url'] ) ) {
+      if ( empty( $link['url'] ) || $link['url'] === '#' ) {
         $link['url'] = get_post_type_archive_link( 'll_before_after' ) ?: home_url( '/' );
       }
       if ( empty( $link['title'] ) ) {
@@ -548,13 +551,27 @@ class ThemeComponentInjector {
     ];
 
     $sub_fields[] = [
+      'key'           => 'field_ll_ba_bag_grid_view_all',
+      'label'         => 'Show View All Button',
+      'name'          => 'll_ba_grid_view_all',
+      '_name'         => 'll_ba_grid_view_all',
+      'type'          => 'true_false',
+      'ui'            => 1,
+      'default_value' => 0,
+      'instructions'  => 'A "View All" button linking to the archive unless the override below changes it.',
+    ];
+
+    $sub_fields[] = [
       'key'           => 'field_ll_ba_bag_grid_view_all_link',
-      'label'         => 'View All Button',
+      'label'         => 'View All Link',
       'name'          => 'll_ba_grid_view_all_link',
       '_name'         => 'll_ba_grid_view_all_link',
       'type'          => 'link',
       'return_format' => 'array',
-      'instructions'  => 'Leave empty for no button. Leave the URL empty to link to the gallery archive.',
+      'instructions'  => 'Optional. Point the button somewhere else or change its label.',
+      'conditional_logic' => [
+        [ [ 'field' => 'field_ll_ba_bag_grid_view_all', 'operator' => '==', 'value' => '1' ] ],
+      ],
     ];
 
     $sub_fields[] = [

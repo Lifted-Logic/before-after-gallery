@@ -108,6 +108,12 @@
     }
   }
 
+  .ll-ba-card__video-image img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+  }
+
   .ll-ba-card__image.ll-ba-single__ratio--panorama,
   .ll-ba-card__image.ll-ba-single__ratio--wide {
     height: unset;

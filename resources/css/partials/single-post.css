@@ -413,14 +413,14 @@
   .ll-ba-single__slide-image {
     position: relative;
     width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  /* FRA-118: a narrower-than-slide image (portrait, uncropped) is a block element in a
-     full-width wrapper, so it sat flush left with all the slack on the right. */
   .ll-ba-single__slide-image img,
   .ll-ba-single__video img {
     display: block;
-    margin-inline: auto;
   }
 
   /* Side-by-side (two-images, no comparison)
@@ -450,6 +450,12 @@
   .ll-ba-single__video {
     position: relative;
     width: 100%;
+  }
+
+  .ll-ba-single__video img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .ll-ba-single__video-overlay {
