@@ -11,10 +11,7 @@ use LiftedLogic\LLBag\Hooks\Hooks;
 use LiftedLogic\LLBag\BeforeAfterPostType\BeforeAfterPostType;
 use LiftedLogic\LLBag\Support\PostTerms;
 
-$post_treatment_title = get_field('ll_ba_title');
-$global_treatment_title = get_field('ll_ba_global_default_single_page_label', 'options');
-$treatment_title = $post_treatment_title ?: ( $global_treatment_title ?: 'Treatments Used:' );
-// FRA-115: primary term's CTA, else first assigned term's, else the global pair.
+$single_page_label = bag_single_page_label( get_the_ID() );
 $cta = bag_resolve_cta( get_the_ID() );
 
 $card_terms  = PostTerms::forCard( get_the_ID() );
@@ -103,9 +100,11 @@ if ( !empty($images_field) ) {
             </div>
     
             <div class="ll-ba-single__header">
-                <h4 class="ll-ba-single__title ba_hdg-medium">
-                    <?= esc_html( $treatment_title ) ?>
-                </h4>
+                <?php if ( $single_page_label !== '' ) : ?>
+                    <h4 class="ll-ba-single__title ba_hdg-medium">
+                        <?= esc_html( $single_page_label ) ?>
+                    </h4>
+                <?php endif; ?>
                 <?php if ( !empty( $card_terms['terms'] ) ) : ?>
                     <ul class="ll-ba-single__categories">
                         <?php foreach ( $card_terms['terms'] as $term ) : ?>

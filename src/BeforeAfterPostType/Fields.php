@@ -146,7 +146,7 @@ class Fields {
           'name'          => 'll_ba_provider_link',
           'type'          => 'link',
           'return_format' => 'array',
-          'instructions'  => 'Shows on single treatment pages where this provider has been selected',
+          'instructions'  => 'Shows on single before & after pages where this provider has been selected',
         ],
         [
           'key'           => 'field_ll_ba_provider_image',
@@ -181,11 +181,11 @@ class Fields {
         ],
         [
           'key' => 'field_ll_ba_title',
-          'label' => 'Treatment Label',
+          'label' => 'Single Page Label',
           'name' => 'll_ba_title',
           'type' => 'text',
           'wrapper' => [
-            'data-tooltip' => 'If left blank, this will default to the value entered at Before & Afters > Settings Single Page > Default Single Page Label. If nothing is entered in either field "Treatments Used" will be the default text',
+            'data-tooltip' => 'The heading shown above this post\'s categories. Leave blank to use Before & Afters > Settings > Single Page > Default Single Page Label, or to show no heading if that is empty too',
           ],
         ],
         [

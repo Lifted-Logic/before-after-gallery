@@ -97,7 +97,7 @@ class SettingsPage {
         'name' => 'll_ba_global_default_single_page_label',
         'type' => 'text',
         'wrapper' => [
-          'data-tooltip' => 'If left empty the label will default to "Treatments Used"',
+          'data-tooltip' => 'The heading shown above each post\'s categories, for posts that do not set their own Single Page Label. Leave empty to show no heading',
         ],
       ],
       [

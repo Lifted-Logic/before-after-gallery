@@ -49,6 +49,19 @@ if ( ! function_exists( 'bag_cta_taxonomy' ) ) {
   }
 }
 
+if ( ! function_exists( 'bag_single_page_label' ) ) {
+  function bag_single_page_label( ?int $post_id = null ): string {
+    $post_id = $post_id ?: (int) get_the_ID();
+
+    $label = trim( (string) get_field( 'll_ba_title', $post_id ) );
+    if ( $label !== '' ) {
+      return $label;
+    }
+
+    return trim( (string) get_field( 'll_ba_global_default_single_page_label', 'options' ) );
+  }
+}
+
 if ( ! function_exists( 'bag_primary_term_id' ) ) {
   /**
    * The "primary category" the ticket asks for already exists on the site — Yoast adds primary-term selection to every hierarchical public taxonomy, and TaxonomyRegistrar registers all of ours that way.

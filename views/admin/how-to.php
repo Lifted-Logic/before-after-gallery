@@ -138,8 +138,8 @@ defined('ABSPATH') || exit;
 
         <h3><?php esc_html_e('Details Tab', 'll-bag'); ?></h3>
         <dl class="ll-bag-how-to__def-list">
-          <dt><?php esc_html_e('Treatment Label', 'll-bag'); ?></dt>
-          <dd><?php esc_html_e('An optional heading that appears on the single post page above the detail content. If left blank it falls back to the default label set in Settings, or "Treatments Used" if nothing is set there.', 'll-bag'); ?></dd>
+          <dt><?php esc_html_e('Single Page Label', 'll-bag'); ?></dt>
+          <dd><?php esc_html_e('An optional heading that appears on the single post page above the detail content. If left blank it falls back to the default label set in Settings; if that is empty too, no heading is shown.', 'll-bag'); ?></dd>
 
           <dt><?php esc_html_e('Detail Sections', 'll-bag'); ?></dt>
           <dd><?php esc_html_e('Add one or more blocks of information about this case — things like the treatment performed, timeframe, or provider notes. Each section has a Title, a main Content area, and an optional Read More area that opens in a popup for longer content. If you add more than one section, they\'ll automatically display as tabs on the post page. You can add up to three sections.', 'll-bag'); ?></dd>
@@ -191,7 +191,7 @@ defined('ABSPATH') || exit;
         <p><?php esc_html_e('A few things that appear on every single post page are controlled globally rather than per-post. You\'ll find them under Before & Afters → Settings, on the Single Page tab.', 'll-bag'); ?></p>
         <dl class="ll-bag-how-to__def-list">
           <dt><?php esc_html_e('Default Single Page Label', 'll-bag'); ?></dt>
-          <dd><?php esc_html_e('The heading that appears above the treatment details on every post. Individual posts can override this with their own Treatment Label — but if they don\'t, this is what shows. Leave it blank and it will fall back to "Treatments Used".', 'll-bag'); ?></dd>
+          <dd><?php esc_html_e('The heading that appears above the detail content on every post. Individual posts can override this with their own Single Page Label — but if they don\'t, this is what shows. Leave it blank and no heading is shown.', 'll-bag'); ?></dd>
 
           <dt><?php esc_html_e('CTA Title & CTA Link', 'll-bag'); ?></dt>
           <dd><?php esc_html_e('A call-to-action button that appears on every single post page — typically something like "Book a Consultation" linking to a contact page. Fill in both the title and the link to show the CTA. Leave either field blank and the CTA won\'t appear at all.', 'll-bag'); ?></dd>

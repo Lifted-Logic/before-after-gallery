@@ -18,7 +18,7 @@ use LiftedLogic\LLBag\Support\PostTerms;
 $postID = $post->ID;
 $hide_provider = $hide_provider ?? false;
 $permalink = get_permalink($postID);
-$post_treatment_title = get_field('ll_ba_title', $postID) ?? '';
+$post_label = get_field('ll_ba_title', $postID) ?? '';
 
 // Resolve card images from the first row of the ACF images repeater
 $firstRow = (get_field('ll_ba_images', $postID) ?: [])[0] ?? [];
@@ -217,9 +217,9 @@ $provider_link   = $provider_term ? get_field( 'll_ba_provider_link',  'term_' .
     <div class="ll-ba-slider-card__hover-overlay"></div>
 
     <div class="ll-ba-slider-card__pills ll-ba-slider-card__pills--hover">
-      <?php if( $post_treatment_title ) : ?>
+      <?php if( $post_label ) : ?>
         <p class="ll-ba-slider-card__treatment-title">
-          <?= $post_treatment_title ?>
+          <?= esc_html( $post_label ) ?>
         </p>
       <?php endif; ?>
       <div class="ll-ba-slider-card__pill-group">
