@@ -699,8 +699,8 @@
   top: 50%;
   transform: translateY(-50%);
   border-radius: 9999px;
-  background-color: var(--arrow-button-fill, var(--video-ui-fill, #fff));
-  color: var(--arrow-button-elements, var(--video-ui-element, #1d2729));
+  background-color: var(--arrow-buttons-fill, var(--video-ui-fill, #fff));
+  color: var(--arrow-buttons-elements, var(--video-ui-element, #1d2729));
   opacity: 1;
   display: flex;
   align-items: center;
@@ -710,8 +710,8 @@
 
 .ll-ba-mfp .mfp-arrow.ll-ba-mfp-arrow:hover,
 .ll-ba-mfp .mfp-arrow.ll-ba-mfp-arrow:focus-visible {
-  background-color: var(--arrow-button-fill-hover, var(--video-ui-fill-hover, #fff));
-  color: var(--arrow-button-elements-hover, var(--video-ui-element-hover, #1d2729));
+  background-color: var(--arrow-buttons-fill-hover, var(--video-ui-fill-hover, #fff));
+  color: var(--arrow-buttons-elements-hover, var(--video-ui-element-hover, #1d2729));
 }
 
 .ll-ba-mfp .mfp-arrow.ll-ba-mfp-arrow:before,

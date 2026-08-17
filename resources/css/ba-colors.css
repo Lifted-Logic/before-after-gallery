@@ -54,4 +54,6 @@
   --cta-card-heading: var(--hex-codes-white);
   --cta-button-radius: var(--cta-card-radius);
   --cta-button-fill: var(--cards-background);
+  --arrow-buttons-fill: var(--hex-codes-dandelion);
+  --arrow-buttons-elements: var(--hex-codes-gunmetal);
 }
