@@ -56,4 +56,5 @@
   --cta-button-fill: var(--cards-background);
   --arrow-buttons-fill: var(--hex-codes-dandelion);
   --arrow-buttons-elements: var(--hex-codes-gunmetal);
+  --arrow-buttons-stroke: var(--hex-codes-gunmetal);
 }

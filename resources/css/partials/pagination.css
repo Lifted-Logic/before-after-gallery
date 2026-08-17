@@ -13,7 +13,10 @@
 .ll-ba-pagination-button {
   height: 44px;
   width: 44px;
-  background-color: white;
+  box-sizing: border-box;
+  background-color: var(--arrow-buttons-fill, white);
+  border: 1px solid var(--arrow-buttons-stroke, transparent);
+  color: var(--arrow-buttons-elements, black);
   border-radius: 100%;
   display: flex;
   align-items: center;
@@ -25,13 +28,16 @@
     height: 20px;
     width: 20px;
     flex: none;
-    color: black;
+    /* inherit, not a second colour declaration -- the old `color: black` here
+       outranked the parent's hover colour, so the glyph never changed state. */
+    color: inherit;
     transition: all .3s;
   }
 
   &:hover {
-    background-color: black;
-    color: white;
+    background-color: var(--arrow-buttons-fill-hover, black);
+    border-color: var(--arrow-buttons-stroke-hover, var(--arrow-buttons-stroke, transparent));
+    color: var(--arrow-buttons-elements-hover, white);
   }
 }
 
