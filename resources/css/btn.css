@@ -1,7 +1,8 @@
 .ba_btn-primary {
-  color: black;
-  background-color: var(--cta-button-fill, var(--cards-background, black));
-  border: 1px solid var(--cta-button-fill, var(--cards-background, black));
+  --_ba-btn-fill: var(--cta-button-fill, var(--cards-background, black));
+  color: var(--cta-button-text, black);
+  background-color: var(--_ba-btn-fill);
+  border: 1px solid var(--cta-button-stroke, var(--_ba-btn-fill));
   padding: 0.75em 1.5em;
   font-size: 1rem;
   cursor: pointer;
@@ -9,18 +10,20 @@
   align-items: center;
   gap: 0.5em;
   border-radius: var(--cta-button-radius, var(--cta-card-radius));
-  transition: all .3s;
+  transition: color .3s, background-color .3s, border-color .3s;
   width: fit-content;
 }
 
-.ba_btn-primary:hover {
-  color: black;
-  background-color: white;
+.ba_btn-primary:hover,
+.ba_btn-primary:focus-visible {
+  color: var(--cta-button-text-hover, var(--cta-button-text, black));
+  background-color: var(--cta-button-fill-hover, white);
+  border-color: var(--cta-button-stroke-hover, var(--cta-button-fill-hover, white));
 }
 
 .ba_btn-secondary {
   color: var(--general-heading);
-  font-size: 16px; 
+  font-size: 16px;
   font-style: normal;
   font-weight: 500;
   line-height: 150%;
@@ -34,6 +37,7 @@
     color: var(--general-heading);
     flex: none;
   }
+
   svg:last-of-type {
     height: 12px;
     width: 12px;
@@ -42,21 +46,25 @@
     margin-left: 8px;
     flex: none;
   }
+
   &:hover {
     svg:first-of-type {
       width: 12px;
       margin-right: 8px;
     }
+
     svg:last-of-type {
       width: 0;
       margin-left: 0;
     }
   }
+
   .theme-one &,
   .theme-two &,
   .theme-three &,
   .theme-four & {
     color: var(--secondary-button-default);
+
     svg {
       color: var(--secondary-button-default);
     }
@@ -65,12 +73,13 @@
 
 .ba_btn-secondary--back {
   color: var(--general-heading);
-  font-size: 16px; 
+  font-size: 16px;
   font-style: normal;
   font-weight: 500;
   line-height: 150%;
   display: flex;
   align-items: center;
+
   svg:last-of-type {
     width: 0;
     height: 12px;
@@ -79,6 +88,7 @@
     margin-left: 8px;
     flex: none;
   }
+
   svg:first-of-type {
     height: 12px;
     width: 12px;
@@ -87,21 +97,25 @@
     margin-right: 8px;
     flex: none;
   }
+
   &:hover {
     svg:last-of-type {
       width: 12px;
       margin-left: 8px;
     }
+
     svg:first-of-type {
       width: 0;
       margin-right: 0;
     }
   }
+
   .theme-one &,
   .theme-two &,
   .theme-three &,
   .theme-four & {
     color: var(--secondary-button-default);
+
     svg {
       color: var(--secondary-button-default);
     }

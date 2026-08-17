@@ -699,12 +699,19 @@
   top: 50%;
   transform: translateY(-50%);
   border-radius: 9999px;
-  background-color: var(--cards-background, white);
+  background-color: var(--arrow-button-fill, var(--video-ui-fill, #fff));
+  color: var(--arrow-button-elements, var(--video-ui-element, #1d2729));
   opacity: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 300ms ease-in-out;
+  transition: background-color 300ms ease-in-out, color 300ms ease-in-out;
+}
+
+.ll-ba-mfp .mfp-arrow.ll-ba-mfp-arrow:hover,
+.ll-ba-mfp .mfp-arrow.ll-ba-mfp-arrow:focus-visible {
+  background-color: var(--arrow-button-fill-hover, var(--video-ui-fill-hover, #fff));
+  color: var(--arrow-button-elements-hover, var(--video-ui-element-hover, #1d2729));
 }
 
 .ll-ba-mfp .mfp-arrow.ll-ba-mfp-arrow:before,
@@ -718,6 +725,16 @@
 
 .ll-ba-mfp .ll-ba-mfp-arrow--right {
   right: 24px;
+}
+
+@media screen and (min-width: 1024px) {
+  .ll-ba-mfp .ll-ba-mfp-arrow--left {
+    left: max(24px, calc(50% - 620px));
+  }
+
+  .ll-ba-mfp .ll-ba-mfp-arrow--right {
+    right: max(24px, calc(50% - 620px));
+  }
 }
 
 .ll-ba-mfp .ll-ba-mfp-arrow--left .ll-ba-mfp-arrow-icon {

@@ -68,10 +68,26 @@
   align-self: center;
 }
 
+.ll-ba-nsfw-modal__btn.ba_btn-primary {
+  --_ba-popup-btn-fill: var(--popup-button-fill, var(--cta-button-fill, var(--cards-background, black)));
+  color: var(--popup-button-text, var(--cta-button-text, black));
+  background-color: var(--_ba-popup-btn-fill);
+  border-color: var(--popup-button-stroke, var(--_ba-popup-btn-fill));
+  border-radius: var(--popup-button-radius, var(--cta-button-radius, var(--cta-card-radius)));
+}
+
+.ll-ba-nsfw-modal__btn.ba_btn-primary:hover,
+.ll-ba-nsfw-modal__btn.ba_btn-primary:focus-visible {
+  color: var(--popup-button-text-hover, var(--popup-button-text, var(--cta-button-text, black)));
+  background-color: var(--popup-button-fill-hover, var(--cta-button-fill-hover, white));
+  border-color: var(--popup-button-stroke-hover, var(--popup-button-fill-hover, var(--cta-button-fill-hover, white)));
+}
+
 .ll-ba-nsfw-modal__btn--secondary {
   color: var(--popup-heading);
   display: flex;
   align-items: center;
+
   svg:first-of-type {
     width: 0;
     height: 12px;
@@ -80,6 +96,7 @@
     margin-left: 8px;
     flex: none;
   }
+
   svg:last-of-type {
     height: 12px;
     width: 12px;
@@ -88,11 +105,13 @@
     margin-left: 8px;
     flex: none;
   }
+
   &:hover {
     svg:first-of-type {
       width: 12px;
       margin-right: 8px;
     }
+
     svg:last-of-type {
       width: 0;
       margin-left: 0;
