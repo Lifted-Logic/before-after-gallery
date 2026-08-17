@@ -19,6 +19,12 @@
   }
 }
 
+.ll-ba-archive__inner--no-sidebar {
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
 .ll-ba-content {
   min-width: 0;
 }

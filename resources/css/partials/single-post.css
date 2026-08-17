@@ -741,6 +741,17 @@
   opacity: 1;
 }
 
+.ll-ba-mfp img.mfp-img {
+  max-width: min(88vw, 1100px);
+  max-height: min(72vh, 820px) !important;
+  width: auto;
+  margin: 0 auto;
+}
+
+.ll-ba-mfp .mfp-figure figure {
+  margin: 0;
+}
+
 .ll-ba-mfp .mfp-title {
   padding: 12px 0 0;
   font-size: 14px;

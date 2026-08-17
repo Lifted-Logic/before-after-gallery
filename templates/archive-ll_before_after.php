@@ -20,6 +20,11 @@ $filters = (new FilterManager())->getEnabled();
 <div class="ll-ba-archive">
   <?php TemplateLoader::get( 'partials/archive-hero-banner.php' ); ?>
   <?php $archive_inner_classes = implode( ' ', array_map( 'sanitize_html_class', apply_filters( 'lifted_logic/bag/archive_inner_classes', [] ) ) ); ?>
+  <?php
+    if ( $filters->isEmpty() ) {
+      $archive_inner_classes = trim( $archive_inner_classes . ' ll-ba-archive__inner--no-sidebar' );
+    }
+  ?>
   <div class="ll-ba-archive__inner<?= $archive_inner_classes ? ' ' . $archive_inner_classes : '' ?>">
     <!-- Sensitive images bar (shown/hidden by JS based on whether sensitive cards are in the grid) -->
     <div class="ll-ba-sensitive-bar ll-ba-hidden" id="ll-ba-sensitive-bar">
