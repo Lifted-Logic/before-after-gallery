@@ -1,14 +1,14 @@
 .ba_btn-primary {
   color: black;
-  background-color: var(--cards-background, black);
-  border: 1px solid var(--cards-background, black);
+  background-color: var(--cta-button-fill, var(--cards-background, black));
+  border: 1px solid var(--cta-button-fill, var(--cards-background, black));
   padding: 0.75em 1.5em;
   font-size: 1rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 0.5em;
-  border-radius: var(--cta-card-radius);
+  border-radius: var(--cta-button-radius, var(--cta-card-radius));
   transition: all .3s;
   width: fit-content;
 }

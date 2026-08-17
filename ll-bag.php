@@ -3,7 +3,7 @@
  * Plugin Name:  LL Before & After
  * Plugin URI:   https://liftedlogic.com
  * Description:  Before & After post type with Vite HMR.
- * Version:      3.1.5
+ * Version:      3.1.6
  * Author:       Lifted Logic
  * Author URI:   https://liftedlogic.com
  * Text Domain:  ll-bag
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') || exit;
 
-define('LL_BAG_VERSION', '3.1.5');
+define('LL_BAG_VERSION', '3.1.6');
 define('LL_BAG_FILE',    __FILE__);
 define('LL_BAG_PATH',    plugin_dir_path(__FILE__));
 define('LL_BAG_URL',     plugin_dir_url(__FILE__));

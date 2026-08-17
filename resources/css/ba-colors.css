@@ -52,4 +52,6 @@
   --video-ui-element-hover: var(--hex-codes-teal);
   --cta-card-background: var(--hex-codes-evergreen);
   --cta-card-heading: var(--hex-codes-white);
+  --cta-button-radius: var(--cta-card-radius);
+  --cta-button-fill: var(--cards-background);
 }
