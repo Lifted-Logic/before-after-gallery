@@ -6,7 +6,7 @@ use LiftedLogic\LLBag\Filters\FilterManager;
 use LiftedLogic\LLBag\BeforeAfterPostType\BeforeAfterPostType;
 
 class AjaxHandler {
-  public const ACTION         = 'll_bag_filter';
+  public const ACTION         = 'll_before_after_filter';
   public const RELATED_ACTION = 'll_bag_related';
 
   public function __construct(private readonly FilterManager $filterManager) {}
