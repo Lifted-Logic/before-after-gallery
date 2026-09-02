@@ -9,7 +9,7 @@ class FilterManager {
   public const CARD_TAXONOMY_KEY = 'll_bag_card_taxonomy';
 
   private const BUILTINS = [
-    ['id' => '__builtin_category', 'label' => 'Categories', 'meta_key' => 'category',       'builtin' => true, 'display' => 'checkbox', 'enabled' => false, 'searchable' => false],
+    ['id' => '__builtin_category', 'label' => 'Categories', 'meta_key' => 'll_ba_category', 'builtin' => true, 'display' => 'checkbox', 'enabled' => false, 'searchable' => false],
     ['id' => '__builtin_provider', 'label' => 'Providers',  'meta_key' => 'll_ba_provider', 'builtin' => true, 'display' => 'checkbox', 'enabled' => false, 'searchable' => false],
   ];
 
@@ -81,5 +81,38 @@ class FilterManager {
    */
   public function save(array $filters): void {
     update_option(self::OPTION_KEY, $filters);
+  }
+
+  /**
+   * One-time migration: before-after posts used to share WordPress's built-in
+   * `category` taxonomy with blog posts. Sites that already saved Filter Settings
+   * have a saved `__builtin_category` entry with the old `meta_key`, which would
+   * otherwise keep resolving to the shared taxonomy even after the code default
+   * changes to `ll_ba_category`. This only rewrites the taxonomy-slug pointer in
+   * saved settings — it does not touch any post's term assignments.
+   */
+  public function migrateBuiltinCategoryTaxonomy(): void {
+    if (get_option('ll_bag_category_taxonomy_migrated')) {
+      return;
+    }
+
+    $filters = get_option(self::OPTION_KEY, []);
+    foreach ($filters as &$filter) {
+      if (($filter['id'] ?? '') === '__builtin_category' && ($filter['meta_key'] ?? '') === 'category') {
+        $filter['meta_key'] = 'll_ba_category';
+      }
+    }
+    unset($filter);
+    update_option(self::OPTION_KEY, $filters);
+
+    if (get_option(self::CARD_TAXONOMY_KEY) === 'category') {
+      update_option(self::CARD_TAXONOMY_KEY, 'll_ba_category');
+    }
+
+    if (get_option('options_ll_bag_category_taxonomy') === 'category') {
+      update_option('options_ll_bag_category_taxonomy', 'll_ba_category');
+    }
+
+    update_option('ll_bag_category_taxonomy_migrated', 1);
   }
 }

@@ -109,7 +109,7 @@ class Fields {
   }
 
   public function registerFields(): void {
-    $categoryTaxonomy = get_option('options_ll_bag_category_taxonomy') ?: 'category';
+    $categoryTaxonomy = get_option('options_ll_bag_category_taxonomy') ?: 'll_ba_category';
 
     // Category Fields
     acf_add_local_field_group([

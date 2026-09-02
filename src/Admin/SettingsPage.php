@@ -303,7 +303,7 @@ class SettingsPage {
   }
 
   public function registerTermCtaFields(): void {
-    $taxonomy = (string) ( get_option('options_ll_bag_category_taxonomy') ?: 'category' );
+    $taxonomy = (string) ( get_option('options_ll_bag_category_taxonomy') ?: 'll_ba_category' );
     if ($taxonomy === '') return;
 
     acf_add_local_field_group( [

@@ -45,7 +45,7 @@ if ( ! function_exists( 'bag_cta_taxonomy' ) ) {
    * The taxonomy treated as the post's "category".
    */
   function bag_cta_taxonomy(): string {
-    return (string) ( get_option( 'options_ll_bag_category_taxonomy' ) ?: 'category' );
+    return (string) ( get_option( 'options_ll_bag_category_taxonomy' ) ?: 'll_ba_category' );
   }
 }
 

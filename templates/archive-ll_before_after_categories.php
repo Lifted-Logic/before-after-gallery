@@ -11,7 +11,7 @@ defined('ABSPATH') || exit;
 use LiftedLogic\LLBag\Admin\SettingsPage;
 use LiftedLogic\LLBag\Frontend\TemplateLoader;
 
-$categoryTaxonomy = SettingsPage::getCategoryTaxonomy() ?: 'category';
+$categoryTaxonomy = SettingsPage::getCategoryTaxonomy() ?: 'll_ba_category';
 
 $categories = get_terms( [
     'taxonomy'   => $categoryTaxonomy,

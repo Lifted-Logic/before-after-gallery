@@ -54,6 +54,8 @@ class Plugin {
   }
 
   public function boot(): void {
+    $this->container->make(FilterManager::class)->migrateBuiltinCategoryTaxonomy();
+
     $this->container->make(Hooks::class)->register();
     $this->container->make(BeforeAfterPostType::class)->register();
     $this->container->make(TaxonomyRegistrar::class)->register();
