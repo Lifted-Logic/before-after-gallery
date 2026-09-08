@@ -3,10 +3,12 @@
 # symbol-defs.svg and vendor/magnific-popup are read at runtime, not bundled
 # by Vite. Trimming resources/css out of a zip is what broke staging once.
 .git
+.github
 .gitignore
 .vscode
 .nvmrc
 .distignore
+.DS_Store
 CLAUDE.md
 README.md
 node_modules
