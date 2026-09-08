@@ -18,7 +18,15 @@ jobs:
 
       - id: version
         run: |
+          HEADER=$(grep -oP "^\s*\*\s*Version:\s*\K[0-9.]+" ll-bag.php)
           VERSION=$(grep -oP "define\('LL_BAG_VERSION',\s*'\K[0-9.]+" ll-bag.php)
+          PKG=$(node -p "require('./package.json').version")
+
+          if [ "$HEADER" != "$VERSION" ] || [ "$VERSION" != "$PKG" ]; then
+            echo "::error::Version drift — header ${HEADER}, LL_BAG_VERSION ${VERSION}, package.json ${PKG}"
+            exit 1
+          fi
+
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
           if git ls-remote --exit-code --tags origin "refs/tags/v${VERSION}" >/dev/null 2>&1; then
