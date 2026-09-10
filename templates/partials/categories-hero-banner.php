@@ -15,6 +15,7 @@ $hero         = get_field( 'll_ba_category_archive_hero', 'option' ) ?: [];
 $hero_content = $hero['content'] ?? '';
 $hero_link    = $hero['link']    ?? [];
 $hero_image   = $hero['image']   ?? null;
+$hero_focus   = $hero['image_focus_point'] ?? 'object-center';
 ?>
 
 <div class="ll-ba-hero-banner">
@@ -22,7 +23,7 @@ $hero_image   = $hero['image']   ?? null;
     <?php bag_include_partial( 'fit-image', [
       'image_id'       => $hero_image,
       'thumbnail_size' => 'large',
-      'position'       => '',
+      'position'       => $hero_focus,
       'fit'            => 'object-cover',
       'loading'        => '',
     ] ); ?>

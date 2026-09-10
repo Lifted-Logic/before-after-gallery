@@ -14,6 +14,7 @@ $hero         = $page_id ? ( get_field( 'll_ba_hero_banner', $page_id ) ?: [] ) 
 $hero_content = $hero['content'] ?? '';
 $hero_link    = $hero['link']    ?? [];
 $hero_image   = $hero['image']   ?? null;
+$hero_focus   = $hero['image_focus_point'] ?? 'object-center';
 ?>
 <?php if( $hero_content ) : ?>
   <div class="ll-ba-hero-banner">
@@ -21,7 +22,7 @@ $hero_image   = $hero['image']   ?? null;
       <?php bag_include_partial( 'fit-image', [
         'image_id'       => $hero_image,
         'thumbnail_size' => 'large',
-        'position'       => '',
+        'position'       => $hero_focus,
         'fit'            => 'object-cover',
         'loading'        => '',
       ] ); ?>
