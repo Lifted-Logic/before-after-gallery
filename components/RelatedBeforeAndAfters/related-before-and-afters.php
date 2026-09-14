@@ -13,6 +13,7 @@
 defined('ABSPATH') || exit;
 
 use LiftedLogic\LLBag\Frontend\TemplateLoader;
+use LiftedLogic\LLBag\Hooks\Hooks;
 
 $content = $component_data['content'] ?? '';
 $link    = $component_data['link']    ?? [];
@@ -26,17 +27,10 @@ $hide_provider = !empty( $component_data['hide_provider'] );
     <div class="ll-ba-related-bna__heading-content">
       <?php if ( $content ) : ?>
         <div class="wysiwyg">
-          <?= wp_kses_post( $content ) ?>
+          <?= Hooks::bag_sanitize_wysiwyg( $content ) ?>
         </div>
       <?php endif; ?>
-      <?php if ( $link ) : ?>
-        <a class="btn-primary" href="<?= esc_url( $link['url'] ?? '' ); ?>" <?= !empty( $link['target'] ) ? 'target="' . esc_attr( $link['target'] ) . '"' : '' ?>>
-          <?= esc_html( $link['title'] ?? '' ); ?>
-          <?php if($link['target'] === '_blank') : ?>
-            <span class="sr-only"> (opens in new tab)</span>
-          <?php endif; ?>
-        </a>
-      <?php endif; ?>
+      <?= Hooks::bag_related_bna_link_markup( $link ) ?>
     </div>
     <?php if( !empty($posts) ) : ?>    
       <div class="ll-ba-related-bna__card-grid">

@@ -13,6 +13,7 @@
 defined('ABSPATH') || exit;
 
 use LiftedLogic\LLBag\Frontend\TemplateLoader;
+use LiftedLogic\LLBag\Hooks\Hooks;
 
 $posts         = $component_data['posts'] ?? [];
 $content       = $component_data['content'] ?? '';
@@ -32,7 +33,7 @@ $extra_classes = implode( ' ', array_map( 'sanitize_html_class', apply_filters( 
     <div class="ll-ba-bag-grid__header-stack">
       <?php if ( $content ) : ?>
         <div class="ll-ba-bag-grid__heading wysiwyg">
-          <?= wp_kses_post( $content ) ?>
+          <?= Hooks::bag_sanitize_wysiwyg( $content ) ?>
         </div>
       <?php endif; ?>
       <div class="ll-ba-bag-grid__sensitive-bar ll-ba-sensitive-bar ll-ba-hidden">
@@ -53,16 +54,7 @@ $extra_classes = implode( ' ', array_map( 'sanitize_html_class', apply_filters( 
       </div>
       </div>
     </div>
-    <?php if ( $view_all ) : ?>
-      <a class="ll-ba-bag-grid__all-link ba_btn-secondary" href="<?= esc_url( $view_all['url'] ) ?>" <?= !empty( $view_all['target'] ) ? 'target="' . esc_attr( $view_all['target'] ) . '"' : '' ?>>
-        <svg class='icon icon-arrow-right' aria-hidden='true'><use xlink:href='#icon-arrow-right'></use></svg>
-        <?= esc_html( $view_all['title'] ) ?>
-        <svg class='icon icon-arrow-right' aria-hidden='true'><use xlink:href='#icon-arrow-right'></use></svg>
-        <?php if ( ( $view_all['target'] ?? '' ) === '_blank' ) : ?>
-          <span class="sr-only"> (opens in new tab)</span>
-        <?php endif; ?>
-      </a>
-    <?php endif; ?>
+    <?= Hooks::bag_grid_view_all_link_markup( $view_all ?? [] ) ?>
   </div>
   <div class="ll-ba-bag-grid__card-grid ll-ba-bag-grid__card-grid--cols-<?= $columns ?>">
     <?php foreach ( $posts as $post ) : ?>

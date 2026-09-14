@@ -219,11 +219,15 @@ Returning `''` (the default) calls `get_header()`/`get_footer()` with no argumen
 
 The plugin exposes WordPress filters so themes can override specific pieces of markup without copying full templates. Each hook is a static method on `Hooks` — search the codebase for the method name to find its definition and usage.
 
+Several CTA-style buttons below (`bag_link_card_markup`, `bag_hero_banner_link_markup`, `bag_related_bna_link_markup`, `bag_categories_all_link_markup`, `bag_grid_view_all_link_markup`, `bag_back_button_markup`) are composed from two shared generators, `bag_primary_button_markup()` and `bag_secondary_button_markup()`. Each shared generator fires its own filter (`primary_button_markup` / `secondary_button_markup`) **before** the calling method fires its own named filter — hook the shared filter to restyle every button of that style plugin-wide in one place, or hook a specific method's own filter to change just that one instance. The per-instance filter's `$markup` argument already reflects any shared-filter override; returning a new string from it fully replaces that value.
+
 ---
 
 ### `bag_back_button_markup`
 
 Filter: `lifted_logic/bag/bag_back_button_markup`
+
+Internally composed via **bag_secondary_button_markup()**, overriding `base_class` (to `bag_back-text bag-inline-block`) and `icon` (to `arrow-left`). The `secondary_button_markup` shared filter fires before this one.
 
 Overrides the back-to-gallery link at the top of the single post sidebar. The `$href` defaults to the post type archive URL, falling back to `site_url('/')` if no archive is configured. If a `ba_ref` query param is present **and its path matches the gallery archive page**, it is used instead (preserves filtered archive state — e.g. active filter query args). If `ba_ref` points to some other page on the site (e.g. a B&A card embedded outside the gallery via a plugin component), it is ignored and the plain archive URL is used.
 
@@ -302,9 +306,91 @@ add_filter( 'lifted_logic/bag/related_slider_arrows_markup', function( $markup, 
 
 ---
 
+### `bag_primary_button_markup`
+
+Filter: `lifted_logic/bag/primary_button_markup`
+
+Shared generator for every solid, icon-less CTA button (`ba_btn-primary`). Used internally by `bag_link_card_markup`, `bag_hero_banner_link_markup`, and `bag_related_bna_link_markup`. Hook this filter to restyle every primary button across the plugin at once.
+
+**Default markup:**
+
+```html
+<a class="{class} ba_btn-primary" href="{url}" target="{target}">{text} {sr-only text if target=_blank}</a>
+```
+
+**Parameters passed to the filter:**
+| # | Variable | Type | Description |
+|---|----------|------|-------------|
+| 1 | `$markup` | `string` | Full anchor tag HTML |
+| 2 | `$text` | `string` | Unescaped link text |
+| 3 | `$url` | `string` | Unescaped URL |
+| 4 | `$args` | `array` | `target` (string), `class` (string, appended alongside `ba_btn-primary`), `base_class` (string, replaces `ba_btn-primary` entirely — used internally by callers that need a different base class) |
+
+```php
+add_filter( 'lifted_logic/bag/primary_button_markup', function( $markup, $text, $url, $args ) {
+    $target      = $args['target'] ?? '';
+    $extra_class = $args['class'] ?? '';
+    $base_class  = $args['base_class'] ?? 'ba_btn-primary';
+    $classes     = trim( $extra_class . ( $extra_class && $base_class ? ' ' : '' ) . $base_class );
+    $href        = esc_url( $url );
+    $text_html   = esc_html( $text );
+    $target_attr = $target ? 'target="' . esc_attr( $target ) . '"' : '';
+    $sr_text     = $target === '_blank' ? '<span class="sr-only"> (opens in new tab)</span>' : '';
+
+    return '
+      <a class="' . $classes . '" href="' . $href . '" ' . $target_attr . '>' . $text_html . ' ' . $sr_text . '</a>
+    ';
+}, 10, 4 );
+```
+
+---
+
+### `bag_secondary_button_markup`
+
+Filter: `lifted_logic/bag/secondary_button_markup`
+
+Shared generator for every icon-flanked CTA button (`ba_btn-secondary`). Used internally by `bag_categories_all_link_markup`, `bag_grid_view_all_link_markup`, and `bag_back_button_markup` (which overrides `base_class` and `icon` to render its own left-arrow variant). Hook this filter to restyle every secondary button across the plugin at once.
+
+**Default markup:**
+
+```html
+<a class="{class} ba_btn-secondary" href="{url}" target="{target}"><svg class='icon icon-{icon}' aria-hidden='true'><use xlink:href='#icon-{icon}'></use></svg>{text}<svg class='icon icon-{icon}' aria-hidden='true'><use xlink:href='#icon-{icon}'></use></svg>{sr-only text if target=_blank}</a>
+```
+
+**Parameters passed to the filter:**
+| # | Variable | Type | Description |
+|---|----------|------|-------------|
+| 1 | `$markup` | `string` | Full anchor tag HTML |
+| 2 | `$text` | `string` | Unescaped link text |
+| 3 | `$url` | `string` | Unescaped URL |
+| 4 | `$args` | `array` | `target` (string), `class` (string, appended alongside `ba_btn-secondary`), `base_class` (string, replaces `ba_btn-secondary` entirely), `icon` (string, defaults to `arrow-right`; falsy disables the icon) |
+
+```php
+add_filter( 'lifted_logic/bag/secondary_button_markup', function( $markup, $text, $url, $args ) {
+    $target      = $args['target'] ?? '';
+    $extra_class = $args['class'] ?? '';
+    $base_class  = $args['base_class'] ?? 'ba_btn-secondary';
+    $classes     = trim( $extra_class . ( $extra_class && $base_class ? ' ' : '' ) . $base_class );
+    $icon        = $args['icon'] ?? 'arrow-right';
+    $href        = esc_url( $url );
+    $text_html   = esc_html( $text );
+    $target_attr = $target ? 'target="' . esc_attr( $target ) . '"' : '';
+    $sr_text     = $target === '_blank' ? '<span class="sr-only"> (opens in new tab)</span>' : '';
+    $icon_html   = $icon ? "<svg class='icon icon-{$icon}' aria-hidden='true'><use xlink:href='#icon-{$icon}'></use></svg>" : '';
+
+    return '
+      <a class="' . $classes . '" href="' . $href . '" ' . $target_attr . '>' . $icon_html . $text_html . $icon_html . $sr_text . '</a>
+    ';
+}, 10, 4 );
+```
+
+---
+
 ### `bag_link_card_markup`
 
 Filter: `lifted_logic/bag/link_card_markup`
+
+Internally composed via **bag_primary_button_markup()** — see that entry for available `$args` keys.
 
 Overrides the CTA link card in the single post sidebar. The card only renders when a CTA link is configured on the **B&A Posts → Settings** options page (Global Single Page Options tab) — it is skipped entirely when the link field is empty.
 
@@ -500,6 +586,147 @@ add_filter( 'lifted_logic/bag/slider_card_sensitive_overlay_markup', function( $
 
     return str_replace( $actions, $custom_actions, $markup );
 }, 10, 3 );
+```
+
+---
+
+### `bag_hero_banner_link_markup`
+
+Filter: `lifted_logic/bag/hero_banner_link_markup`
+
+Internally composed via **bag_primary_button_markup()** — see that entry for available `$args` keys.
+
+Overrides the CTA link rendered in the hero banner content row — used by both `partials/archive-hero-banner.php` (posts page hero) and `partials/categories-hero-banner.php` (categories archive hero). Only rendered when the hero's `link` sub-field is populated (ACF returns `''`, not an array, when empty).
+
+**Default markup:**
+
+```html
+<a class="ba_btn-primary" href="{url}">{link title}</a>
+```
+
+**Parameters passed to the filter:**
+| # | Variable | Type | Description |
+|---|----------|------|-------------|
+| 1 | `$markup` | `string` | Full link HTML |
+| 2 | `$link` | `array` | ACF link array — keys: `url`, `title`, `target` |
+
+```php
+add_filter( 'lifted_logic/bag/hero_banner_link_markup', function( $markup, $link ) {
+    $href      = $link['url'] ?? '';
+    $link_text = $link['title'] ?? '';
+    $target    = $link['target'] ? 'target="' . $link['target'] . '"' : '';
+    $sr_text   = $link['target'] === '_blank' ? '<span class="sr-only"> (opens in new tab)</span>' : '';
+
+    return '
+      <a class="ba_btn-primary" href="' . $href . '" ' . $target . '>' . $link_text . ' ' . $sr_text . '</a>
+    ';
+}, 10, 2 );
+```
+
+---
+
+### `bag_categories_all_link_markup`
+
+Filter: `lifted_logic/bag/categories_all_link_markup`
+
+Internally composed via **bag_secondary_button_markup()** — see that entry for available `$args` keys.
+
+Overrides the "View All Before & Afters" link on the categories archive (`archive-ll_before_after_categories.php`). Only rendered when a posts page URL is resolvable.
+
+**Default markup:**
+
+```html
+<a class="ll-ba-archive-categories__all-link ba_btn-secondary" href="{url}">
+  <svg class='icon icon-arrow-right' aria-hidden='true'><use xlink:href='#icon-arrow-right'></use></svg>
+  View All Before &amp; Afters
+  <svg class='icon icon-arrow-right' aria-hidden='true'><use xlink:href='#icon-arrow-right'></use></svg>
+</a>
+```
+
+**Parameters passed to the filter:**
+| # | Variable | Type | Description |
+|---|----------|------|-------------|
+| 1 | `$markup` | `string` | Full link HTML |
+| 2 | `$url` | `string` | B&A posts page URL |
+
+```php
+add_filter( 'lifted_logic/bag/categories_all_link_markup', function( $markup, $url ) {
+    return '
+      <a class="ll-ba-archive-categories__all-link ba_btn-secondary" href="' . $url . '">
+        View All Before &amp; Afters
+      </a>
+    ';
+}, 10, 2 );
+```
+
+---
+
+### `bag_grid_view_all_link_markup`
+
+Filter: `lifted_logic/bag/grid_view_all_link_markup`
+
+Internally composed via **bag_secondary_button_markup()** — see that entry for available `$args` keys.
+
+Overrides the "View All" link on the Before & Afters Grid component. Only rendered when the component's `view_all` link sub-field is populated (ACF returns `''`, not an array, when empty).
+
+**Default markup:**
+
+```html
+<a class="ll-ba-bag-grid__all-link ba_btn-secondary" href="{url}">
+  <svg class='icon icon-arrow-right' aria-hidden='true'><use xlink:href='#icon-arrow-right'></use></svg>
+  {link title}
+  <svg class='icon icon-arrow-right' aria-hidden='true'><use xlink:href='#icon-arrow-right'></use></svg>
+</a>
+```
+
+**Parameters passed to the filter:**
+| # | Variable | Type | Description |
+|---|----------|------|-------------|
+| 1 | `$markup` | `string` | Full link HTML |
+| 2 | `$link` | `array` | ACF link array — keys: `url`, `title`, `target` |
+
+```php
+add_filter( 'lifted_logic/bag/grid_view_all_link_markup', function( $markup, $link ) {
+    $href      = $link['url'] ?? '';
+    $link_text = $link['title'] ?? '';
+
+    return '
+      <a class="ll-ba-bag-grid__all-link ba_btn-secondary" href="' . $href . '">' . $link_text . '</a>
+    ';
+}, 10, 2 );
+```
+
+---
+
+### `bag_related_bna_link_markup`
+
+Filter: `lifted_logic/bag/related_bna_link_markup`
+
+Internally composed via **bag_primary_button_markup()** — see that entry for available `$args` keys.
+
+Overrides the CTA link on the Related Before & Afters component. Only rendered when the component's `link` sub-field is populated (ACF returns `''`, not an array, when empty).
+
+**Default markup:**
+
+```html
+<a class="ba_btn-primary" href="{url}">{link title}</a>
+```
+
+**Parameters passed to the filter:**
+| # | Variable | Type | Description |
+|---|----------|------|-------------|
+| 1 | `$markup` | `string` | Full link HTML |
+| 2 | `$link` | `array` | ACF link array — keys: `url`, `title`, `target` |
+
+```php
+add_filter( 'lifted_logic/bag/related_bna_link_markup', function( $markup, $link ) {
+    $href      = $link['url'] ?? '';
+    $link_text = $link['title'] ?? '';
+
+    return '
+      <a class="ba_btn-primary" href="' . $href . '">' . $link_text . '</a>
+    ';
+}, 10, 2 );
 ```
 
 ---

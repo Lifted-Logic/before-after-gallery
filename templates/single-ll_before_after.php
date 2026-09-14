@@ -163,7 +163,7 @@ if ( !empty($images_field) ) {
                     <div class="ll-ba-single__detail-panels">
                         <?php foreach ( $detail_sections as $section_content ) : ?>
                             <div id="<?= $section_content['tab_id'] ?>" class="ll-ba-single__detail-panel wysiwyg <?= $section_content['is_tab'] ? ' ll-ba-single__detail-panel--tab' : '' ?>">
-                                <?= wp_kses_post( $section_content['content'] ) ?>
+                                <?= Hooks::bag_sanitize_wysiwyg( $section_content['content'] ) ?>
                                 <?php if ( !empty($section_content['read_more_content']) ) : ?>
                                     <div class="ll-ba-single__detail-read-more">
                                         <button class="ll-ba-single__detail-read-more-trigger ba_btn-secondary" data-mfp-src="#<?= $section_content['read_more_id'] ?>">
@@ -173,7 +173,7 @@ if ( !empty($images_field) ) {
                                         </button>
                                         <div class="mfp-hide ll-ba-single__read-more-popup ll-ba-popup-modal" id="<?= $section_content['read_more_id'] ?>">
                                             <div class="wysiwyg">
-                                                <?= wp_kses_post( $section_content['read_more_content'] ) ?>
+                                                <?= Hooks::bag_sanitize_wysiwyg( $section_content['read_more_content'] ) ?>
                                             </div>
                                         </div>
                                     </div>

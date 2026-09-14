@@ -24,7 +24,7 @@ class Hooks {
   public static function bag_back_button_markup(): string {
     $classes    = 'bag_back-text bag-inline-block';
     $label      = function_exists( 'get_field' ) ? get_field( 'll_ba_global_back_label', 'options' ) : '';
-    $text       = esc_html( $label ?: 'Back to Gallery' );
+    $label_raw  = $label ?: 'Back to Gallery';
     $archiveUrl = get_post_type_archive_link('ll_before_after') ?: site_url('/');
     $refUrl     = isset($_GET['ba_ref']) ? wp_validate_redirect(wp_unslash($_GET['ba_ref']), '') : '';
 
@@ -39,10 +39,18 @@ class Hooks {
       }
     }
 
-    $href   = esc_url( $refUrl ?: $archiveUrl );
-    $markup = <<<HTML
-      <a href="$href" class="$classes"><svg class='icon icon-arrow-left' aria-hidden='true'><use xlink:href='#icon-arrow-left'></use></svg>$text<svg class='icon icon-arrow-left' aria-hidden='true'><use xlink:href='#icon-arrow-left'></use></svg></a>
-    HTML;
+    $href_raw = $refUrl ?: $archiveUrl;
+    // $text/$href below are pre-escaped ONLY for this method's own outer filter signature
+    // (unchanged from before this refactor). The generator call further down is passed the
+    // *raw* $label_raw/$href_raw instead — it does its own esc_html()/esc_url() internally,
+    // so passing the already-escaped versions would double-encode entities.
+    $text = esc_html( $label_raw );
+    $href = esc_url( $href_raw );
+
+    $markup = self::bag_secondary_button_markup( $label_raw, $href_raw, [
+      'base_class' => $classes,
+      'icon'       => 'arrow-left',
+    ] );
 
     return apply_filters( 'lifted_logic/bag/bag_back_button_markup', $markup, $classes, $text, $href );
   }
@@ -169,22 +177,146 @@ class Hooks {
     return apply_filters( 'lifted_logic/bag/slider_card_sensitive_overlay_markup', $markup, $message, $actions );
   }
 
-  // CTA Link card
-  public static function bag_link_card_markup( string $title, array $link ): string {
-    if ( empty( $link ) ) return '';
+  // Shared button generators — used internally by the CTA link filters below.
+  // Hook the shared filter to restyle every button of that style plugin-wide in one place;
+  // hook a specific method's own filter (below) only to change a single instance.
 
-    $href       = esc_url( $link['url'] ?? '' );
-    $link_text  = esc_html( $link['title'] ?? '' );
-    $target     = !empty( $link['target'] ) ? 'target="' . esc_attr( $link['target'] ) . '"' : '';
-    $sr_text    = $link['target'] === '_blank' ? '<span class="sr-only"> (opens in new tab)</span>' : '';
-    $markup     = <<<HTML
+  // Shared "primary" CTA button (solid background, no icon).
+  public static function bag_primary_button_markup( string $text, string $url, array $args = [] ): string {
+    $target      = $args['target'] ?? '';
+    $extra_class = $args['class'] ?? '';
+    $base_class  = $args['base_class'] ?? 'ba_btn-primary';
+    $classes     = esc_attr( trim( $extra_class . ( $extra_class && $base_class ? ' ' : '' ) . $base_class ) );
+    $href        = esc_url( $url );
+    $text_html   = esc_html( $text );
+    $target_attr = $target ? 'target="' . esc_attr( $target ) . '"' : '';
+    $sr_text     = $target === '_blank' ? '<span class="sr-only"> (opens in new tab)</span>' : '';
+
+    $markup = <<<HTML
+      <a class="$classes" href="$href" $target_attr>$text_html $sr_text</a>
+    HTML;
+
+    return apply_filters( 'lifted_logic/bag/primary_button_markup', $markup, $text, $url, $args );
+  }
+
+  // Shared "secondary" CTA button (icon-flanked link). Icon/text are concatenated with no
+  // literal whitespace between them: ba_btn-secondary is a flex container (whitespace-only
+  // text nodes aren't rendered as flex items anyway), and this matches bag_back_button_markup's
+  // existing single-line markup, which relies on there being no gap between icon and text.
+  public static function bag_secondary_button_markup( string $text, string $url, array $args = [] ): string {
+    $target      = $args['target'] ?? '';
+    $extra_class = $args['class'] ?? '';
+    $base_class  = $args['base_class'] ?? 'ba_btn-secondary';
+    $classes     = esc_attr( trim( $extra_class . ( $extra_class && $base_class ? ' ' : '' ) . $base_class ) );
+    $icon        = $args['icon'] ?? 'arrow-right';
+    $href        = esc_url( $url );
+    $text_html   = esc_html( $text );
+    $target_attr = $target ? 'target="' . esc_attr( $target ) . '"' : '';
+    $sr_text     = $target === '_blank' ? '<span class="sr-only"> (opens in new tab)</span>' : '';
+    $icon_html   = $icon ? "<svg class='icon icon-$icon' aria-hidden='true'><use xlink:href='#icon-$icon'></use></svg>" : '';
+
+    $markup = <<<HTML
+      <a class="$classes" href="$href" $target_attr>$icon_html$text_html$icon_html$sr_text</a>
+    HTML;
+
+    return apply_filters( 'lifted_logic/bag/secondary_button_markup', $markup, $text, $url, $args );
+  }
+
+  // CTA Link card
+  public static function bag_link_card_markup( string $title, $link ): string {
+    // ACF's link field returns '' (not an array) when empty.
+    if ( empty( $link ) || !is_array( $link ) ) return '';
+
+    $button = self::bag_primary_button_markup( $link['title'] ?? '', $link['url'] ?? '', [
+      'target' => $link['target'] ?? '',
+      'class'  => 'll-ba-single__cta-button',
+    ] );
+
+    $markup = <<<HTML
       <div class="ll-ba-single__cta-card">
         <p class="ll-ba-single__cta-title ba_hdg-small">$title</p>
-        <a class="ll-ba-single__cta-button ba_btn-primary" href="$href" $target>$link_text $sr_text</a>
+        $button
       </div>
     HTML;
 
     return apply_filters( 'lifted_logic/bag/link_card_markup', $markup, $title, $link );
+  }
+
+  // Hero banner CTA (used by both the archive and category/taxonomy archive hero banners)
+  public static function bag_hero_banner_link_markup( $link ): string {
+    // ACF's link field returns '' (not an array) when empty.
+    if ( empty( $link ) || !is_array( $link ) ) return '';
+
+    $markup = self::bag_primary_button_markup( $link['title'] ?? '', $link['url'] ?? '', [
+      'target' => $link['target'] ?? '',
+    ] );
+
+    return apply_filters( 'lifted_logic/bag/hero_banner_link_markup', $markup, $link );
+  }
+
+  // "View All Before & Afters" link on the categories archive
+  public static function bag_categories_all_link_markup( string $url ): string {
+    if ( empty( $url ) ) return '';
+
+    $markup = self::bag_secondary_button_markup( 'View All Before & Afters', $url, [
+      'class' => 'll-ba-archive-categories__all-link',
+    ] );
+
+    return apply_filters( 'lifted_logic/bag/categories_all_link_markup', $markup, $url );
+  }
+
+  // "View All" link on the Before & Afters Grid component
+  public static function bag_grid_view_all_link_markup( $link ): string {
+    // ACF's link field returns '' (not an array) when empty.
+    if ( empty( $link ) || !is_array( $link ) ) return '';
+
+    $markup = self::bag_secondary_button_markup( $link['title'] ?? '', $link['url'] ?? '', [
+      'target' => $link['target'] ?? '',
+      'class'  => 'll-ba-bag-grid__all-link',
+    ] );
+
+    return apply_filters( 'lifted_logic/bag/grid_view_all_link_markup', $markup, $link );
+  }
+
+  // CTA on the Related Before & Afters component
+  public static function bag_related_bna_link_markup( $link ): string {
+    // ACF's link field returns '' (not an array) when empty.
+    if ( empty( $link ) || !is_array( $link ) ) return '';
+
+    $markup = self::bag_primary_button_markup( $link['title'] ?? '', $link['url'] ?? '', [
+      'target' => $link['target'] ?? '',
+    ] );
+
+    return apply_filters( 'lifted_logic/bag/related_bna_link_markup', $markup, $link );
+  }
+
+  /**
+   * Sanitize wysiwyg content for output the same way wp_kses_post() would,
+   * but additionally allowing the inline SVG icon markup (<svg>/<use>/<path>)
+   * that add_button_markup-style theme filters inject into acf_the_content.
+   * Scoped to this helper only — does not touch the global 'post' kses context.
+   */
+  public static function bag_sanitize_wysiwyg( string $content ): string {
+    $allowed = wp_kses_allowed_html( 'post' );
+
+    $allowed['svg'] = [
+      'xmlns'       => true,
+      'fill'        => true,
+      'viewbox'     => true,
+      'role'        => true,
+      'aria-hidden' => true,
+      'focusable'   => true,
+      'class'       => true,
+    ];
+    $allowed['path'] = [
+      'd'    => true,
+      'fill' => true,
+    ];
+    $allowed['use'] = [
+      'xlink:href' => true,
+    ];
+
+    return wp_kses( $content, $allowed );
   }
 
 }

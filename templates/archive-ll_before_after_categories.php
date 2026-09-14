@@ -10,6 +10,7 @@ defined('ABSPATH') || exit;
 
 use LiftedLogic\LLBag\Admin\SettingsPage;
 use LiftedLogic\LLBag\Frontend\TemplateLoader;
+use LiftedLogic\LLBag\Hooks\Hooks;
 
 $categoryTaxonomy = SettingsPage::getCategoryTaxonomy() ?: 'll_ba_category';
 
@@ -36,13 +37,7 @@ $allPostsUrl = SettingsPage::getPostsPageUrl();
 
         <div class="ll-ba-archive-categories__header">
           <p class="ll-ba-archive-categories__subtitle"><?= esc_html( $subtitle ) ?></p>
-          <?php if ( $allPostsUrl ) : ?>
-            <a class="ll-ba-archive-categories__all-link ba_btn-secondary" href="<?= esc_url( $allPostsUrl ) ?>">
-              <svg class='icon icon-arrow-right' aria-hidden='true'><use xlink:href='#icon-arrow-right'></use></svg>
-              View All Before &amp; Afters
-              <svg class='icon icon-arrow-right' aria-hidden='true'><use xlink:href='#icon-arrow-right'></use></svg>
-            </a>
-          <?php endif; ?>
+          <?= Hooks::bag_categories_all_link_markup( $allPostsUrl ) ?>
         </div>
 
         <?php if ( !empty( $categories ) ) : ?>

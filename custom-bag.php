@@ -152,3 +152,51 @@ add_filter( 'lifted_logic/bag/slider_card_sensitive_overlay_markup', function ( 
 		</div>
 	";
 }, 10, 3 );
+
+
+// Shared "primary" CTA button — used internally by link_card_markup, hero_banner_link_markup,
+// and related_bna_link_markup. Hook this ONE filter to restyle every primary button plugin-wide;
+// hook one of those individual filters instead only when you need to change a single instance.
+add_filter( 'lifted_logic/bag/primary_button_markup', function ( $markup, $text, $url, $args ) {
+	$target      = $args['target'] ?? '';
+	$extra_class = $args['class'] ?? '';
+	$base_class  = $args['base_class'] ?? 'ba_btn-primary';
+	$classes     = trim( $extra_class . ( $extra_class && $base_class ? ' ' : '' ) . $base_class );
+	$href        = esc_url( $url );
+	$text_html   = esc_html( $text );
+	$target_attr = $target ? 'target="' . esc_attr( $target ) . '"' : '';
+	$sr_text     = $target === '_blank' ? '<span class="sr-only"> (opens in new tab)</span>' : '';
+
+	return "
+		<a class=\"{$classes}\" href=\"{$href}\" {$target_attr}>{$text_html} {$sr_text}</a>
+	";
+}, 10, 4 );
+
+
+// Shared "secondary" CTA button (icon-flanked link) — used internally by categories_all_link_markup,
+// grid_view_all_link_markup, and bag_back_button_markup (via base_class + icon overrides).
+// Hook this ONE filter to restyle every secondary button plugin-wide.
+add_filter( 'lifted_logic/bag/secondary_button_markup', function ( $markup, $text, $url, $args ) {
+	$target      = $args['target'] ?? '';
+	$extra_class = $args['class'] ?? '';
+	$base_class  = $args['base_class'] ?? 'ba_btn-secondary';
+	$classes     = trim( $extra_class . ( $extra_class && $base_class ? ' ' : '' ) . $base_class );
+	$icon        = $args['icon'] ?? 'arrow-right';
+	$href        = esc_url( $url );
+	$text_html   = esc_html( $text );
+	$target_attr = $target ? 'target="' . esc_attr( $target ) . '"' : '';
+	$sr_text     = $target === '_blank' ? '<span class="sr-only"> (opens in new tab)</span>' : '';
+	$icon_html   = $icon ? "<svg class='icon icon-{$icon}' aria-hidden='true'><use xlink:href='#icon-{$icon}'></use></svg>" : '';
+
+	return "
+		<a class=\"{$classes}\" href=\"{$href}\" {$target_attr}>{$icon_html}{$text_html}{$icon_html}{$sr_text}</a>
+	";
+}, 10, 4 );
+
+
+// hero_banner_link_markup, categories_all_link_markup, grid_view_all_link_markup, and
+// related_bna_link_markup are also still available for one-off, per-instance overrides
+// (e.g. to change just the Grid's "View All" link without touching every other secondary
+// button). Each just wraps bag_primary_button_markup()/bag_secondary_button_markup() with
+// its own class/args — hook the shared filters above instead if you want to restyle every
+// button of one style at once. See README.md → Hooks for each filter's signature and default markup.

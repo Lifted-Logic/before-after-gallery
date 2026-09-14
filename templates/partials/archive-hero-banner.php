@@ -2,12 +2,13 @@
 /**
  * Partial: Before & After archive hero banner
  *
- * Override: place this file at {theme}/ll-before-after/partials/before-after-hero-banner.php
+ * Override: place this file at {theme}/ll-before-after/partials/archive-hero-banner.php
  */
 
 defined('ABSPATH') || exit;
 
 use LiftedLogic\LLBag\Admin\SettingsPage;
+use LiftedLogic\LLBag\Hooks\Hooks;
 
 $page_id      = (int) get_field( SettingsPage::FIELD_POSTS_PAGE, 'option' );
 $hero         = $page_id ? ( get_field( 'll_ba_hero_banner', $page_id ) ?: [] ) : [];
@@ -32,17 +33,12 @@ $hero_focus   = $hero['image_focus_point'] ?? 'object-center';
       <div class="ll-ba-hero-banner__row js-fade-group">
         <div class="ll-ba-hero-banner__content">
           <div class="wysiwyg">
-            <?= wp_kses_post( $hero_content ) ?>
+            <?= Hooks::bag_sanitize_wysiwyg( $hero_content ) ?>
           </div>
         </div>
         <?php if ( $hero_link ) : ?>
           <div class="ll-ba-hero-banner__link-wrap theme-four">
-            <a class="btn-primary" href="<?= esc_url( $hero_link['url'] ); ?>" <?= $hero_link['target'] ? 'target="' . esc_attr( $hero_link['target'] ) . '"' : '' ?>>
-              <?= esc_html( $hero_link['title'] ); ?>
-              <?php if ( $hero_link['target'] === '_blank' ) : ?>
-                <span class="sr-only"> (opens in new tab)</span>
-              <?php endif; ?>
-            </a>
+            <?= Hooks::bag_hero_banner_link_markup( $hero_link ) ?>
           </div>
         <?php endif; ?>
       </div>

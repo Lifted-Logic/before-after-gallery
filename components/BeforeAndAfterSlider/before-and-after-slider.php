@@ -13,6 +13,7 @@
 defined('ABSPATH') || exit;
 
 use LiftedLogic\LLBag\Frontend\TemplateLoader;
+use LiftedLogic\LLBag\Hooks\Hooks;
 
 $color_theme = $component_data['color_theme'] ?? '';
 $content     = $component_data['content']     ?? '';
@@ -28,7 +29,7 @@ if ( empty( $posts ) ) return;
     <div class="ll-ba-before-after-slider__content">
       <?php if ( $content ) : ?>
         <div class="ll-ba-before-after-slider__content wysiwyg">
-          <?= wp_kses_post( $content ) ?>
+          <?= Hooks::bag_sanitize_wysiwyg( $content ) ?>
         </div>
       <?php endif; ?>
     </div>
