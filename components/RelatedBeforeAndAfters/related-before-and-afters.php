@@ -20,6 +20,8 @@ $link    = $component_data['link']    ?? [];
 $posts   = $component_data['posts']   ?? [];
 $color_theme = $component_data['color_theme'] ?? '';
 $hide_provider = !empty( $component_data['hide_provider'] );
+
+if ( empty( $posts ) ) return;
 ?>
 
 <div class="ll-ba-related-bna <?= esc_attr( $color_theme ) ?> component-spacing ba_grid-cols-container">
@@ -32,12 +34,10 @@ $hide_provider = !empty( $component_data['hide_provider'] );
       <?php endif; ?>
       <?= Hooks::bag_related_bna_link_markup( $link ) ?>
     </div>
-    <?php if( !empty($posts) ) : ?>    
-      <div class="ll-ba-related-bna__card-grid">
-        <?php foreach( $posts as $post ) : ?>
-          <?php TemplateLoader::get('partials/post-card.php', ['post' => $post, 'hide_provider' => $hide_provider]); ?>
-        <?php endforeach; ?>
-      </div>
-    <?php endif; ?>
+    <div class="ll-ba-related-bna__card-grid">
+      <?php foreach( $posts as $post ) : ?>
+        <?php TemplateLoader::get('partials/post-card.php', ['post' => $post, 'hide_provider' => $hide_provider]); ?>
+      <?php endforeach; ?>
+    </div>
   </div>
 </div>

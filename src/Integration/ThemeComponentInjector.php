@@ -254,7 +254,8 @@ class ThemeComponentInjector {
     $selection_method = $data[$selection_method_key] ?? 'manual';
 
     if ( $selection_method !== 'taxonomy' ) {
-      return $data[$posts_key] ?? [];
+      $posts = $data[$posts_key] ?? [];
+      return is_array( $posts ) ? $posts : [];
     }
 
     $filter_terms = $data[$filter_terms_key] ?? [];
