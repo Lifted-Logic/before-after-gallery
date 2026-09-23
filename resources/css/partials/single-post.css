@@ -749,6 +749,7 @@
   width: 16px;
   height: 16px;
   fill: currentColor;
+  pointer-events: none;
 }
 
 .ll-ba-mfp.mfp-bg {
