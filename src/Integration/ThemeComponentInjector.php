@@ -115,6 +115,7 @@ class ThemeComponentInjector {
   public function injectRelatedBnaTemplate( array $files ): array {
     $plugin_file = LL_BAG_PATH . 'components/RelatedBeforeAndAfters/related-before-and-afters.php';
     $files[] = $this->relativePathFromTheme( $plugin_file );
+    $files[] = $plugin_file;
     return $files;
   }
 
@@ -378,6 +379,7 @@ class ThemeComponentInjector {
   public function injectBeforeAndAftersGridTemplate( array $files ): array {
     $plugin_file = LL_BAG_PATH . 'components/BeforeAndAftersGrid/before-and-afters-grid.php';
     $files[] = $this->relativePathFromTheme( $plugin_file );
+    $files[] = $plugin_file;
     return $files;
   }
 
@@ -420,6 +422,7 @@ class ThemeComponentInjector {
   public function injectBeforeAndAfterSliderTemplate( array $files ): array {
     $plugin_file = LL_BAG_PATH . 'components/BeforeAndAfterSlider/before-and-after-slider.php';
     $files[] = $this->relativePathFromTheme( $plugin_file );
+    $files[] = $plugin_file;
     return $files;
   }
 
