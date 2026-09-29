@@ -16,6 +16,7 @@ use LiftedLogic\LLBag\Hooks\Hooks;
 use LiftedLogic\LLBag\BeforeAfterPostType\Fields;
 use LiftedLogic\LLBag\BeforeAfterPostType\TaxonomyRegistrar;
 use LiftedLogic\LLBag\Integration\ThemeComponentInjector;
+use LiftedLogic\LLBag\Integration\ComponentUsageFinder;
 
 class Plugin {
   private Container $container;
@@ -31,8 +32,12 @@ class Plugin {
     $this->container->singleton(BeforeAfterPostType::class);
     $this->container->singleton(Fields::class);
     $this->container->singleton(TaxonomyRegistrar::class);
+    $this->container->singleton(ComponentUsageFinder::class);
     $this->container->singleton(SettingsPage::class, function () {
-      return new SettingsPage($this->container->make(FilterManager::class));
+      return new SettingsPage(
+        $this->container->make(FilterManager::class),
+        $this->container->make(ComponentUsageFinder::class),
+      );
     });
     $this->container->singleton(TemplateLoader::class);
     $this->container->singleton(AjaxHandler::class);

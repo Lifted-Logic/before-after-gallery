@@ -5,12 +5,16 @@ namespace LiftedLogic\LLBag\Admin;
 use LiftedLogic\LLBag\Frontend\TemplateLoader;
 use LiftedLogic\LLBag\BeforeAfterPostType\BeforeAfterPostType;
 use LiftedLogic\LLBag\Filters\FilterManager;
+use LiftedLogic\LLBag\Integration\ComponentUsageFinder;
 use WP_Taxonomy;
 
 class SettingsPage {
   public const FIELD_POSTS_PAGE = 'll_bag_posts_page';
 
-  public function __construct(private readonly FilterManager $filterManager) {}
+  public function __construct(
+    private readonly FilterManager $filterManager,
+    private readonly ComponentUsageFinder $componentUsageFinder,
+  ) {}
 
   public function register(): void {
     add_action('acf/init',     [$this, 'registerOptionsPage']);
@@ -22,6 +26,8 @@ class SettingsPage {
     add_filter('use_block_editor_for_post', [$this, 'disableBlockEditorForArchivePage'], 10, 2);
     add_filter('acf/load_field/key=field_ll_bag_category_taxonomy',          [$this, 'populateCategoryTaxonomyChoices']);
     add_filter('acf/load_field/key=field_ll_bag_category_archive_url_message', [$this, 'updateCategoryArchiveUrlMessage']);
+    add_filter('acf/load_field/key=field_ll_bag_component_usage_component', [$this, 'populateComponentUsageChoices']);
+    add_filter('acf/load_field/key=field_ll_bag_component_usage_results',   [$this, 'updateComponentUsageResultsMessage']);
   }
 
   public function disableArchivePageEditor(): void {
@@ -274,6 +280,34 @@ class SettingsPage {
       ],
     ];
 
+    if ( $this->componentUsageFinder->isAvailable() ) {
+      $fields[] = [
+        'key'       => 'field_ll_bag_component_usage_tab',
+        'label'     => 'Component Usage',
+        'type'      => 'tab',
+        'placement' => 'left',
+        'endpoint'  => 0,
+      ];
+      $fields[] = [
+        'key'           => 'field_ll_bag_component_usage_component',
+        'label'         => 'Find Pages Using a Component',
+        'name'          => 'll_bag_component_usage_component',
+        'type'          => 'select',
+        'choices'       => [],
+        'allow_null'    => 1,
+        'multiple'      => 0,
+        'ui'            => 1,
+        'return_format' => 'value',
+        'placeholder'   => 'Select a component…',
+        'instructions'  => 'Pick a component and save to list every page it appears on — directly or through a Global Component. Click \'Update\' button to load results.',
+      ];
+      $fields[] = [
+        'key'     => 'field_ll_bag_component_usage_results',
+        'type'    => 'message',
+        'message' => '',
+      ];
+    }
+
     acf_add_local_field_group( [
       'key'      => 'group_ll_ba_settings',
       'title'    => 'Before & After Settings',
@@ -324,6 +358,42 @@ class SettingsPage {
         $field['choices'][$slug] = $taxonomy->label;
       }
     }
+
+    return $field;
+  }
+
+  public function populateComponentUsageChoices(array $field): array {
+    $field['choices'] = $this->componentUsageFinder->getComponentChoices();
+    return $field;
+  }
+
+  public function updateComponentUsageResultsMessage(array $field): array {
+    $layout = (string) get_option('options_ll_bag_component_usage_component');
+
+    if ($layout === '') {
+      $field['message'] = 'Select a component above and save to see where it\'s used.';
+      return $field;
+    }
+
+    $rows = $this->componentUsageFinder->findUsage($layout);
+
+    if (empty($rows)) {
+      $field['message'] = 'No usages found.';
+      return $field;
+    }
+
+    $items = array_map(function (array $row) {
+      return sprintf(
+        '<li><a href="%s">%s</a> — %s, %s (%s)</li>',
+        esc_url($row['edit_link']),
+        esc_html($row['title']),
+        esc_html($row['post_type']),
+        esc_html($row['status']),
+        esc_html($row['path'])
+      );
+    }, $rows);
+
+    $field['message'] = '<ul>' . implode('', $items) . '</ul>';
 
     return $field;
   }
