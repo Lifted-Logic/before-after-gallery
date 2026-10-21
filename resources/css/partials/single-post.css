@@ -597,7 +597,7 @@
   .ll-ba-comparison-slider__after {
     position: absolute;
     inset: 0;
-    clip-path: inset(0 50% 0 0);
+    clip-path: inset(0 0 0 50%);
     z-index: 1;
   }
 

@@ -118,7 +118,7 @@ document.querySelectorAll( '.ll-ba-comparison-slider' ).forEach( el => {
   let dragging = false;
 
   const setPosition = ( pct ) => {
-    after.style.clipPath = `inset(0 ${( 1 - pct ) * 100}% 0 0)`;
+    after.style.clipPath = `inset(0 0 0 ${pct * 100}%)`;
     divider.style.left = `${pct * 100}%`;
   };
 
