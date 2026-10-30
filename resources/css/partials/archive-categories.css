@@ -110,3 +110,10 @@
   border-color: var(--categories-nav-fill-active, var(--nsfw-fill-selected));
   color: var(--categories-nav-text-active, var(--nsfw-text-selected));
 }
+.ll-ba-hero-banner__content:has(.wysiwyg [style*="text-align: center"]) .ll-ba-categories-nav__list {
+  justify-content: center;
+}
+
+.ll-ba-hero-banner__content:has(.wysiwyg [style*="text-align: right"]) .ll-ba-categories-nav__list {
+  justify-content: flex-end;
+}
