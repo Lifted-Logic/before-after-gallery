@@ -255,14 +255,19 @@ class Hooks {
   }
 
   // "View All Before & Afters" link on the categories archive
-  public static function bag_categories_all_link_markup( string $url ): string {
+  // On a scoped categories page ($scope set) the label names the scope and $url is pre-filtered by it.
+  public static function bag_categories_all_link_markup( string $url, ?array $scope = null ): string {
     if ( empty( $url ) ) return '';
 
-    $markup = self::bag_secondary_button_markup( 'View All Before & Afters', $url, [
+    $text = $scope
+      ? sprintf( 'View All %s Before & Afters', $scope['label'] ?? '' )
+      : 'View All Before & Afters';
+
+    $markup = self::bag_secondary_button_markup( $text, $url, [
       'class' => 'll-ba-archive-categories__all-link',
     ] );
 
-    return apply_filters( 'lifted_logic/bag/categories_all_link_markup', $markup, $url );
+    return apply_filters( 'lifted_logic/bag/categories_all_link_markup', $markup, $url, $scope );
   }
 
   // "View All" link on the Before & Afters Grid component

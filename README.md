@@ -69,6 +69,7 @@ your-theme/
     └── partials/
         ├── archive-hero-banner.php       # Archive page hero banner
         ├── categories-hero-banner.php    # Categories listing page hero banner
+        ├── categories-nav.php            # Hero Navigation pills on the categories page
         ├── category-card.php             # Individual category card
         ├── post-card.php                        # Grid card for archive and related slider
         ├── before-after-slider-post-card.php    # Card used inside the Before & After Slider component
@@ -79,13 +80,38 @@ your-theme/
 
 #### Categories archive page
 
-The categories listing lives at `/{archive-slug}/categories/` and is controlled via **B&A Posts → Settings → Category Settings**:
+The categories listing lives at `/{archive-slug}/{taxonomy-archive-slug}/` (slug defaults to `categories`) and is controlled via **B&A Posts → Settings → Taxonomy Archive Settings**:
 
-- **Use category archive?** — master toggle. When off, the URL returns 404 and all fields below hide.
-- **Category Archive Hero** — content/link/image for the hero banner on that page.
-- **Categories Subtitle** — text shown above the category grid (defaults to "Select a category below to start exploring.").
+- **Use Taxonomy Archive?** — master toggle. When off, the URL returns 404 and all fields below hide.
+- **Taxonomy Archive Hero** — content/link/image for the hero banner on that page.
+- **Show "All" Pill** / **"All" Pill Label** — optional first pill linking back to the unscoped page.
+- **Hero Navigation** — repeater; each row (Label / Taxonomy / Term) becomes a pill in the hero and a scoped categories page (see below).
+- **Taxonomy Archive Subtitle** — text shown above the category grid (defaults to "Select a category below to start exploring.").
 
-Category cards link directly to the main archive pre-filtered by category (`?category={slug}`). There are no individual per-category archive pages — the archive's filter/restore URL logic handles the rest.
+Category cards link to the main archive pre-filtered by category (`?{featured-taxonomy}={slug}`) — the archive's filter/restore URL logic handles the rest.
+
+#### Scoped categories pages (Hero Navigation)
+
+Each Hero Navigation row creates a scoped page at `/{archive-slug}/{taxonomy-archive-slug}/{term-slug}/` (e.g. `/before-afters/categories/breast/`). Logic lives in `src/Support/CategoryScope.php`.
+
+- **What shows on a scoped page:** featured-taxonomy terms used by at least one published post that also carries the row's term. Nothing is mapped by hand — the posts are the relationship. If the row's term is itself from the featured taxonomy, it's excluded from its own grid.
+- **Card links carry the scope:** a card on `/categories/breast/` links to `?ll_ba_body_area=breast&ll_ba_category=breast-lift`, so the archive opens with both filters checked (two flat "Filtered by" tags). Different filter groups are AND'd, so this narrows correctly.
+- **Same-taxonomy scopes:** within one filter group the archive matches *any* checked term, so when the scope term shares a taxonomy with the cards (e.g. a Treatment Name pill), the card link marks it as required instead: `?ll_ba_require[ll_ba_treatment_name]=botox&ll_ba_treatment_name=lazerz`. `filters.js` checks the box and shows the tag as usual but sends it as `required[{taxonomy}]`, which `AjaxHandler` adds as its own AND clause. Unchecking the box or removing its tag drops the requirement.
+- **Parent terms:** a pill can use a parent term (Body Area → Breast) even when posts are only tagged with its children (Chest). Child terms count toward showing the pill, the scoped grid and the archive filter.
+- **"View All" link** becomes "View All {Label} Before & Afters" and points at the archive filtered by the scope term.
+- **Subtitle** on scoped pages is "Showing {Label} categories. Select one to start exploring." — change it via `lifted_logic/bag/categories_scoped_subtitle`.
+- **Taxonomy choices are limited to enabled sidebar filters.** The archive only restores URL params that have a matching sidebar group, so a scope from a disabled filter would be dropped on click-through.
+- **Validation:** every row needs a taxonomy and a term from that taxonomy, and term slugs must be unique across rows (the slug is the URL).
+- Rows whose term has no published posts are skipped (no pill, URL 404s). Unknown slugs return a real 404.
+- **Theme overrides:** an overridden `archive-ll_before_after_categories.php` won't scope until it uses `CategoryScope::current()` / `CategoryScope::terms()` (see the plugin template). An overridden `categories-hero-banner.php` needs to include `partials/categories-nav.php` to show the pills.
+
+Filters:
+
+| Filter | Arguments | Purpose |
+|---|---|---|
+| `lifted_logic/bag/categories_nav_items` | `$pills` (array of `label`, `url`, `active`) | Change, reorder or remove hero pills |
+| `lifted_logic/bag/categories_scoped_subtitle` | `$text`, `$scope`, `$default` | Subtitle on scoped pages |
+| `lifted_logic/bag/categories_terms_args` | `$args`, `$scope` (null when unscoped) | `get_terms()` args for the category grid |
 
 #### Adding fields to the Taxonomy Archive Settings tab
 
@@ -631,7 +657,7 @@ Filter: `lifted_logic/bag/categories_all_link_markup`
 
 Internally composed via **bag_secondary_button_markup()** — see that entry for available `$args` keys.
 
-Overrides the "View All Before & Afters" link on the categories archive (`archive-ll_before_after_categories.php`). Only rendered when a posts page URL is resolvable.
+Overrides the "View All Before & Afters" link on the categories archive (`archive-ll_before_after_categories.php`). Only rendered when a posts page URL is resolvable. On a scoped categories page the label reads "View All {Label} Before & Afters" and `$url` is pre-filtered by the scope term.
 
 **Default markup:**
 
@@ -647,7 +673,8 @@ Overrides the "View All Before & Afters" link on the categories archive (`archiv
 | # | Variable | Type | Description |
 |---|----------|------|-------------|
 | 1 | `$markup` | `string` | Full link HTML |
-| 2 | `$url` | `string` | B&A posts page URL |
+| 2 | `$url` | `string` | B&A posts page URL (with the scope filter param on a scoped page) |
+| 3 | `$scope` | `array\|null` | Active scope (`label`, `taxonomy`, `term`, `slug`, `url`) on a scoped page, otherwise `null` |
 
 ```php
 add_filter( 'lifted_logic/bag/categories_all_link_markup', function( $markup, $url ) {

@@ -403,7 +403,8 @@ class ThemeComponentInjector {
             && ( $data['ll_ba_grid_selection_method'] ?? 'manual' ) === 'taxonomy';
 
       if ( $carry ) {
-        $link['url'] = $this->archiveUrlForFilterTerms( $data['ll_ba_grid_filter_terms'] ?? [] );
+        $filter_terms = $data['ll_ba_grid_filter_terms'] ?? [];
+        $link['url'] = $this->archiveUrlForFilterTerms( is_array( $filter_terms ) ? $filter_terms : [] );
       }
 
       if ( empty( $link['url'] ) || $link['url'] === '#' ) {

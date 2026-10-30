@@ -17,6 +17,14 @@ export function initFilters() {
   let currentPage          = 1;
   let currentSensitiveMode = getSensitiveMode();
 
+  // Required ("must match") terms, keyed by taxonomy: { ll_ba_treatment_name: 'botox' }.
+  // Set from ?ll_ba_require[{taxonomy}]={slug}, which scoped category pages add when the
+  // scope term shares a taxonomy with the clicked category. Within one filter group,
+  // checked terms are OR'd, so a required term is sent separately and AND'd instead.
+  // It still shows as a checked box + tag; unchecking it drops the requirement.
+  const REQUIRE_PARAM = /^ll_ba_require\[([a-z0-9_-]+)\]$/;
+  const required      = {};
+
   // ── Accordion toggles ────────────────────────────────────────────────────────
 
   filtersEl.addEventListener('click', (e) => {
@@ -164,22 +172,36 @@ export function initFilters() {
     return active;
   }
 
+  // Drop requirements whose checkbox is no longer checked (tag removed, unchecked, Clear All).
+  function pruneRequired(active) {
+    for (const key of Object.keys(required)) {
+      const values = active[key];
+      if (!Array.isArray(values) || !values.includes(required[key])) delete required[key];
+    }
+  }
+
+  // A group's checked values minus its required term (which is sent/serialized separately).
+  const optionalValues = (key, value) =>
+    (Array.isArray(value) ? value : [value]).filter(v => v !== required[key]);
+
   async function applyFilters(page = currentPage) {
     currentPage = page;
 
     const active   = collectFilters();
     const formData = new FormData();
 
+    pruneRequired(active);
+
     formData.append('action', llBag.action);
     formData.append('nonce',  llBag.nonce);
     formData.append('paged',  page);
 
     for (const [key, value] of Object.entries(active)) {
-      if (Array.isArray(value)) {
-        value.forEach(v => formData.append(`filters[${key}][]`, v));
-      } else {
-        formData.append(`filters[${key}]`, value);
-      }
+      optionalValues(key, value).forEach(v => formData.append(`filters[${key}][]`, v));
+    }
+
+    for (const [key, value] of Object.entries(required)) {
+      formData.append(`required[${key}]`, value);
     }
 
     grid.classList.add('is-filtering');
@@ -245,12 +267,12 @@ export function initFilters() {
   function updateUrl(active) {
     const params = new URLSearchParams();
 
+    for (const [key, value] of Object.entries(required)) {
+      params.append(`ll_ba_require[${key}]`, value);
+    }
+
     for (const [key, value] of Object.entries(active)) {
-      if (Array.isArray(value)) {
-        value.forEach(v => params.append(key, v));
-      } else {
-        params.set(key, value);
-      }
+      optionalValues(key, value).forEach(v => params.append(key, v));
     }
 
     if (currentPage > 1) {
@@ -271,10 +293,16 @@ export function initFilters() {
       currentPage = Math.max(1, parseInt(pagedParam, 10));
     }
 
-    params.forEach((value, key) => {
-      if (key === 'paged' || key === 'ba_ref') return;
+    params.forEach((rawValue, rawKey) => {
+      if (rawKey === 'paged' || rawKey === 'ba_ref') return;
+
+      // ll_ba_require[{taxonomy}]={slug}: check the box like any filter and remember it as required.
+      const requireMatch = rawKey.match(REQUIRE_PARAM);
+      const key   = requireMatch ? requireMatch[1] : rawKey;
+      const value = rawValue;
 
       const group = filtersEl.querySelector(`[data-meta-key="${key}"]`);
+      if (group && requireMatch) required[key] = value;
       if (!group) return;
 
       if (group.dataset.display === 'checkbox') {

@@ -3,6 +3,7 @@
 namespace LiftedLogic\LLBag\Frontend;
 
 use LiftedLogic\LLBag\BeforeAfterPostType\BeforeAfterPostType;
+use LiftedLogic\LLBag\Support\CategoryScope;
 use LiftedLogic\LLBag\Support\Vite;
 
 class TemplateLoader {
@@ -101,6 +102,15 @@ class TemplateLoader {
     }
 
     if ( get_query_var('ll_ba_view') === 'categories' && get_field( 'll_bag_use_category_archive', 'option' ) ) {
+      // A scope slug that matches no Hero Navigation row is a real 404, not the unscoped grid.
+      if ( CategoryScope::requestedSlug() !== '' && CategoryScope::current() === null ) {
+        global $wp_query;
+        $wp_query->set_404();
+        status_header(404);
+        nocache_headers();
+        return get_404_template() ?: $template;
+      }
+
       return self::resolve('archive-ll_before_after_categories.php') ?? $template;
     }
 

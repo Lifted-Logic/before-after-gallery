@@ -5,6 +5,7 @@ namespace LiftedLogic\LLBag\Admin;
 use LiftedLogic\LLBag\Frontend\TemplateLoader;
 use LiftedLogic\LLBag\BeforeAfterPostType\BeforeAfterPostType;
 use LiftedLogic\LLBag\Filters\FilterManager;
+use LiftedLogic\LLBag\Support\CategoryScope;
 use WP_Taxonomy;
 
 class SettingsPage {
@@ -22,6 +23,9 @@ class SettingsPage {
     add_filter('use_block_editor_for_post', [$this, 'disableBlockEditorForArchivePage'], 10, 2);
     add_filter('acf/load_field/key=field_ll_bag_category_taxonomy',          [$this, 'populateCategoryTaxonomyChoices']);
     add_filter('acf/load_field/key=field_ll_bag_category_archive_url_message', [$this, 'updateCategoryArchiveUrlMessage']);
+    add_filter('acf/load_field/key=field_ll_ba_category_nav_taxonomy', [$this, 'populateCategoryNavTaxonomyChoices']);
+    add_filter('acf/load_field/key=field_ll_ba_category_nav_term',     [$this, 'populateCategoryNavTermChoices']);
+    add_filter('acf/validate_value/key=field_ll_ba_category_nav',      [$this, 'validateCategoryNav'], 10, 2);
   }
 
   public function disableArchivePageEditor(): void {
@@ -262,6 +266,69 @@ class SettingsPage {
       ];
     }
 
+    $archiveOn = [ 'field' => 'field_ll_bag_use_category_archive', 'operator' => '==', 'value' => '1' ];
+
+    $fields[] = [
+      'key'           => 'field_ll_ba_category_nav_show_all',
+      'label'         => 'Show "All" Pill',
+      'name'          => CategoryScope::FIELD_SHOW_ALL,
+      'type'          => 'true_false',
+      'default_value' => 1,
+      'ui'            => 1,
+      'wrapper'       => [ 'width' => '50%' ],
+      'conditional_logic' => [ [ $archiveOn ] ],
+    ];
+
+    $fields[] = [
+      'key'           => 'field_ll_ba_category_nav_all_label',
+      'label'         => '"All" Pill Label',
+      'name'          => CategoryScope::FIELD_ALL_LABEL,
+      'type'          => 'text',
+      'default_value' => 'All',
+      'wrapper'       => [ 'width' => '50%' ],
+      'conditional_logic' => [ [ $archiveOn, [ 'field' => 'field_ll_ba_category_nav_show_all', 'operator' => '==', 'value' => '1' ] ] ],
+    ];
+
+    $fields[] = [
+      'key'          => 'field_ll_ba_category_nav',
+      'label'        => 'Hero Navigation',
+      'name'         => CategoryScope::FIELD_NAV,
+      'type'         => 'repeater',
+      'layout'       => 'table',
+      'button_label' => 'Add Row',
+      'conditional_logic' => [ [ $archiveOn ] ],
+      'sub_fields'   => [
+        [
+          'key'   => 'field_ll_ba_category_nav_label',
+          'label' => 'Label',
+          'name'  => 'label',
+          'type'  => 'text',
+        ],
+        [
+          'key'           => 'field_ll_ba_category_nav_taxonomy',
+          'label'         => 'Taxonomy',
+          'name'          => 'taxonomy',
+          'type'          => 'select',
+          'choices'       => [],
+          'allow_null'    => 1,
+          'ui'            => 0,
+          'return_format' => 'value',
+        ],
+        [
+          // Choices are every term of every enabled filter taxonomy, grouped by taxonomy.
+          // admin.js hides the groups that don't match the row's Taxonomy select.
+          'key'           => 'field_ll_ba_category_nav_term',
+          'label'         => 'Term',
+          'name'          => 'term',
+          'type'          => 'select',
+          'choices'       => [],
+          'allow_null'    => 1,
+          'ui'            => 0,
+          'return_format' => 'value',
+        ],
+      ],
+    ];
+
     $fields[] = [
       'key'           => 'field_ll_ba_categories_subtitle',
       'label'         => 'Taxonomy Archive Subtitle',
@@ -310,6 +377,93 @@ class SettingsPage {
       $field['message'] = 'The category archive page will live at: <a href="' . esc_url($url) . '" target="_blank" rel="noopener">' . esc_html($url) . '</a>';
     }
     return $field;
+  }
+
+  /**
+   * Hero Navigation taxonomy choices: enabled sidebar filters only. The archive only
+   * restores a URL param that has a matching sidebar group, so a scope taxonomy that
+   * isn't an enabled filter would be silently dropped on click-through.
+   *
+   * @param array<string, mixed> $field
+   * @return array<string, mixed>
+   */
+  public function populateCategoryNavTaxonomyChoices(array $field): array {
+    $field['choices'] = [];
+
+    foreach ($this->enabledFilterTaxonomies() as $slug => $taxonomy) {
+      $field['choices'][$slug] = $taxonomy->label;
+    }
+
+    return $field;
+  }
+
+  /**
+   * Hero Navigation term choices, grouped by taxonomy label (rendered as <optgroup>s).
+   *
+   * @param array<string, mixed> $field
+   * @return array<string, mixed>
+   */
+  public function populateCategoryNavTermChoices(array $field): array {
+    $field['choices'] = [];
+
+    foreach ($this->enabledFilterTaxonomies() as $slug => $taxonomy) {
+      $terms = get_terms(['taxonomy' => $slug, 'hide_empty' => false]);
+      if (is_wp_error($terms) || empty($terms)) continue;
+
+      foreach ($terms as $term) {
+        $field['choices'][$taxonomy->label][$term->term_id] = $term->name;
+      }
+    }
+
+    return $field;
+  }
+
+  /**
+   * Each row needs a term that belongs to its taxonomy, and term slugs must be unique
+   * across rows because the slug is the scoped page's URL segment.
+   */
+  public function validateCategoryNav(mixed $valid, mixed $value): mixed {
+    if ($valid !== true || !is_array($value)) return $valid;
+
+    $slugs = [];
+
+    foreach ($value as $key => $row) {
+      if ($key === 'acfcloneindex' || !is_array($row)) continue;
+
+      $taxonomy = (string) ($row['field_ll_ba_category_nav_taxonomy'] ?? '');
+      $termId   = (int) ($row['field_ll_ba_category_nav_term'] ?? 0);
+
+      if ($taxonomy === '' || !$termId) {
+        return 'Each Hero Navigation row needs a taxonomy and a term.';
+      }
+
+      $term = get_term($termId, $taxonomy);
+      if (!$term instanceof \WP_Term) {
+        return 'A Hero Navigation term doesn\'t belong to the taxonomy picked in its row.';
+      }
+
+      if (isset($slugs[$term->slug])) {
+        return sprintf('Two Hero Navigation rows use terms with the slug "%s". Each row needs a unique slug, since it becomes that page\'s URL.', $term->slug);
+      }
+      $slugs[$term->slug] = true;
+    }
+
+    return $valid;
+  }
+
+  /** @return array<string, WP_Taxonomy> Enabled filter taxonomies keyed by slug. */
+  private function enabledFilterTaxonomies(): array {
+    $out = [];
+
+    foreach ($this->filterManager->getEnabled() as $filter) {
+      $slug     = $filter['meta_key'] ?? '';
+      $taxonomy = $slug !== '' ? get_taxonomy($slug) : false;
+      if ($taxonomy instanceof WP_Taxonomy) {
+        $out[$slug] = $taxonomy;
+      }
+    }
+
+    return $out;
   }
 
   public function populateCategoryTaxonomyChoices(array $field): array {

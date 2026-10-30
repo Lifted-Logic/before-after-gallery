@@ -61,6 +61,23 @@ class AjaxHandler {
       }
     }
 
+    // Required terms (from ?ll_ba_require[{taxonomy}]={slug} on scoped category links) get
+    // their own clause, so they're AND'd with the rest even when they share a taxonomy with
+    // other checked terms — which are OR'd within their group above.
+    $required = isset($_POST['required']) && is_array($_POST['required']) ? $_POST['required'] : [];
+
+    foreach ($required as $rawKey => $value) {
+      $taxonomy = sanitize_key((string) $rawKey);
+      if (!$validSlugs->has($taxonomy) || !is_string($value) || $value === '') continue;
+
+      $taxQuery[] = [
+        'taxonomy' => $taxonomy,
+        'field'    => 'slug',
+        'terms'    => sanitize_key($value),
+        'operator' => 'IN',
+      ];
+    }
+
     $perPage = (int) get_option('posts_per_page', 10);
     $paged   = max(1, (int) ($_POST['paged'] ?? 1));
 

@@ -55,3 +55,58 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+/* Categories hero navigation pills
+   ========================================================================== */
+
+.ll-ba-categories-nav {
+  margin-top: 24px;
+}
+
+.ll-ba-categories-nav__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ll-ba-categories-nav__item {
+  margin: 0;
+}
+
+.ll-ba-categories-nav__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 22px;
+  border: 1.5px solid var(--categories-nav-stroke);
+  border-radius: var(--categories-nav-radius);
+  color: var(--categories-nav-text);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+
+  .icon {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background-color: var(--categories-nav-fill-active);
+    border-color: var(--categories-nav-fill-active);
+    color: var(--categories-nav-text-active);
+  }
+}
+
+.ll-ba-categories-nav__link--active {
+  background-color: var(--categories-nav-fill-active);
+  border-color: var(--categories-nav-fill-active);
+  color: var(--categories-nav-text-active);
+}

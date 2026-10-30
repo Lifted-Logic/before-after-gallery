@@ -57,4 +57,9 @@
   --arrow-buttons-fill: var(--hex-codes-dandelion);
   --arrow-buttons-elements: var(--hex-codes-gunmetal);
   --arrow-buttons-stroke: var(--hex-codes-gunmetal);
+  --categories-nav-radius: 1000px;
+  --categories-nav-text: var(--hex-codes-white);
+  --categories-nav-stroke: var(--hex-codes-white);
+  --categories-nav-fill-active: var(--hex-codes-dandelion);
+  --categories-nav-text-active: var(--hex-codes-gunmetal);
 }

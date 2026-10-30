@@ -3,6 +3,7 @@
 namespace LiftedLogic\LLBag\BeforeAfterPostType;
 
 use LiftedLogic\LLBag\Admin\SettingsPage;
+use LiftedLogic\LLBag\Support\CategoryScope;
 
 class BeforeAfterPostType {
   public const SLUG = 'll_before_after';
@@ -16,6 +17,7 @@ class BeforeAfterPostType {
 
   public function registerQueryVars(array $vars): array {
     $vars[] = 'll_ba_view';
+    $vars[] = CategoryScope::QUERY_VAR;
     return $vars;
   }
 
@@ -26,6 +28,14 @@ class BeforeAfterPostType {
     $archiveLink  = get_post_type_archive_link(self::SLUG);
     $categorySlug = SettingsPage::getCategoryArchiveSlug();
     return $archiveLink ? trailingslashit($archiveLink) . trailingslashit($categorySlug) : '';
+  }
+
+  /**
+   * Return the URL for a scoped categories archive (/{archive-slug}/{category-slug}/{scope-slug}/).
+   */
+  public static function getScopedCategoriesArchiveUrl(string $scopeSlug): string {
+    $base = self::getCategoriesArchiveUrl();
+    return $base ? trailingslashit($base . $scopeSlug) : '';
   }
 
   public static function getRewriteSlug(): string {
@@ -41,6 +51,14 @@ class BeforeAfterPostType {
     add_rewrite_rule(
       '^' . preg_quote($archiveSlug, '/') . '/' . preg_quote($categorySlug, '/') . '/?$',
       'index.php?ll_ba_view=categories',
+      'top'
+    );
+
+    // Scoped categories archive, e.g. /before-afters/categories/breast/. The slug is
+    // matched against the Hero Navigation rows at render time; unknown slugs 404.
+    add_rewrite_rule(
+      '^' . preg_quote($archiveSlug, '/') . '/' . preg_quote($categorySlug, '/') . '/([^/]+)/?$',
+      'index.php?ll_ba_view=categories&' . CategoryScope::QUERY_VAR . '=$matches[1]',
       'top'
     );
   }

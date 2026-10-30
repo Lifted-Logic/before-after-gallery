@@ -641,3 +641,46 @@ document.addEventListener( 'DOMContentLoaded', () => {
     } );
   }
 } )();
+
+/**
+ * Settings → Taxonomy Archive → Hero Navigation: each row's Term select holds every
+ * term of every enabled filter taxonomy, grouped in <optgroup>s labelled by taxonomy.
+ * Show only the group matching the row's Taxonomy select, and clear a term that no
+ * longer fits. (Server-side, SettingsPage::validateCategoryNav() enforces the same.)
+ */
+( () => {
+  const NAV      = 'field_ll_ba_category_nav';
+  const TAXONOMY = 'field_ll_ba_category_nav_taxonomy';
+  const TERM     = 'field_ll_ba_category_nav_term';
+
+  const syncRow = ( row ) => {
+    const taxSelect  = row?.querySelector( `.acf-field[data-key="${TAXONOMY}"] select` );
+    const termSelect = row?.querySelector( `.acf-field[data-key="${TERM}"] select` );
+    if ( !taxSelect || !termSelect ) return;
+
+    const taxLabel = taxSelect.value ? taxSelect.selectedOptions[0]?.textContent.trim() : '';
+    let keepValue  = false;
+
+    termSelect.querySelectorAll( 'optgroup' ).forEach( ( group ) => {
+      const match = taxLabel !== '' && group.label === taxLabel;
+      group.hidden   = !match;
+      group.disabled = !match;
+      if ( match && [ ...group.querySelectorAll( 'option' ) ].some( ( o ) => o.value === termSelect.value ) ) {
+        keepValue = true;
+      }
+    } );
+
+    if ( !keepValue ) termSelect.value = '';
+    termSelect.disabled = taxLabel === '';
+  };
+
+  const scan = () =>
+    document.querySelectorAll( `.acf-field[data-key="${NAV}"] .acf-row:not(.acf-clone)` ).forEach( syncRow );
+
+  document.addEventListener( 'change', ( e ) => {
+    if ( e.target.closest?.( `.acf-field[data-key="${TAXONOMY}"]` ) ) syncRow( e.target.closest( '.acf-row' ) );
+  } );
+
+  document.addEventListener( 'DOMContentLoaded', scan );
+  if ( window.acf ) window.acf.addAction( 'append', scan );
+} )();

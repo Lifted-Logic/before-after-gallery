@@ -6,12 +6,17 @@
  * Uses the same markup as archive-hero-banner.php so both
  * can be styled identically while remaining independently overridable.
  *
+ * Renders the Hero Navigation pills (partials/categories-nav.php) under the content.
+ * A theme override that wants the pills should include that partial itself.
+ *
  * Override: place this file at {theme}/ll-before-after/partials/categories-hero-banner.php
  */
 
 defined('ABSPATH') || exit;
 
+use LiftedLogic\LLBag\Frontend\TemplateLoader;
 use LiftedLogic\LLBag\Hooks\Hooks;
+use LiftedLogic\LLBag\Support\CategoryScope;
 
 $hero         = get_field( 'll_ba_category_archive_hero', 'option' ) ?: [];
 $hero_content = $hero['content'] ?? '';
@@ -37,6 +42,7 @@ $hero_focus   = $hero['image_focus_point'] ?? 'object-center';
         <div class="wysiwyg">
           <?= Hooks::bag_sanitize_wysiwyg( $hero_content ) ?>
         </div>
+        <?php TemplateLoader::get( 'partials/categories-nav.php', ['items' => CategoryScope::pillItems()] ); ?>
       </div>
       <?php if ( $hero_link ) : ?>
         <div class="ll-ba-hero-banner__link-wrap theme-four">
