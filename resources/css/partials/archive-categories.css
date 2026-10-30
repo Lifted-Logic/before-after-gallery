@@ -82,9 +82,9 @@
   gap: 8px;
   min-height: 44px;
   padding: 0 22px;
-  border: 1.5px solid var(--categories-nav-stroke);
-  border-radius: var(--categories-nav-radius);
-  color: var(--categories-nav-text);
+  border: 1.5px solid var(--categories-nav-stroke, var(--overlays-elements, #fff));
+  border-radius: var(--categories-nav-radius, var(--nsfw-radius, 1000px));
+  color: var(--categories-nav-text, var(--overlays-elements, #fff));
   font-size: 16px;
   font-weight: 500;
   line-height: 1;
@@ -99,14 +99,14 @@
 
   &:hover,
   &:focus-visible {
-    background-color: var(--categories-nav-fill-active);
-    border-color: var(--categories-nav-fill-active);
-    color: var(--categories-nav-text-active);
+    background-color: var(--categories-nav-fill-active, var(--nsfw-fill-selected));
+    border-color: var(--categories-nav-fill-active, var(--nsfw-fill-selected));
+    color: var(--categories-nav-text-active, var(--nsfw-text-selected));
   }
 }
 
 .ll-ba-categories-nav__link--active {
-  background-color: var(--categories-nav-fill-active);
-  border-color: var(--categories-nav-fill-active);
-  color: var(--categories-nav-text-active);
+  background-color: var(--categories-nav-fill-active, var(--nsfw-fill-selected));
+  border-color: var(--categories-nav-fill-active, var(--nsfw-fill-selected));
+  color: var(--categories-nav-text-active, var(--nsfw-text-selected));
 }
