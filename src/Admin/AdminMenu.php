@@ -9,11 +9,13 @@ class AdminMenu {
   public function __construct(
     private readonly FilterSettingsPage $filterSettingsPage,
     private readonly HowToPage $howToPage,
+    private readonly MigrationPage $migrationPage,
   ) {}
 
   public function register(): void {
     add_action('admin_menu', [$this, 'registerMenu']);
     add_action('admin_menu', [$this, 'registerHowToMenu'], 99);
+    add_action('admin_menu', [$this, 'registerMigrationMenu'], 100);
     add_action('admin_enqueue_scripts', [$this, 'enqueueAssets']);
     add_action('admin_post_ll_bag_save_filters', [$this, 'handleFilterSave']);
   }
@@ -40,6 +42,21 @@ class AdminMenu {
     );
   }
 
+  public function registerMigrationMenu(): void {
+    if (!$this->migrationPage->shouldShow()) {
+      return;
+    }
+
+    add_submenu_page(
+      'edit.php?post_type=' . BeforeAfterPostType::SLUG,
+      __('Migrate from V2', 'll-bag'),
+      __('Migrate from V2', 'll-bag'),
+      'manage_options',
+      MigrationPage::SLUG,
+      [$this->migrationPage, 'render']
+    );
+  }
+
   public function enqueueAssets(string $hook): void {
     // make sure styles aren't messing up term pages
     if (in_array($hook, ['edit-tags.php', 'term.php'], true)) {
@@ -51,7 +68,8 @@ class AdminMenu {
     if (
       $screen?->post_type !== BeforeAfterPostType::SLUG &&
       $hook !== 'll_before_after_page_ll-bag-filters' &&
-      $hook !== 'll_before_after_page_ll-bag-how-to'
+      $hook !== 'll_before_after_page_ll-bag-how-to' &&
+      $hook !== 'll_before_after_page_' . MigrationPage::SLUG
     ) {
       return;
     }

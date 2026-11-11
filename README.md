@@ -819,6 +819,32 @@ add_filter( 'lifted_logic/bag/grid_classes', function ( $classes ) {
 
 ---
 
+## Migrating from V2
+
+Sites still running the old **LL Before After Gallery** plugin (V2, post type `ll_bag`) get a **Before & Afters → Migrate from V2** page. It only appears when V2 posts exist in the database, and works whether V2 is active or not.
+
+1. Open the page and check the **Taxonomies → Filters** preview.
+2. Click **Run migration**. Posts are copied in batches, so large sites won't time out.
+3. Work through the **Migration log**. "Needs action" items are things V3 has no place for (image captions, V2's separate card image, per-post CTAs that differ from the global one, posts with no images). "Review" items were migrated but are worth a look.
+4. Deactivate V2. Old V2 URLs (`/before-and-after/{post}/`, `/treatment-category/{term}/`, etc.) then 301 to their V3 equivalents automatically. **Download old → new URLs (CSV)** gives the same list for a redirect plugin or the host.
+
+V2 data is only read, never changed. **Undo migration** deletes the migrated posts and the terms/filters the migration created, and restores any settings it changed. Running it again skips posts that were already migrated.
+
+| V2 | V3 |
+|---|---|
+| Category (`ll_bag_category`) | Categories (`ll_ba_category`) |
+| Provider (`ll_bag_provider`) | Providers (`ll_ba_provider`) |
+| Treatment Name (`ll_bag_name`) | new filter "Treatment" (`ll_ba_treatment`) |
+| Treatment Area (`ll_bag_area`) | new filter "Treatment Area" (`ll_ba_treatment_area`) |
+| Gender (`ll_bag_gender`) | new filter "Gender" (`ll_ba_gender`) |
+| Treatment Title | Single Page Label |
+| Patient / Treatment Details | Detail Sections |
+| Photos and Videos | Images (closest frame shape; shown uncropped if it isn't a close match) |
+| Gallery Image | Only used when a post has no Photos and Videos: it becomes the post's single image |
+| NSFW | Sensitive Images |
+
+Existing filters and terms with the same slug are reused rather than duplicated.
+
 ## Plugin Components
 
 Plugin components appear in the LL theme's "Add Component" flexible content dropdown alongside native theme components. They work on both newer PHP-`ComponentProvider` sites and older JSON/DB-based sites — both share the same FC field key.
