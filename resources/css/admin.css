@@ -555,3 +555,126 @@ tr.ll-bag-orderable .ll-bag-drag-handle {
 .ll-bag-drag-handle:active {
   cursor: grabbing;
 }
+
+/* ── Migrate from V2 ─────────────────────────────────────────────────────── */
+
+.ll-bag-migrate {
+  max-width: 1100px;
+}
+
+.ll-bag-migrate__intro {
+  max-width: 720px;
+  font-size: 14px;
+}
+
+.ll-bag-migrate__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0 8px;
+}
+
+.ll-bag-migrate__stat {
+  display: flex;
+  flex-direction: column;
+  min-width: 140px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+}
+
+.ll-bag-migrate__stat-value {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.ll-bag-migrate__stat-label {
+  color: #646970;
+}
+
+.ll-bag-migrate__table {
+  margin-top: 8px;
+}
+
+.ll-bag-migrate__table .ll-bag-meta-key-hint {
+  margin: 2px 0 0;
+}
+
+.ll-bag-migrate__details {
+  margin: 16px 0;
+  max-width: 720px;
+}
+
+.ll-bag-migrate__details summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.ll-bag-migrate__details ul {
+  list-style: disc;
+  padding-left: 20px;
+}
+
+.ll-bag-migrate__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 24px 0 12px;
+}
+
+.ll-bag-migrate__actions .ll-bag-migrate__undo {
+  color: #b32d2e;
+  border-color: #b32d2e;
+}
+
+.ll-bag-migrate__progress progress {
+  width: 100%;
+  max-width: 480px;
+  height: 16px;
+}
+
+.ll-bag-migrate__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 8px 0;
+}
+
+.ll-bag-migrate__col-level {
+  width: 110px;
+}
+
+.ll-bag-migrate__col-post {
+  width: 220px;
+}
+
+.ll-bag-migrate__badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ll-bag-migrate__badge.is-manual {
+  background: #fcf0f1;
+  color: #8a2424;
+}
+
+.ll-bag-migrate__badge.is-review {
+  background: #fcf9e8;
+  color: #6e5300;
+}
+
+.ll-bag-migrate__badge.is-info {
+  background: #f0f0f1;
+  color: #50575e;
+}
+
+.ll-bag-migrate__post-list {
+  margin: 6px 0 0;
+}

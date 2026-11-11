@@ -1,4 +1,7 @@
 import '../css/admin.css';
+import { initMigrationPage } from './admin-migration.js';
+
+document.addEventListener( 'DOMContentLoaded', initMigrationPage );
 
 /**
  * Convert a human label to a snake_case meta key with ll_ba_ prefix.

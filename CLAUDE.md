@@ -227,6 +227,15 @@ add_filter( 'll_bag/inject_component_fields/ll_ba_slider',      '__return_false'
 
 **Relationship fields in components:** The ACF relationship AJAX handler calls `acf_get_field($key)` to get the field config. If the field is only defined inside a layout's `sub_fields` (in memory via `acf/load_field`), it won't be found and the dropdown returns empty. Register it separately via `acf_add_local_field()` in `registerLocalFields()` to fix this.
 
+### V2 Migration (`src/Migration/`)
+
+`V2Migrator` copies the old V2 plugin's data (post type `ll_bag`, taxonomies `ll_bag_*`, `bag_*` ACF meta) into V3. UI is `src/Admin/MigrationPage.php` + `views/admin/migration.php` + `resources/js/admin-migration.js` (submenu only shows when `ll_bag` posts exist). Rules:
+- **Reads V2 via `$wpdb`, never `get_terms()`/`get_field()` on V2 data** — V2's taxonomies and field groups usually aren't registered (plugin deactivated).
+- **Never writes to V2 data.** Migrated V3 posts carry `_ll_bag_v2_source_id`; that's how re-runs skip done posts and how undo finds them.
+- Everything the migration creates or changes (terms, filters, settings' previous values) is recorded in the `ll_bag_v2_migration` option so `rollbackBatch()` can reverse it. Add to that state when adding a new write.
+- Log entries (`ll_bag_v2_migration_log`) have a level: `manual` (needs a person), `review`, `info`. Prefer one grouped entry with many `v2_ids` over one entry per post when the message is the same.
+- `V2Redirects` 301s old V2 URLs on 404 only, using `V2Migrator::urlMap()`.
+
 ### Dynamic CSS Variables
 
 `TemplateLoader::enqueueCssOverrides()` enqueues `ba-colors.css` (checking theme override first), then outputs per-site values as inline CSS via `wp_add_inline_style`. When adding a new ACF color/style option from the settings page, register the field in `SettingsPage.php`, read it in `enqueueCssOverrides()`, and output it as a CSS variable on `:root`. Consume it in CSS via `var(--variable-name)`.

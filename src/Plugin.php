@@ -7,6 +7,7 @@ use LiftedLogic\LLBag\Admin\AdminMenu;
 use LiftedLogic\LLBag\Admin\PostOrderController;
 use LiftedLogic\LLBag\Admin\FilterSettingsPage;
 use LiftedLogic\LLBag\Admin\HowToPage;
+use LiftedLogic\LLBag\Admin\MigrationPage;
 use LiftedLogic\LLBag\Admin\SettingsPage;
 use LiftedLogic\LLBag\Filters\FilterManager;
 use LiftedLogic\LLBag\Frontend\AjaxHandler;
@@ -16,6 +17,8 @@ use LiftedLogic\LLBag\Hooks\Hooks;
 use LiftedLogic\LLBag\BeforeAfterPostType\Fields;
 use LiftedLogic\LLBag\BeforeAfterPostType\TaxonomyRegistrar;
 use LiftedLogic\LLBag\Integration\ThemeComponentInjector;
+use LiftedLogic\LLBag\Migration\V2Migrator;
+use LiftedLogic\LLBag\Migration\V2Redirects;
 
 class Plugin {
   private Container $container;
@@ -43,12 +46,16 @@ class Plugin {
     });
 
     $this->container->singleton(HowToPage::class);
+    $this->container->singleton(V2Migrator::class);
+    $this->container->singleton(V2Redirects::class);
+    $this->container->singleton(MigrationPage::class);
     $this->container->singleton(PostOrderController::class);
 
     $this->container->singleton(AdminMenu::class, function () {
       return new AdminMenu(
         $this->container->make(FilterSettingsPage::class),
         $this->container->make(HowToPage::class),
+        $this->container->make(MigrationPage::class),
       );
     });
   }
@@ -64,10 +71,12 @@ class Plugin {
     $this->container->make(TemplateLoader::class)->register();
     $this->container->make(AjaxHandler::class)->register();
     $this->container->make(ThemeComponentInjector::class)->register();
+    $this->container->make(V2Redirects::class)->register();
 
     if (is_admin()) {
       $this->container->make(AdminMenu::class)->register();
       $this->container->make(PostOrderController::class)->register();
+      $this->container->make(MigrationPage::class)->register();
     }
   }
 }
