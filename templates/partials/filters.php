@@ -28,6 +28,7 @@ if ($filters->isEmpty()) {
     <div class="ll-ba-hidden ll-ba-filters__active" id="ll-ba-active-bar">
       <div class="ll-ba-filters__active-inner">
         <span class="ll-ba-filters__active-label">Filtered by:</span>
+        <button type="button" id="ll-ba-clear-all" class="ll-ba-filters__clear-all">Clear All</button>
       </div>
       <ul class="ll-ba-filters__active-tags" id="ll-ba-active-tags">
         <!-- Tags are managed by updateActiveTags() in resources/js/filters.js -->

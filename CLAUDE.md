@@ -61,7 +61,7 @@ All ACF field groups are registered programmatically via `acf_add_local_field_gr
 - `ll_ba_category_hero_image` — hero image for the category page (future use)
 
 **Category Settings tab** (`SettingsPage.php`):
-- `ll_bag_use_category_archive` — master toggle; controls URL routing and field visibility. When enabled, a generated message field shows the resolved URL (`home_url() . '/' . BeforeAfterPostType::getRewriteSlug() . '/categories/'`) — built without relying on `get_post_type_archive_link()` because `acf/init` fires before `register_post_type` on `init`.
+- `ll_bag_archive_mode` (Archive Settings tab, "Main Gallery View") — `posts` | `categories`; replaces the old `ll_bag_use_category_archive` toggle, which `BeforeAfterPostType::archiveMode()` still reads as the fallback when the mode was never saved. Posts: `/{archive}/` is the posts archive and no categories routes exist. Categories: `/{archive}/` is the categories page, `/{archive}/{ll_bag_posts_archive_slug}/` (default `all`, `ll_ba_view=posts`) the posts archive, `/{archive}/{ll_bag_category_archive_slug}/{scope}/` the scoped pages; `redirectCategoriesModeUrls()` 301s `/{archive}/{categories-slug}/` → root and root `?{filter}` links → the posts archive. Build "show posts" links with `BeforeAfterPostType::getPostsArchiveUrl()`, never `get_post_type_archive_link()` (that's `getGalleryUrl()`, the gallery root). Settings saves set `BeforeAfterPostType::FLUSH_FLAG`; rules are flushed on the next request's `init` (the saving request already registered the old rules).
 - `ll_ba_category_archive_hero` — group with content/link/image for the categories page hero
 - `ll_ba_categories_subtitle` — subtitle text above the category grid
 - `ll_ba_category_nav_show_all` / `ll_ba_category_nav_all_label` — optional leading "All" pill
@@ -72,7 +72,7 @@ All ACF field groups are registered programmatically via `acf_add_local_field_gr
 **NSFW Popup tab** (`SettingsPage.php`):
 - `ll_bag_nsfw_popup_text` — body copy shown inside the NSFW confirmation modal; PHP fallback default is `'This before and after contains sensitive content.'`
 
-**`get_option()` vs `get_field()` in early hooks:** Never call `get_field()` inside a `pre_get_posts` callback. ACF's `get_field()` calls `get_posts()` internally to look up field registration, which fires `pre_get_posts` again → infinite recursion → fatal error. The same `get_option('options_{field_name}')` pattern is also used for `init`-hooked logic that needs an options-page field before templates load — ACF's options fields aren't reliably available that early either. Use `get_option('options_{field_name}')` instead — it reads directly from the options table with no query. Examples: `get_option('options_ll_bag_use_category_archive')` in `registerRewriteRules()` / `scopeCategoryArchive()`, and `get_option('options_' . SettingsPage::FIELD_POSTS_PAGE)` in `BeforeAfterPostType::getRewriteSlug()` (called from `registerPostType()`/`registerRewriteRules()` on `init`). `TemplateLoader::loadTemplate()` (on `template_include`) is safe to use `get_field()` since it fires much later.
+**`get_option()` vs `get_field()` in early hooks:** Never call `get_field()` inside a `pre_get_posts` callback. ACF's `get_field()` calls `get_posts()` internally to look up field registration, which fires `pre_get_posts` again → infinite recursion → fatal error. The same `get_option('options_{field_name}')` pattern is also used for `init`-hooked logic that needs an options-page field before templates load — ACF's options fields aren't reliably available that early either. Use `get_option('options_{field_name}')` instead — it reads directly from the options table with no query. Examples: `get_option('options_ll_bag_archive_mode')` in `BeforeAfterPostType::archiveMode()` (used by `registerRewriteRules()`), and `get_option('options_' . SettingsPage::FIELD_POSTS_PAGE)` in `BeforeAfterPostType::getRewriteSlug()` (called from `registerPostType()`/`registerRewriteRules()` on `init`). `TemplateLoader::loadTemplate()` (on `template_include`) is safe to use `get_field()` since it fires much later.
 
 **Archive page fields** (`SettingsPage.php`, `registerArchivePageFields()`, hooked on `acf/init`): When a page is assigned via `FIELD_POSTS_PAGE`, the plugin registers ACF fields directly on that page's edit screen under a "Before & After Archive" meta box (`group_ll_ba_archive_page_fields`). Hero banner fields (`ll_ba_hero_banner` group — content/link/image) are included unless the theme has overridden `archive-hero-banner.php`. Themes that need additional fields on the archive page should register their own `acf_add_local_field_group()` in `functions.php` on `acf/init`, using `get_option('options_ll_bag_posts_page')` for the page ID and `'param' => 'post'` location rule. The block editor and classic editor are also disabled on this page: `disableBlockEditorForArchivePage()` filters `use_block_editor_for_post` to return `false`; `disableArchivePageEditor()` runs on `admin_init` and calls `remove_post_type_support('page', 'editor')` when `$_GET['post']` matches the archive page ID. Both use `get_option()` rather than `get_field()` because they fire before ACF options fields are available.
 
@@ -84,7 +84,7 @@ The images repeater field (`ll_ba_images`) is the core data structure for the si
 - `ll_ba_comparison_slider` — bool (two-images only)
 - `ll_ba_video_url` / `ll_ba_video_title` — video fields
 
-Templates map `ll_ba_image_ratio` values to CSS modifier classes (`ll-ba-single__ratio--wide`, etc.). These classes are defined at the top of `single-post.css` outside any nesting block so they work globally (archive cards and the single page gallery both use them).
+`ll_ba_image_ratio` also has `default` ("Site default", the default for new rows), which follows Settings → Default Image Ratio (`ll_bag_default_image_ratio` / `ll_bag_default_image_ratio_custom`). Templates resolve every row with `bag_resolve_image_ratio( $row )` (`functions.php`) — it returns the modifier class(es), the numeric ratio for crop math, and whether two images stack; '' keeps its legacy fallbacks (one-image → wide, two-image → square). Templates map these to CSS modifier classes (`ll-ba-single__ratio--wide`, etc.; a custom default uses `--default` + the `--ll-ba-default-ratio*` variables, and `--landscape` when it stacks). These classes are defined at the top of `single-post.css` outside any nesting block so they work globally (archive cards and the single page gallery both use them).
 
 ### Filter System
 
@@ -95,6 +95,8 @@ The AJAX filter handler (`src/Frontend/AjaxHandler.php`) handles two actions:
 - `ll_bag_related` — related posts for the single page slider; runs three query passes (card taxonomy → override terms → recent fallback)
 
 **Mobile active filter bar:** A second active-filter bar (`#ll-ba-active-bar-mobile`, `#ll-ba-active-tags-mobile`, `#ll-ba-clear-all-mobile`) is rendered in `archive-ll_before_after.php` immediately below `.ll-ba-filter-trigger`. `filters.js`'s `updateActiveTags()` populates and syncs both bars simultaneously. On mobile (≤767px) the sidebar's `#ll-ba-active-bar` is inside the flyout popup; this second bar stays visible in the page flow below the trigger button. On desktop the mobile bar is hidden via `.ll-ba-filters__active--mobile { display: none; }` in `archive.css`. Both bars' tag lists and clear-all buttons delegate to the same shared handler functions (`handleTagRemoval`, `handleClearAll`).
+
+**No filters enabled:** `filters.php` (and so `#ll-ba-filters`) isn't rendered when every filter is disabled. `initFilters()` only requires `#ll-ba-grid`; every `filtersEl` use is optional-chained so AJAX pagination and the sensitive-images bar still run.
 
 ### CSS Architecture
 
@@ -111,7 +113,7 @@ CSS is split into:
 
 When adding a new component partial, create a matching CSS file in `resources/css/partials/` and import it in `frontend.css`.
 
-Colors come from CSS custom properties defined in `ba-colors.css` (e.g. `var(--general-background)`, `var(--general-body)`), which reference the raw values in `primitives.css`. Use `var(--property-name)` directly — there is no token abstraction layer. `TemplateLoader::enqueueCssOverrides()` enqueues `primitives.css` as a dependency of `ba-colors.css` (in that order); both follow the same theme-override resolution as other CSS partials — if a `var(--general-*)` or `var(--hex-codes-*)` resolves to nothing, check that both files are still wired up this way.
+Colors come from CSS custom properties defined in `ba-colors.css` (e.g. `var(--general-background)`, `var(--general-body)`), which reference the raw values in `primitives.css`. Use `var(--property-name)` directly — there is no token abstraction layer. `TemplateLoader::enqueueCssOverrides()` prints `primitives.css` then `ba-colors.css` **inline** (src-less registered handles `ll-bag-primitives` / `ll-bag-ba-colors` + `wp_add_inline_style`), minified by `TemplateLoader::minifiedCss()` and cached in a transient keyed by file mtime; both follow the same theme-override resolution as other CSS partials — if a `var(--general-*)` or `var(--hex-codes-*)` resolves to nothing, check that both files are still wired up this way.
 
 CSS nesting is acceptable. Use it for component-scoped child selectors (e.g. `.ll-ba-card { .ll-ba-card__image { ... } }`). Avoid deep nesting — keep selectors readable.
 
@@ -145,7 +147,7 @@ The `llBag` global (set via `wp_localize_script`) provides `ajaxUrl`, `nonce`, `
 
 **jQuery plugins** are enqueued via WordPress (`wp_enqueue_script` with `['jquery']` dependency), not bundled through Vite. This avoids CJS/ESM interop issues with jQuery. Current plugins: Magnific Popup (`ll-bag-magnific-popup`, loaded in `TemplateLoader::enqueueMagnificPopup()`). Do not import jQuery-dependent libraries directly in `frontend.js`.
 
-**Vendored assets:** Magnific Popup's CSS/JS are committed to `resources/vendor/magnific-popup/` (copied from `node_modules/magnific-popup/dist/`) rather than referenced from `node_modules/` directly, since `node_modules/` is gitignored and unavailable in production. `magnific-popup` stays in `devDependencies` purely as the source for that copy — Vite never bundles it. If bumping the version, re-copy `magnific-popup.css` and `jquery.magnific-popup.min.js` into `resources/vendor/magnific-popup/`.
+**Vendored assets:** Magnific Popup's CSS/JS are committed to `resources/vendor/magnific-popup/` (copied from `node_modules/magnific-popup/dist/`) rather than referenced from `node_modules/` directly, since `node_modules/` is gitignored and unavailable in production. `magnific-popup` stays in `devDependencies` purely as the source for that copy. The CSS is `@import`ed at the top of `frontend.css` so Vite bundles and minifies it; only the jQuery JS is enqueued separately. If bumping the version, re-copy `magnific-popup.css` and `jquery.magnific-popup.min.js` into `resources/vendor/magnific-popup/`.
 
 **Sensitive image preference** is stored in the `ll-ba-sensitive-mode` cookie (default: `'blur'`). Always use `getSensitiveMode()` / `setSensitiveMode()` from `sensitive.js` — never read or write `localStorage` or a cookie directly for this value.
 
@@ -229,7 +231,7 @@ add_filter( 'll_bag/inject_component_fields/ll_ba_slider',      '__return_false'
 
 ### Dynamic CSS Variables
 
-`TemplateLoader::enqueueCssOverrides()` enqueues `ba-colors.css` (checking theme override first), then outputs per-site values as inline CSS via `wp_add_inline_style`. When adding a new ACF color/style option from the settings page, register the field in `SettingsPage.php`, read it in `enqueueCssOverrides()`, and output it as a CSS variable on `:root`. Consume it in CSS via `var(--variable-name)`.
+`TemplateLoader::enqueueCssOverrides()` prints `ba-colors.css` inline (checking theme override first), then appends per-site values via `wp_add_inline_style`. When adding a new ACF color/style option from the settings page, register the field in `SettingsPage.php`, read it in `enqueueCssOverrides()`, and output it as a CSS variable on `:root`. Consume it in CSS via `var(--variable-name)`.
 
 ---
 

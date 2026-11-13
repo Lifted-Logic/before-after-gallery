@@ -25,16 +25,20 @@ class Hooks {
     $classes    = 'bag_back-text bag-inline-block';
     $label      = function_exists( 'get_field' ) ? get_field( 'll_ba_global_back_label', 'options' ) : '';
     $label_raw  = $label ?: 'Back to Gallery';
-    $archiveUrl = get_post_type_archive_link('ll_before_after') ?: site_url('/');
+    $archiveUrl = \LiftedLogic\LLBag\BeforeAfterPostType\BeforeAfterPostType::getGalleryUrl() ?: site_url('/');
+    $postsUrl   = \LiftedLogic\LLBag\BeforeAfterPostType\BeforeAfterPostType::getPostsArchiveUrl() ?: $archiveUrl;
     $refUrl     = isset($_GET['ba_ref']) ? wp_validate_redirect(wp_unslash($_GET['ba_ref']), '') : '';
 
-    // Only honor ba_ref if it actually points back to the gallery archive page
-    // (preserving any active filters). If the card was clicked from some other
-    // page on the site, fall back to the plain, unfiltered archive URL.
+    // Only honor ba_ref if it actually points back to the gallery (the posts archive, with any
+    // active filters, or the gallery root). If the card was clicked from some other page on the
+    // site, fall back to the gallery's main URL.
     if ( $refUrl ) {
-      $refPath     = untrailingslashit( (string) wp_parse_url( $refUrl, PHP_URL_PATH ) );
-      $archivePath = untrailingslashit( (string) wp_parse_url( $archiveUrl, PHP_URL_PATH ) );
-      if ( $refPath !== $archivePath ) {
+      $refPath      = untrailingslashit( (string) wp_parse_url( $refUrl, PHP_URL_PATH ) );
+      $galleryPaths = array_map(
+        fn( $u ) => untrailingslashit( (string) wp_parse_url( $u, PHP_URL_PATH ) ),
+        [ $archiveUrl, $postsUrl ]
+      );
+      if ( !in_array( $refPath, $galleryPaths, true ) ) {
         $refUrl = '';
       }
     }

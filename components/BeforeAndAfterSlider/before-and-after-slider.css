@@ -101,7 +101,8 @@
   }
 
   .ll-ba-slider-card__image.ll-ba-single__ratio--panorama,
-  .ll-ba-slider-card__image.ll-ba-single__ratio--wide {
+  .ll-ba-slider-card__image.ll-ba-single__ratio--wide,
+  .ll-ba-slider-card__image.ll-ba-single__ratio--landscape {
     height: unset;
     width: 100%;
   }

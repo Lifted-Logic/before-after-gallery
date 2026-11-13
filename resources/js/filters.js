@@ -12,7 +12,9 @@ export function initFilters() {
   const filterApply    = document.getElementById('ll-ba-filter-apply');
   const filterClearMob = document.getElementById('ll-ba-filter-clear-mobile');
 
-  if (!filtersEl || !grid) return;
+  // The sidebar (#ll-ba-filters) isn't rendered when no filters are enabled. Pagination,
+  // AJAX paging and the sensitive-images bar still need to run, so only the grid is required.
+  if (!grid) return;
 
   let currentPage          = 1;
   let currentSensitiveMode = getSensitiveMode();
@@ -27,7 +29,7 @@ export function initFilters() {
 
   // ── Accordion toggles ────────────────────────────────────────────────────────
 
-  filtersEl.addEventListener('click', (e) => {
+  filtersEl?.addEventListener('click', (e) => {
     const toggle = e.target.closest('.ll-ba-filter-toggle');
     if (!toggle) return;
 
@@ -40,7 +42,7 @@ export function initFilters() {
 
     // Close all other open groups before opening this one
     if ( !isOpen ) {
-      filtersEl.querySelectorAll( '.ll-ba-filter-content' ).forEach( other => {
+      filtersEl?.querySelectorAll( '.ll-ba-filter-content' ).forEach( other => {
         if ( other === content || other.classList.contains( 'll-ba-hidden' ) ) return;
         other.classList.add( 'll-ba-hidden' );
         const otherGroup  = other.closest( '.ll-ba-filter-group' );
@@ -57,7 +59,7 @@ export function initFilters() {
 
   // ── Option search (client-side, filters visible checkboxes only) ─────────────
 
-  filtersEl.addEventListener('input', (e) => {
+  filtersEl?.addEventListener('input', (e) => {
     const search = e.target.closest('.ll-ba-option-search');
     if (!search) return;
 
@@ -73,7 +75,7 @@ export function initFilters() {
 
   // ── Filter change events ─────────────────────────────────────────────────────
 
-  filtersEl.addEventListener('change', (e) => {
+  filtersEl?.addEventListener('change', (e) => {
     if (
       e.target.matches('.ll-ba-checkbox-filter') ||
       e.target.matches('.ll-ba-dropdown-filter')
@@ -122,8 +124,8 @@ export function initFilters() {
   // ── Clear all ────────────────────────────────────────────────────────────────
 
   const handleClearAll = () => {
-    filtersEl.querySelectorAll('.ll-ba-checkbox-filter').forEach(el => { el.checked = false; });
-    filtersEl.querySelectorAll('.ll-ba-dropdown-filter').forEach(el => { el.value = ''; });
+    filtersEl?.querySelectorAll('.ll-ba-checkbox-filter').forEach(el => { el.checked = false; });
+    filtersEl?.querySelectorAll('.ll-ba-dropdown-filter').forEach(el => { el.value = ''; });
     currentPage = 1;
     applyFilters();
   };
@@ -150,8 +152,8 @@ export function initFilters() {
   filterApply?.addEventListener('click', closeFlyout);
 
   filterClearMob?.addEventListener('click', () => {
-    filtersEl.querySelectorAll('.ll-ba-checkbox-filter').forEach(el => { el.checked = false; });
-    filtersEl.querySelectorAll('.ll-ba-dropdown-filter').forEach(el => { el.value = ''; });
+    filtersEl?.querySelectorAll('.ll-ba-checkbox-filter').forEach(el => { el.checked = false; });
+    filtersEl?.querySelectorAll('.ll-ba-dropdown-filter').forEach(el => { el.value = ''; });
     currentPage = 1;
     applyFilters();
   });
@@ -161,7 +163,7 @@ export function initFilters() {
   function collectFilters() {
     const active = {};
 
-    filtersEl.querySelectorAll('.ll-ba-filter-group').forEach(group => {
+    filtersEl?.querySelectorAll('.ll-ba-filter-group').forEach(group => {
       const key = group.dataset.metaKey;
 
       const checked = [...group.querySelectorAll('.ll-ba-checkbox-filter:checked')]
@@ -236,7 +238,7 @@ export function initFilters() {
     if (tagsMobile) tagsMobile.innerHTML = '';
 
     for (const [key, value] of Object.entries(active)) {
-      const group  = filtersEl.querySelector(`[data-meta-key="${key}"]`);
+      const group  = filtersEl?.querySelector(`[data-meta-key="${key}"]`);
       const label  = group?.dataset.label ?? key;
       const values = Array.isArray(value) ? value : [value];
 
@@ -301,7 +303,7 @@ export function initFilters() {
       const key   = requireMatch ? requireMatch[1] : rawKey;
       const value = rawValue;
 
-      const group = filtersEl.querySelector(`[data-meta-key="${key}"]`);
+      const group = filtersEl?.querySelector(`[data-meta-key="${key}"]`);
       if (group && requireMatch) required[key] = value;
       if (!group) return;
 

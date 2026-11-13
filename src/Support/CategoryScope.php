@@ -183,7 +183,7 @@ class CategoryScope {
    * or ?ll_ba_require[ll_ba_category]=botox&ll_ba_category=lazerz when both share a taxonomy).
    */
   public static function cardUrl( WP_Term $category, string $taxonomy, ?array $scope = null ): string {
-    $archive = get_post_type_archive_link( BeforeAfterPostType::SLUG );
+    $archive = BeforeAfterPostType::getPostsArchiveUrl();
     if ( !$archive ) return '';
 
     $args = [];
@@ -202,7 +202,7 @@ class CategoryScope {
 
   /** "View All" URL: the posts page, pre-filtered by the scope term when scoped. */
   public static function allPostsUrl( ?array $scope = null ): string {
-    $url = SettingsPage::getPostsPageUrl();
+    $url = BeforeAfterPostType::getPostsArchiveUrl();
     if ( $url === '' || !$scope ) return $url;
 
     return add_query_arg( $scope['taxonomy'], $scope['term']->slug, $url );

@@ -23,6 +23,11 @@ class SettingsPage {
     add_filter('use_block_editor_for_post', [$this, 'disableBlockEditorForArchivePage'], 10, 2);
     add_filter('acf/load_field/key=field_ll_bag_category_taxonomy',          [$this, 'populateCategoryTaxonomyChoices']);
     add_filter('acf/load_field/key=field_ll_bag_category_archive_url_message', [$this, 'updateCategoryArchiveUrlMessage']);
+    add_filter('acf/load_field/key=field_ll_bag_archive_mode_urls', [$this, 'updateArchiveModeUrlsMessage']);
+    add_filter('acf/load_value/key=field_ll_bag_archive_mode', [$this, 'loadArchiveModeValue']);
+    add_filter('acf/load_field/key=field_ll_ba_image_ratio', [$this, 'labelDefaultRatioChoice']);
+    add_filter('acf/validate_value/key=field_ll_bag_default_image_ratio_custom', [$this, 'validateCustomRatio'], 10, 2);
+    add_action('admin_enqueue_scripts', [$this, 'exposeDefaultRatio'], 20);
     add_filter('acf/load_field/key=field_ll_ba_category_nav_taxonomy', [$this, 'populateCategoryNavTaxonomyChoices']);
     add_filter('acf/load_field/key=field_ll_ba_category_nav_term',     [$this, 'populateCategoryNavTermChoices']);
     add_filter('acf/validate_value/key=field_ll_ba_category_nav',      [$this, 'validateCategoryNav'], 10, 2);
@@ -44,9 +49,11 @@ class SettingsPage {
     return $use;
   }
 
+  // Flushed on the next request (BeforeAfterPostType::maybeFlushRewriteRules): this save's
+  // init already registered rules for the previous mode/slugs.
   public function maybeFlushRewriteRules(mixed $postId): void {
     if ($postId === 'options') {
-      flush_rewrite_rules();
+      update_option(BeforeAfterPostType::FLUSH_FLAG, 1, false);
     }
   }
 
@@ -84,6 +91,76 @@ class SettingsPage {
         'post_type'     => ['page'],
         'return_format' => 'id',
         'allow_null'    => 1,
+      ],
+      [
+        'key'           => 'field_ll_bag_archive_mode',
+        'label'         => 'Main Gallery View',
+        'name'          => 'll_bag_archive_mode',
+        'type'          => 'button_group',
+        'choices'       => [
+          BeforeAfterPostType::MODE_POSTS      => 'Posts archive',
+          BeforeAfterPostType::MODE_CATEGORIES => 'Categories',
+        ],
+        'default_value' => BeforeAfterPostType::MODE_POSTS,
+        'return_format' => 'value',
+        'layout'        => 'horizontal',
+        'wrapper'       => [
+          'data-tooltip' => 'What the gallery URL shows. Posts archive: every before & after with filters (no categories page). Categories: category cards with hero navigation; the posts archive moves to its own URL below and category cards link into it pre-filtered.',
+        ],
+      ],
+      [
+        'key'           => 'field_ll_bag_posts_archive_slug',
+        'label'         => 'Posts Archive Slug',
+        'name'          => 'll_bag_posts_archive_slug',
+        'type'          => 'text',
+        'default_value' => 'all',
+        'wrapper'       => [
+          'width'        => '50%',
+          'data-tooltip' => 'URL segment for the posts archive in Categories mode, e.g. "all" → /before-afters/all/.',
+        ],
+        'conditional_logic' => [
+          [ [ 'field' => 'field_ll_bag_archive_mode', 'operator' => '==', 'value' => BeforeAfterPostType::MODE_CATEGORIES ] ],
+        ],
+      ],
+      [
+        'key'     => 'field_ll_bag_archive_mode_urls',
+        'label'   => 'Gallery URLs',
+        'type'    => 'message',
+        'message' => '',
+        'wrapper' => [ 'width' => '50%' ],
+      ],
+      [
+        'key'           => 'field_ll_bag_default_image_ratio',
+        'label'         => 'Default Image Ratio',
+        'name'          => 'll_bag_default_image_ratio',
+        'type'          => 'select',
+        'choices'       => [
+          'wide'     => '16/9 (Wide)',
+          'square'   => '1/1 (Square)',
+          'panorama' => '3/1 (Panorama)',
+          'vertical' => '4/5 (Vertical)',
+          'custom'   => 'Custom',
+        ],
+        'default_value' => 'wide',
+        'return_format' => 'value',
+        'wrapper'       => [
+          'width'        => '50%',
+          'data-tooltip' => 'Used by every post image set to "Site default" (the default for new images). Images with their own ratio keep it.',
+        ],
+      ],
+      [
+        'key'           => 'field_ll_bag_default_image_ratio_custom',
+        'label'         => 'Custom Ratio',
+        'name'          => 'll_bag_default_image_ratio_custom',
+        'type'          => 'text',
+        'placeholder'   => '4:3',
+        'wrapper'       => [
+          'width'        => '50%',
+          'data-tooltip' => 'Width:height, e.g. 4:3 or 3:2.',
+        ],
+        'conditional_logic' => [
+          [ [ 'field' => 'field_ll_bag_default_image_ratio', 'operator' => '==', 'value' => 'custom' ] ],
+        ],
       ],
     ];
 
@@ -161,14 +238,12 @@ class SettingsPage {
         'endpoint'  => 0,
       ],
       [
-        'key'           => 'field_ll_bag_use_category_archive',
-        'label'         => 'Use Taxonomy Archive?',
-        'name'          => 'll_bag_use_category_archive',
-        'type'          => 'true_false',
-        'default_value' => 1,
-        'ui'            => 1,
-        'ui_on_text'    => 'Yes',
-        'ui_off_text'   => 'No',
+        'key'     => 'field_ll_bag_posts_mode_notice',
+        'type'    => 'message',
+        'message' => 'The categories page is off because Archive Settings → Main Gallery View is set to Posts archive. Switch it to Categories to use the settings below.',
+        'conditional_logic' => [
+          [ [ 'field' => 'field_ll_bag_archive_mode', 'operator' => '!=', 'value' => BeforeAfterPostType::MODE_CATEGORIES ] ],
+        ],
       ],
       [
         'key'           => 'field_ll_bag_category_taxonomy',
@@ -185,13 +260,13 @@ class SettingsPage {
       ],
       [
         'key'           => 'field_ll_bag_category_archive_slug',
-        'label'         => 'Taxonomy Archive Slug',
+        'label'         => 'Scoped Pages Slug',
         'name'          => 'll_bag_category_archive_slug',
         'type'          => 'text',
         'default_value' => 'categories',
-        'instructions'  => 'The URL segment for the category archive page (e.g. "treatments" → /before-afters/treatments/). After changing this field you must go to Settings > Permalinks > Save in order for the change to take effect',
+        'instructions'  => 'URL segment for the Hero Navigation pages, e.g. "categories" → /before-afters/categories/breast/.',
         'conditional_logic' => [
-          [ [ 'field' => 'field_ll_bag_use_category_archive', 'operator' => '==', 'value' => '1' ] ],
+          [ [ 'field' => 'field_ll_bag_archive_mode', 'operator' => '==', 'value' => BeforeAfterPostType::MODE_CATEGORIES ] ],
         ],
       ],
       [
@@ -199,7 +274,7 @@ class SettingsPage {
         'type'    => 'message',
         'message' => '',
         'conditional_logic' => [
-          [ [ 'field' => 'field_ll_bag_use_category_archive', 'operator' => '==', 'value' => '1' ] ],
+          [ [ 'field' => 'field_ll_bag_archive_mode', 'operator' => '==', 'value' => BeforeAfterPostType::MODE_CATEGORIES ] ],
         ],
       ],
     ] );
@@ -212,7 +287,7 @@ class SettingsPage {
         'type'   => 'group',
         'layout' => 'block',
         'conditional_logic' => [
-          [ [ 'field' => 'field_ll_bag_use_category_archive', 'operator' => '==', 'value' => '1' ] ],
+          [ [ 'field' => 'field_ll_bag_archive_mode', 'operator' => '==', 'value' => BeforeAfterPostType::MODE_CATEGORIES ] ],
         ],
         'sub_fields' => [
           [
@@ -266,7 +341,7 @@ class SettingsPage {
       ];
     }
 
-    $archiveOn = [ 'field' => 'field_ll_bag_use_category_archive', 'operator' => '==', 'value' => '1' ];
+    $archiveOn = [ 'field' => 'field_ll_bag_archive_mode', 'operator' => '==', 'value' => BeforeAfterPostType::MODE_CATEGORIES ];
 
     $fields[] = [
       'key'           => 'field_ll_ba_category_nav_show_all',
@@ -337,7 +412,7 @@ class SettingsPage {
       'default_value' => 'Select a category below to start exploring.',
       'instructions'  => 'Text shown above the category grid.',
       'conditional_logic' => [
-        [ [ 'field' => 'field_ll_bag_use_category_archive', 'operator' => '==', 'value' => '1' ] ],
+        [ [ 'field' => 'field_ll_bag_archive_mode', 'operator' => '==', 'value' => BeforeAfterPostType::MODE_CATEGORIES ] ],
       ],
     ];
 
@@ -374,9 +449,32 @@ class SettingsPage {
   public function updateCategoryArchiveUrlMessage(array $field): array {
     $url = BeforeAfterPostType::getCategoriesArchiveUrl();
     if ($url) {
-      $field['message'] = 'The category archive page will live at: <a href="' . esc_url($url) . '" target="_blank" rel="noopener">' . esc_html($url) . '</a>';
+      $field['message'] = 'The categories page lives at: <a href="' . esc_url($url) . '" target="_blank" rel="noopener">' . esc_html($url) . '</a>';
     }
     return $field;
+  }
+
+  /** Current gallery URLs for the saved mode (they change after saving a different mode). */
+  public function updateArchiveModeUrlsMessage(array $field): array {
+    $link = fn(string $url) => '<a href="' . esc_url($url) . '" target="_blank" rel="noopener">' . esc_html($url) . '</a>';
+    $rows = BeforeAfterPostType::isCategoriesMode()
+      ? [
+          'Categories page' => BeforeAfterPostType::getCategoriesArchiveUrl(),
+          'Posts archive'   => BeforeAfterPostType::getPostsArchiveUrl(),
+        ]
+      : [ 'Posts archive' => BeforeAfterPostType::getPostsArchiveUrl() ];
+
+    $field['message'] = implode('<br>', array_map(
+      fn($label, $url) => esc_html($label) . ': ' . ($url ? $link($url) : '—'),
+      array_keys($rows), $rows
+    ));
+    return $field;
+  }
+
+  /** Sites that never saved the mode show what they're actually running (see BeforeAfterPostType::archiveMode()). */
+  public function loadArchiveModeValue($value) {
+    // ACF has already swapped in default_value by now, so check whether it was ever saved.
+    return get_option('options_ll_bag_archive_mode') === false ? BeforeAfterPostType::archiveMode() : $value;
   }
 
   /**
@@ -464,6 +562,32 @@ class SettingsPage {
     }
 
     return $out;
+  }
+
+  /** Show which ratio "Site default" currently means, e.g. "Site default (16/9 Wide)". */
+  public function labelDefaultRatioChoice(array $field): array {
+    $default = bag_default_image_ratio();
+    $labels  = ['wide' => '16/9 Wide', 'square' => '1/1 Square', 'panorama' => '3/1 Panorama', 'vertical' => '4/5 Vertical'];
+    $label   = $default['key'] === 'custom' ? str_replace(' / ', '/', $default['css']) : ($labels[$default['key']] ?? '');
+    if (isset($field['choices']['default'])) {
+      $field['choices']['default'] = 'Site default' . ($label ? " ($label)" : '');
+    }
+    return $field;
+  }
+
+  public function validateCustomRatio(mixed $valid, mixed $value): mixed {
+    if ($valid !== true || (string) $value === '') return $valid;
+    return preg_match('/^\s*\d+(\.\d+)?\s*[:\/x]\s*\d+(\.\d+)?\s*$/i', (string) $value) ? $valid : 'Use width:height, e.g. 4:3.';
+  }
+
+  /** The admin crop preview needs the default ratio to frame "Site default" rows. */
+  public function exposeDefaultRatio(): void {
+    if (!wp_script_is('ll-bag-admin', 'enqueued')) return;
+    $default = bag_default_image_ratio();
+    wp_add_inline_script('ll-bag-admin', 'window.llBagDefaultRatio = ' . wp_json_encode([
+      'value'   => $default['value'],
+      'stacked' => $default['key'] === 'custom' ? $default['value'] >= 1.7 : in_array($default['key'], ['wide', 'panorama'], true),
+    ]) . ';', 'before');
   }
 
   public function populateCategoryTaxonomyChoices(array $field): array {
@@ -622,6 +746,11 @@ class SettingsPage {
 
   public static function getCategoryTaxonomy(): string {
     return (string) get_field('ll_bag_category_taxonomy', 'option');
+  }
+
+  /** URL segment of the posts archive in Categories mode (/{archive}/{slug}/). */
+  public static function getPostsArchiveSlug(): string {
+    return sanitize_title(get_option('options_ll_bag_posts_archive_slug') ?: 'all');
   }
 
   public static function getCategoryArchiveSlug(): string {

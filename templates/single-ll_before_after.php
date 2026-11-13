@@ -15,7 +15,8 @@ $single_page_label = bag_single_page_label( get_the_ID() );
 $cta = bag_resolve_cta( get_the_ID() );
 
 $card_terms  = PostTerms::forCard( get_the_ID() );
-$archive_url = get_post_type_archive_link( BeforeAfterPostType::SLUG );
+$archive_url = BeforeAfterPostType::getPostsArchiveUrl(); // category pills filter the posts archive
+$gallery_url = BeforeAfterPostType::getGalleryUrl();
 $is_nsfw     = (bool) get_field( 'll_ba_is_nsfw' );
 $nsfw_popup_text = get_field( 'll_bag_nsfw_popup_text', 'options' ) ?: 'This before and after contains sensitive content.';
 
@@ -46,30 +47,15 @@ $images_field = get_field('field_ll_ba_images');
 $ba_images = [];
 if ( !empty($images_field) ) {
     foreach ( $images_field as $image ) {
-        $ratio_key = $image['ll_ba_image_ratio'];
-
-        if ( $ratio_key === '' && $image['ll_ba_image_options'] === 'one-image' ) {
-            $ratio_key = 'wide';
-        }
-
-        $ratio_class = 'll-ba-single__ratio--square';
-        if ( $ratio_key === 'wide' ) {
-            $ratio_class = 'll-ba-single__ratio--wide';
-        } elseif ( $ratio_key === 'panorama' ) {
-            $ratio_class = 'll-ba-single__ratio--panorama';
-        } elseif ( $ratio_key === 'vertical' ) {
-            $ratio_class = 'll-ba-single__ratio--vertical';
-        }
-
-        $ratio_value = 1.0;
-        if ( $ratio_key === 'wide' )          $ratio_value = 16 / 9;
-        elseif ( $ratio_key === 'panorama' )  $ratio_value = 3.0;
-        elseif ( $ratio_key === 'vertical' )  $ratio_value = 0.8;
+        $ratio       = bag_resolve_image_ratio( $image );
+        $ratio_class = $ratio['class'];
+        $ratio_value = $ratio['value'];
 
         $ba_images[] = [
             'option'           => $image['ll_ba_image_options'],
             'ratio'            => $ratio_class,
             'ratio_value'      => $ratio_value,
+            'ratio_stacked'    => $ratio['stacked'],
             'single_image_id'  => $image['ll_ba_single_image'],
             'before_image_id'  => $image['ll_ba_before_image'],
             'after_image_id'   => $image['ll_ba_after_image'],
@@ -88,7 +74,7 @@ if ( !empty($images_field) ) {
 <main class="ll-ba-single">
 
     <?php if ( $is_nsfw ) : ?>
-        <?= Hooks::bag_nsfw_modal_markup( $nsfw_popup_text, $archive_url ) ?>
+        <?= Hooks::bag_nsfw_modal_markup( $nsfw_popup_text, $gallery_url ) ?>
     <?php endif; ?>
 
     <?php $sidebar_classes = implode( ' ', array_map( 'sanitize_html_class', apply_filters( 'lifted_logic/bag/single_sidebar_classes', [] ) ) ); ?>
@@ -286,7 +272,7 @@ if ( !empty($images_field) ) {
                                     <?php else : ?>
                                         <li class="splide__slide">
                                             <div class="ll-ba-single__slide-inner" data-ba-gallery="<?= Hooks::bag_lightbox_items( [ $image['before_image_id'], $image['after_image_id'] ] ) ?>">
-                                                <div class="ll-ba-single__side-by-side <?= $image['ratio'] === 'll-ba-single__ratio--wide' || $image['ratio'] === 'll-ba-single__ratio--panorama' ? 'll-ba-single__side-by-side--stacked' : '' ?>">
+                                                <div class="ll-ba-single__side-by-side <?= !empty( $image['ratio_stacked'] ) ? 'll-ba-single__side-by-side--stacked' : '' ?>">
                                                     <?php if ( $image['before_image_id'] ) : ?>
                                                         <div class="ll-ba-single__side-by-side-image ll-ba-single__zoomable <?= $image['ratio'] ?>" data-ba-open data-ba-index="0" role="button" tabindex="0" aria-label="View full size">
                                                             <?php bag_include_partial( 'fit-image', [

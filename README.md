@@ -78,21 +78,36 @@ your-theme/
 
 > **Note:** Partials included via `bag_include_partial()` (e.g. `fit-image`) are hardcoded to the plugin directory and cannot be overridden from the theme.
 
-#### Categories archive page
+#### Main gallery view (Posts vs Categories)
 
-The categories listing lives at `/{archive-slug}/{taxonomy-archive-slug}/` (slug defaults to `categories`) and is controlled via **B&A Posts → Settings → Taxonomy Archive Settings**:
+**B&A Posts → Settings → Archive Settings → Main Gallery View** decides what the gallery URL (`/{archive-slug}/`, from the assigned archive page) shows:
 
-- **Use Taxonomy Archive?** — master toggle. When off, the URL returns 404 and all fields below hide.
+| | Posts archive (default) | Categories |
+|---|---|---|
+| `/{archive-slug}/` | Posts archive (filters + grid) | Categories page |
+| Posts archive | `/{archive-slug}/` | `/{archive-slug}/{posts-slug}/` (**Posts Archive Slug**, default `all`), filters as `?{taxonomy}={term}` |
+| Scoped categories pages | not registered | `/{archive-slug}/{scoped-slug}/{term}/` (**Scoped Pages Slug**, default `categories`) |
+| `/{archive-slug}/{scoped-slug}/` | not registered | 301 → `/{archive-slug}/` |
+| Old `/{archive-slug}/?{filters}` links | — | 301 → `/{archive-slug}/{posts-slug}/?{filters}` |
+
+In Posts mode the categories page and its settings are off entirely. In Categories mode, category cards and "View All" link into the posts archive pre-filtered; clearing filters there shows every post, but nothing links to the unfiltered archive by default except "View All Before & Afters".
+
+Every "show posts" link (category cards, single-page category pills, Grid "View All", back button) goes through `BeforeAfterPostType::getPostsArchiveUrl()`; `getGalleryUrl()` is the gallery root. Sites that never saved this setting fall back to the old "Use Taxonomy Archive?" option (on → Categories, off → Posts). Saving settings re-flushes rewrite rules automatically on the next request — no Permalinks re-save needed.
+
+#### Categories page
+
+Controlled via **B&A Posts → Settings → Taxonomy Archive Settings** (Categories mode only):
+
 - **Taxonomy Archive Hero** — content/link/image for the hero banner on that page.
 - **Show "All" Pill** / **"All" Pill Label** — optional first pill linking back to the unscoped page.
 - **Hero Navigation** — repeater; each row (Label / Taxonomy / Term) becomes a pill in the hero and a scoped categories page (see below).
 - **Taxonomy Archive Subtitle** — text shown above the category grid (defaults to "Select a category below to start exploring.").
 
-Category cards link to the main archive pre-filtered by category (`?{featured-taxonomy}={slug}`) — the archive's filter/restore URL logic handles the rest.
+Category cards link to the posts archive pre-filtered by category (`?{featured-taxonomy}={slug}`) — the archive's filter/restore URL logic handles the rest.
 
 #### Scoped categories pages (Hero Navigation)
 
-Each Hero Navigation row creates a scoped page at `/{archive-slug}/{taxonomy-archive-slug}/{term-slug}/` (e.g. `/before-afters/categories/breast/`). Logic lives in `src/Support/CategoryScope.php`.
+Each Hero Navigation row creates a scoped page at `/{archive-slug}/{scoped-slug}/{term-slug}/` (e.g. `/before-afters/categories/breast/`). Logic lives in `src/Support/CategoryScope.php`.
 
 - **What shows on a scoped page:** featured-taxonomy terms used by at least one published post that also carries the row's term. Nothing is mapped by hand — the posts are the relationship. If the row's term is itself from the featured taxonomy, it's excluded from its own grid.
 - **Card links carry the scope:** a card on `/categories/breast/` links to `?ll_ba_body_area=breast&ll_ba_category=breast-lift`, so the archive opens with both filters checked (two flat "Filtered by" tags). Different filter groups are AND'd, so this narrows correctly.
@@ -209,6 +224,13 @@ Overrideable CSS files:
 | File | Purpose |
 |------|---------|
 | `ba-colors.css` | CSS custom properties for UI colors |
+| `primitives.css` | Raw color values (`--hex-codes-*`) referenced by `ba-colors.css` |
+
+Both are printed **inline and minified** in the page head (not linked as stylesheets), whether they come from the theme or the plugin. The minified copy is cached and rebuilt automatically when the file changes; relative `url()`s are rewritten to absolute URLs. No minification step is needed in the theme.
+
+### Default image ratio
+
+**Settings → Archive Settings → Default Image Ratio** (16/9, 1/1, 3/1, 4/5, or Custom `W:H`) applies to every post image whose **Individual Image Ratio** is "Site default" — the default for new image rows. Rows with their own ratio keep it. A preset default renders that preset's class; a custom one renders `ll-ba-single__ratio--default`, sized by `--ll-ba-default-ratio` / `--ll-ba-default-ratio-value` on `:root` (plus `ll-ba-single__ratio--landscape` when it's wide enough, ≥ 1.7:1, to stack before/after images like 16/9 does). Theme overrides of the card/single templates should resolve ratios with `bag_resolve_image_ratio( $row )`.
 
 ### Card Background Image
 

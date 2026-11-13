@@ -41,34 +41,21 @@ $cardLabel    = $card['label'];
 $cardTaxonomy = $card['taxonomy'];
 $termCount    = count($card['terms']);
 
-$archiveUrl = get_post_type_archive_link(BeforeAfterPostType::SLUG);
+$archiveUrl = BeforeAfterPostType::getPostsArchiveUrl();
 
 $images_field = get_field('field_ll_ba_images', $postID);
 $ba_gallery_image = [];
 if ( !empty($images_field) ) {
     foreach ( $images_field as $image ) {
-        $ratio_key = $image['ll_ba_image_ratio'];
-        if ( $ratio_key === '' && $image['ll_ba_image_options'] === 'one-image' ) {
-            $ratio_key = 'wide';
-        }
-
-        $ratio_class = 'll-ba-single__ratio--square';
-        if ( $ratio_key === 'wide' ) {
-            $ratio_class = 'll-ba-single__ratio--wide';
-        } elseif ( $ratio_key === 'panorama' ) {
-            $ratio_class = 'll-ba-single__ratio--panorama';
-        } elseif ( $ratio_key === 'vertical' ) {
-            $ratio_class = 'll-ba-single__ratio--vertical';
-        }
-        $ratio_value = 1.0;
-        if ( $ratio_key === 'wide' )          $ratio_value = 16 / 9;
-        elseif ( $ratio_key === 'panorama' )  $ratio_value = 3.0;
-        elseif ( $ratio_key === 'vertical' )  $ratio_value = 0.8;
+        $ratio       = bag_resolve_image_ratio( $image );
+        $ratio_class = $ratio['class'];
+        $ratio_value = $ratio['value'];
 
         $ba_gallery_image[] = [
             'option'           => $image['ll_ba_image_options'],
             'ratio'            => $ratio_class,
             'ratio_value'      => $ratio_value,
+            'ratio_stacked'    => $ratio['stacked'],
             'single_image_id'  => $image['ll_ba_single_image'],
             'before_image_id'  => $image['ll_ba_before_image'],
             'after_image_id'   => $image['ll_ba_after_image'],
@@ -84,7 +71,7 @@ $card_image = $ba_gallery_image[0] ?? null;
 
 $is_stacked = $card_image
     && $card_image['option'] === 'two-images'
-    && in_array( $card_image['ratio'], ['ll-ba-single__ratio--wide', 'll-ba-single__ratio--panorama'] );
+    && !empty( $card_image['ratio_stacked'] );
 
 $is_nsfw = get_field('ll_ba_is_nsfw', $postID);
 

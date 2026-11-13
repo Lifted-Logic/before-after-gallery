@@ -275,8 +275,10 @@ document.addEventListener( 'DOMContentLoaded', () => {
 } )();
 
 ( function cropPanels() {
-  const RATIOS = { wide: 16 / 9, square: 1, panorama: 3, vertical: 4 / 5, '': 1 };
-  const STACKED = ['wide', 'panorama'];
+  // "default" follows Settings → Default Image Ratio (window.llBagDefaultRatio, set by SettingsPage).
+  const DEFAULT_RATIO = window.llBagDefaultRatio || { value: 16 / 9, stacked: true };
+  const RATIOS = { wide: 16 / 9, square: 1, panorama: 3, vertical: 4 / 5, '': 1, default: DEFAULT_RATIO.value };
+  const STACKED = ['wide', 'panorama', ...( DEFAULT_RATIO.stacked ? ['default'] : [] )];
   const clamp = ( n, lo, hi ) => Math.min( hi, Math.max( lo, n ) );
 
   let activeStop = null;

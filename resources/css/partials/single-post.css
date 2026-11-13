@@ -25,6 +25,13 @@
   --ratio: 0.8;
 }
 
+/* Site-wide custom default (Settings → Default Image Ratio); the variables are printed on :root
+   by TemplateLoader::enqueueCssOverrides(). Preset defaults use their own class above. */
+.ll-ba-single__ratio--default {
+  aspect-ratio: var(--ll-ba-default-ratio, 16 / 9);
+  --ratio: var(--ll-ba-default-ratio-value, 1.7778);
+}
+
 /* Layout
    ========================================================================== */
 

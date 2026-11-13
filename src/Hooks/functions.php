@@ -121,3 +121,82 @@ if ( ! function_exists( 'bag_resolve_cta' ) ) {
     ];
   }
 }
+
+if ( ! function_exists( 'bag_image_ratio_presets' ) ) {
+  /**
+   * Preset image ratios (width / height), keyed by the ll_ba_image_ratio choice.
+   */
+  function bag_image_ratio_presets(): array {
+    return [ 'wide' => 16 / 9, 'square' => 1.0, 'panorama' => 3.0, 'vertical' => 0.8 ];
+  }
+}
+
+if ( ! function_exists( 'bag_default_image_ratio' ) ) {
+  /**
+   * Site-wide default ratio (Settings → Archive Settings → Default Image Ratio), used by image
+   * rows set to "Site default". Returns key (a preset or 'custom'), value (W/H) and css ("4 / 5").
+   * Reads options directly (no ACF) so it's cheap to call per image row.
+   */
+  function bag_default_image_ratio(): array {
+    static $cache = null;
+    if ( $cache !== null ) return $cache;
+
+    $presets = bag_image_ratio_presets();
+    $key     = (string) ( get_option( 'options_ll_bag_default_image_ratio' ) ?: 'wide' );
+
+    if ( $key === 'custom' ) {
+      $raw = (string) get_option( 'options_ll_bag_default_image_ratio_custom' );
+      if ( preg_match( '/^\s*(\d+(?:\.\d+)?)\s*[:\/x]\s*(\d+(?:\.\d+)?)\s*$/i', $raw, $m ) && (float) $m[1] > 0 && (float) $m[2] > 0 ) {
+        return $cache = [ 'key' => 'custom', 'value' => (float) $m[1] / (float) $m[2], 'css' => $m[1] . ' / ' . $m[2] ];
+      }
+      $key = 'wide'; // invalid custom value: fall back rather than break layouts
+    }
+
+    if ( ! isset( $presets[ $key ] ) ) $key = 'wide';
+    return $cache = [ 'key' => $key, 'value' => $presets[ $key ], 'css' => '' ];
+  }
+}
+
+if ( ! function_exists( 'bag_resolve_image_ratio' ) ) {
+  /**
+   * Resolve one ll_ba_images row's ratio for templates.
+   *
+   * Returns:
+   *   class   — CSS modifier class(es) for the image frame
+   *   value   — width / height, for focal-point crop math
+   *   stacked — whether two images stack vertically (wide frames) instead of side by side
+   *
+   * '' is legacy: one-image rows saved '' while the field was hidden (rendered as wide), and
+   * two-image rows fell back to square. 'default' follows the site-wide default ratio.
+   */
+  function bag_resolve_image_ratio( array $row ): array {
+    $presets = bag_image_ratio_presets();
+    $key     = (string) ( $row['ll_ba_image_ratio'] ?? '' );
+
+    if ( $key === '' && ( $row['ll_ba_image_options'] ?? '' ) === 'one-image' ) {
+      $key = 'wide';
+    }
+
+    if ( $key === 'default' ) {
+      $default = bag_default_image_ratio();
+      if ( $default['key'] === 'custom' ) {
+        $stacked = $default['value'] >= 1.7;
+        return [
+          'class'   => 'll-ba-single__ratio--default' . ( $stacked ? ' ll-ba-single__ratio--landscape' : '' ),
+          'value'   => $default['value'],
+          'stacked' => $stacked,
+        ];
+      }
+      $key = $default['key'];
+    }
+
+    if ( ! isset( $presets[ $key ] ) ) $key = 'square';
+
+    return [
+      'class'   => 'll-ba-single__ratio--' . $key,
+      'value'   => $presets[ $key ],
+      'stacked' => in_array( $key, [ 'wide', 'panorama' ], true ),
+    ];
+  }
+}
+

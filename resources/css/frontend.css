@@ -1,3 +1,5 @@
+/* Vendored (see resources/vendor/magnific-popup); bundled here so Vite minifies it. Plugin styles below override it. */
+@import '../vendor/magnific-popup/magnific-popup.css';
 @import './typography.css';
 @import './btn.css';
 @import './grid.css';

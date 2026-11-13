@@ -280,12 +280,13 @@ class Fields {
               'name' => 'll_ba_image_ratio',
               'type' => 'select',
               'choices' => [
+                'default' => 'Site default', // label gets the current default appended (SettingsPage::labelDefaultRatioChoice)
                 'wide' => '16/9 (Wide)',
                 'square' => '1/1 (Square)',
                 'panorama' => '3/1 (Panorama)',
                 'vertical' => '4/5 (Vertical)',
               ],
-              'default_value' => '',
+              'default_value' => 'default',
               'return_format' => 'value',
               'wrapper' => [
                 'width' => '50%',

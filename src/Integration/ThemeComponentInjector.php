@@ -183,7 +183,7 @@ class ThemeComponentInjector {
   }
 
   private function archiveUrlForFilterTerms( array $filter_terms ): string {
-    $base = get_post_type_archive_link( 'll_before_after' ) ?: home_url( '/' );
+    $base = \LiftedLogic\LLBag\BeforeAfterPostType\BeforeAfterPostType::getPostsArchiveUrl() ?: home_url( '/' );
 
     $pairs = [];
     foreach ( $filter_terms as $value ) {
@@ -408,7 +408,7 @@ class ThemeComponentInjector {
       }
 
       if ( empty( $link['url'] ) || $link['url'] === '#' ) {
-        $link['url'] = get_post_type_archive_link( 'll_before_after' ) ?: home_url( '/' );
+        $link['url'] = \LiftedLogic\LLBag\BeforeAfterPostType\BeforeAfterPostType::getPostsArchiveUrl() ?: home_url( '/' );
       }
       if ( empty( $link['title'] ) ) {
         $link['title'] = 'View All';
@@ -508,6 +508,15 @@ class ThemeComponentInjector {
   private function beforeAndAftersGridLayout(): array {
     $sub_fields = [];
 
+    $sub_fields[] = [
+      'key'          => 'field_ll_ba_bag_grid_content',
+      'label'        => 'Heading',
+      'name'         => 'll_ba_grid_content',
+      '_name'        => 'll_ba_grid_content',
+      'type'         => 'wysiwyg',
+      'instructions' => 'Optional. Appears above the grid. Leave empty for no heading.',
+    ];
+
     $selection_method_key = 'field_ll_ba_bag_grid_selection_method';
     $sub_fields[] = $this->postSelectionMethodSubField( $selection_method_key, 'll_ba_grid_selection_method' );
 
@@ -531,15 +540,6 @@ class ThemeComponentInjector {
     ];
 
     $sub_fields[] = $this->filterTermsSubField( 'field_ll_ba_bag_grid_filter_terms', 'll_ba_grid_filter_terms', $selection_method_key );
-
-    $sub_fields[] = [
-      'key'          => 'field_ll_ba_bag_grid_content',
-      'label'        => 'Heading',
-      'name'         => 'll_ba_grid_content',
-      '_name'        => 'll_ba_grid_content',
-      'type'         => 'wysiwyg',
-      'instructions' => 'Optional. Appears above the grid. Leave empty for no heading.',
-    ];
 
     $sub_fields[] = [
       'key'           => 'field_ll_ba_bag_grid_columns',

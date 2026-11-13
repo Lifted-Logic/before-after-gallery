@@ -32,13 +32,9 @@ class TemplateLoader {
     $this->enqueueMagnificPopup();
   }
 
+  // Magnific Popup's CSS is bundled (and minified) into frontend.css by Vite; only the
+  // jQuery plugin itself is enqueued here.
   private function enqueueMagnificPopup(): void {
-    wp_enqueue_style(
-      'll-bag-magnific-popup',
-      LL_BAG_URL . 'resources/vendor/magnific-popup/magnific-popup.css',
-      [],
-      '1.1.0'
-    );
     wp_enqueue_script(
       'll-bag-magnific-popup',
       LL_BAG_URL . 'resources/vendor/magnific-popup/jquery.magnific-popup.min.js',
@@ -51,15 +47,31 @@ class TemplateLoader {
   private function enqueueCssOverrides(): void {
     $deps = [];
 
+    // Color token files are printed inline (minified, cached by file mtime) instead of linked:
+    // they're a few KB of custom properties, and inlining means no extra requests and no
+    // minification step needed in the theme. A theme copy in {theme}/ll-before-after/css/ still wins.
     foreach (['primitives.css', 'ba-colors.css'] as $file) {
       $themeFile = get_stylesheet_directory() . '/ll-before-after/css/' . $file;
-      $url = file_exists($themeFile)
-        ? get_stylesheet_directory_uri() . '/ll-before-after/css/' . $file
-        : LL_BAG_URL . 'resources/css/' . $file;
+      $inTheme   = file_exists($themeFile);
+      $path      = $inTheme ? $themeFile : LL_BAG_PATH . 'resources/css/' . $file;
+      $baseUrl   = $inTheme ? get_stylesheet_directory_uri() . '/ll-before-after/css/' : LL_BAG_URL . 'resources/css/';
 
       $handle = 'll-bag-' . basename($file, '.css');
-      wp_enqueue_style($handle, $url, $deps, LL_BAG_VERSION);
+      wp_register_style($handle, false, $deps, LL_BAG_VERSION);
+      wp_enqueue_style($handle);
+
+      $css = self::minifiedCss($path, $baseUrl);
+      if ($css !== '') wp_add_inline_style($handle, $css);
+
       $deps = [$handle];
+    }
+
+    $default_ratio = bag_default_image_ratio();
+    if ( $default_ratio['key'] === 'custom' ) {
+      wp_add_inline_style('ll-bag-ba-colors', sprintf(
+        ':root{--ll-ba-default-ratio:%s;--ll-ba-default-ratio-value:%s}',
+        $default_ratio['css'], round( $default_ratio['value'], 4 )
+      ));
     }
 
     $this->enqueueCardBackgroundImage();
@@ -92,16 +104,55 @@ class TemplateLoader {
     }
   }
 
+  /**
+   * Minified contents of a CSS file, cached until the file changes. Relative url()s are made
+   * absolute against $baseUrl, since the CSS is printed inline rather than loaded from its folder.
+   */
+  public static function minifiedCss(string $path, string $baseUrl): string {
+    if (!is_readable($path)) return '';
+
+    $signature = filemtime($path) . ':' . filesize($path) . ':' . LL_BAG_VERSION;
+    $cacheKey  = 'll_bag_css_' . md5($path);
+    $cached    = get_transient($cacheKey);
+    if (is_array($cached) && ($cached['sig'] ?? '') === $signature) {
+      return (string) $cached['css'];
+    }
+
+    $css = (string) file_get_contents($path);
+    $css = preg_replace('!/\*.*?\*/!s', '', $css);                 // comments
+    $css = preg_replace('/\s+/', ' ', $css);                       // collapse whitespace
+    $css = preg_replace('/\s*([{};,])\s*/', '$1', $css);           // around braces, semicolons, commas
+    $css = preg_replace('/:\s+/', ':', $css);                      // after colons (not before: keeps "a :hover")
+    $css = str_replace(';}', '}', trim($css));
+
+    $css = preg_replace_callback('/url\(\s*([\'"]?)(?!data:|https?:|\/|#)([^\'")]+)\1\s*\)/i',
+      fn($m) => 'url(' . $m[1] . trailingslashit($baseUrl) . $m[2] . $m[1] . ')', $css);
+
+    $css = str_replace('</', '<\/', $css); // never close the <style> tag early
+
+    set_transient($cacheKey, ['sig' => $signature, 'css' => $css], WEEK_IN_SECONDS);
+    return $css;
+  }
+
   public function loadTemplate(string $template): string {
     if (is_singular(BeforeAfterPostType::SLUG)) {
       return self::resolve('single-ll_before_after.php') ?? $template;
     }
 
-    if (is_post_type_archive(BeforeAfterPostType::SLUG)) {
+    $view       = get_query_var('ll_ba_view');
+    $isArchive  = is_post_type_archive(BeforeAfterPostType::SLUG);
+
+    // Categories mode: /{archive}/ and /{archive}/{categories-slug}/{scope}/ show the categories
+    // page; the posts archive is /{archive}/{posts-slug}/ (ll_ba_view=posts). Posts mode never
+    // shows the categories page.
+    $showCategories = BeforeAfterPostType::isCategoriesMode()
+      && ( $view === 'categories' || ( $isArchive && $view !== 'posts' ) );
+
+    if ($isArchive && !$showCategories) {
       return self::resolve('archive-ll_before_after.php') ?? $template;
     }
 
-    if ( get_query_var('ll_ba_view') === 'categories' && get_field( 'll_bag_use_category_archive', 'option' ) ) {
+    if ( $showCategories ) {
       // A scope slug that matches no Hero Navigation row is a real 404, not the unscoped grid.
       if ( CategoryScope::requestedSlug() !== '' && CategoryScope::current() === null ) {
         global $wp_query;
