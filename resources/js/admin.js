@@ -686,3 +686,34 @@ document.addEventListener( 'DOMContentLoaded', () => {
   document.addEventListener( 'DOMContentLoaded', scan );
   if ( window.acf ) window.acf.addAction( 'append', scan );
 } )();
+
+// Settings → Archive Settings: Gallery URLs follow the unsaved Main Gallery View and Posts Archive Slug.
+( () => {
+  const MODE = 'field_ll_bag_archive_mode';
+  const SLUG = 'field_ll_bag_posts_archive_slug';
+
+  const slugify = ( v ) =>
+    ( v || '' ).toLowerCase().trim().replace( /[^a-z0-9_-]+/g, '-' ).replace( /^-+|-+$/g, '' ) || 'all';
+
+  const sync = () => {
+    const box = document.querySelector( '.ll-bag-gallery-urls' );
+    if ( !box ) return;
+
+    const mode = document.querySelector( `.acf-field[data-key="${MODE}"] input:checked` )?.value;
+    if ( mode ) box.querySelectorAll( '[data-mode]' ).forEach( ( el ) => ( el.style.display = el.dataset.mode === mode ? '' : 'none' ) );
+
+    const slugInput = document.querySelector( `.acf-field[data-key="${SLUG}"] input` );
+    const link = box.querySelector( '[data-posts-url]' );
+    if ( slugInput && link ) {
+      link.href = link.textContent = `${box.dataset.base}${slugify( slugInput.value )}/`;
+    }
+  };
+
+  document.addEventListener( 'change', ( e ) => {
+    if ( e.target.closest?.( `.acf-field[data-key="${MODE}"], .acf-field[data-key="${SLUG}"]` ) ) sync();
+  } );
+  document.addEventListener( 'input', ( e ) => {
+    if ( e.target.closest?.( `.acf-field[data-key="${SLUG}"]` ) ) sync();
+  } );
+  document.addEventListener( 'DOMContentLoaded', sync );
+} )();

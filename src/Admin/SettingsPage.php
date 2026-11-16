@@ -115,7 +115,6 @@ class SettingsPage {
         'type'          => 'text',
         'default_value' => 'all',
         'wrapper'       => [
-          'width'        => '50%',
           'data-tooltip' => 'URL segment for the posts archive in Categories mode, e.g. "all" → /before-afters/all/.',
         ],
         'conditional_logic' => [
@@ -127,7 +126,6 @@ class SettingsPage {
         'label'   => 'Gallery URLs',
         'type'    => 'message',
         'message' => '',
-        'wrapper' => [ 'width' => '50%' ],
       ],
       [
         'key'           => 'field_ll_bag_default_image_ratio',
@@ -144,7 +142,6 @@ class SettingsPage {
         'default_value' => 'wide',
         'return_format' => 'value',
         'wrapper'       => [
-          'width'        => '50%',
           'data-tooltip' => 'Used by every post image set to "Site default" (the default for new images). Images with their own ratio keep it.',
         ],
       ],
@@ -155,7 +152,6 @@ class SettingsPage {
         'type'          => 'text',
         'placeholder'   => '4:3',
         'wrapper'       => [
-          'width'        => '50%',
           'data-tooltip' => 'Width:height, e.g. 4:3 or 3:2.',
         ],
         'conditional_logic' => [
@@ -350,7 +346,6 @@ class SettingsPage {
       'type'          => 'true_false',
       'default_value' => 1,
       'ui'            => 1,
-      'wrapper'       => [ 'width' => '50%' ],
       'conditional_logic' => [ [ $archiveOn ] ],
     ];
 
@@ -360,7 +355,6 @@ class SettingsPage {
       'name'          => CategoryScope::FIELD_ALL_LABEL,
       'type'          => 'text',
       'default_value' => 'All',
-      'wrapper'       => [ 'width' => '50%' ],
       'conditional_logic' => [ [ $archiveOn, [ 'field' => 'field_ll_ba_category_nav_show_all', 'operator' => '==', 'value' => '1' ] ] ],
     ];
 
@@ -454,20 +448,34 @@ class SettingsPage {
     return $field;
   }
 
-  /** Current gallery URLs for the saved mode (they change after saving a different mode). */
+  /**
+   * Both modes' URLs are rendered; admin.js shows the set matching the selected
+   * Main Gallery View (and the typed Posts Archive Slug) before saving.
+   */
   public function updateArchiveModeUrlsMessage(array $field): array {
-    $link = fn(string $url) => '<a href="' . esc_url($url) . '" target="_blank" rel="noopener">' . esc_html($url) . '</a>';
-    $rows = BeforeAfterPostType::isCategoriesMode()
-      ? [
-          'Categories page' => BeforeAfterPostType::getCategoriesArchiveUrl(),
-          'Posts archive'   => BeforeAfterPostType::getPostsArchiveUrl(),
-        ]
-      : [ 'Posts archive' => BeforeAfterPostType::getPostsArchiveUrl() ];
+    $base = BeforeAfterPostType::getGalleryUrl();
+    if (!$base) {
+      $field['message'] = esc_html__('Assign an All Posts Archive Page to see the gallery URLs.', 'll-bag');
+      return $field;
+    }
 
-    $field['message'] = implode('<br>', array_map(
-      fn($label, $url) => esc_html($label) . ': ' . ($url ? $link($url) : '—'),
-      array_keys($rows), $rows
-    ));
+    $link = fn(string $url, string $attr = '') => '<a href="' . esc_url($url) . '" target="_blank" rel="noopener"' . $attr . '>' . esc_html($url) . '</a>';
+    $posts_url = trailingslashit($base) . trailingslashit(self::getPostsArchiveSlug());
+    $current = BeforeAfterPostType::archiveMode();
+    $hidden = fn(string $mode) => $mode === $current ? '' : ' style="display:none"';
+
+    $field['message'] = sprintf(
+      '<div class="ll-bag-gallery-urls" data-base="%1$s">'
+        . '<div data-mode="%2$s"%3$s>%4$s: %5$s</div>'
+        . '<div data-mode="%6$s"%7$s>%8$s: %9$s<br>%10$s: %11$s</div>'
+      . '</div>',
+      esc_attr(trailingslashit($base)),
+      esc_attr(BeforeAfterPostType::MODE_POSTS), $hidden(BeforeAfterPostType::MODE_POSTS),
+      esc_html__('Posts archive', 'll-bag'), $link($base),
+      esc_attr(BeforeAfterPostType::MODE_CATEGORIES), $hidden(BeforeAfterPostType::MODE_CATEGORIES),
+      esc_html__('Categories page', 'll-bag'), $link($base),
+      esc_html__('Posts archive', 'll-bag'), $link($posts_url, ' data-posts-url')
+    );
     return $field;
   }
 
