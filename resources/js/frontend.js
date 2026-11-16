@@ -54,12 +54,14 @@ import { initNsfwModal } from './nsfw-modal.js';
 // ── Splide: single post gallery + thumbnails ───────────────────────────────────
 
 document.querySelectorAll( '.ll-ba-single-page-slider' ).forEach( el => {
-  const navEl = el.nextElementSibling?.classList.contains( 'll-ba-single-page-slider-nav' ) ? el.nextElementSibling : null;
+  const navEl = el.parentElement?.querySelector( ':scope > .ll-ba-single-page-slider-nav' ) ?? null;
+  const arrowsEl = el.parentElement?.querySelector( ':scope > .ll-ba-single__gallery-arrows' ) ?? null;
 
   const slideCount = el.querySelectorAll( '.splide__slide' ).length;
 
   if ( slideCount <= 1 ) {
     if ( navEl ) navEl.style.display = 'none';
+    if ( arrowsEl ) arrowsEl.style.display = 'none';
     new Splide( el, { drag: false, arrows: false, pagination: false } ).mount();
     return;
   }
@@ -73,6 +75,10 @@ document.querySelectorAll( '.ll-ba-single-page-slider' ).forEach( el => {
     focus: 'center',
     drag: false,
   } );
+
+  // Arrows sit outside the slider (between it and the thumbnails), so wire them by hand.
+  arrowsEl?.querySelector( '.splide__arrow--prev' )?.addEventListener( 'click', () => primary.go( '<' ) );
+  arrowsEl?.querySelector( '.splide__arrow--next' )?.addEventListener( 'click', () => primary.go( '>' ) );
 
   if ( navEl ) {
     const nav = new Splide( navEl, {

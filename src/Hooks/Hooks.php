@@ -88,6 +88,29 @@ class Hooks {
     return apply_filters( 'lifted_logic/bag/lightbox_expand_markup', $markup, $index );
   }
 
+  // Main gallery arrows (below the main image, cycle through a post's image sets)
+  public static function bag_gallery_slider_arrows_markup(): string {
+    $prev = <<<HTML
+      <button type="button" class="ll-ba-single__related-arrow ll-ba-single__gallery-arrow ll-ba-single__gallery-arrow--prev splide__arrow--prev">
+        <svg class="ll-ba-single__related-arrow-icon icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
+        <span class="sr-only">Previous image set</span>
+      </button>
+    HTML;
+
+    $next = <<<HTML
+      <button type="button" class="ll-ba-single__related-arrow ll-ba-single__gallery-arrow ll-ba-single__gallery-arrow--next splide__arrow--next">
+        <svg class="ll-ba-single__related-arrow-icon icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
+        <span class="sr-only">Next image set</span>
+      </button>
+    HTML;
+
+    $markup = <<<HTML
+      <div class="ll-ba-single__gallery-arrows">$prev$next</div>
+    HTML;
+
+    return apply_filters( 'lifted_logic/bag/gallery_slider_arrows_markup', $markup, $prev, $next );
+  }
+
   // Related slider arrows
   public static function bag_related_slider_arrows_markup(): string {
     $prev = <<<HTML

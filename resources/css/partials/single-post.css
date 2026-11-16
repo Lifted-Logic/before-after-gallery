@@ -508,6 +508,30 @@
     }
   }
 
+  /* Main gallery arrows (between the main image and the thumbnails)
+     ========================================================================== */
+
+  .ll-ba-single__gallery-arrows {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-block: -1rem;
+  }
+
+  /* They sit on the gallery panel (--cards-background), so the related arrows' colors
+     can disappear here. --gallery-arrows-* override them for these buttons only. */
+  .ll-ba-single__gallery-arrow {
+    background-color: var(--gallery-arrows-fill, var(--arrow-buttons-fill, var(--cards-background, white)));
+    border-color: var(--gallery-arrows-stroke, var(--arrow-buttons-stroke, transparent));
+    color: var(--gallery-arrows-elements, var(--arrow-buttons-elements, black));
+  }
+
+  .ll-ba-single__gallery-arrow:hover {
+    background-color: var(--gallery-arrows-fill-hover, var(--arrow-buttons-fill-hover, black));
+    border-color: var(--gallery-arrows-stroke-hover, var(--gallery-arrows-stroke, var(--arrow-buttons-stroke-hover, var(--arrow-buttons-stroke, transparent))));
+    color: var(--gallery-arrows-elements-hover, var(--arrow-buttons-elements-hover, white));
+  }
+
   /* Nav slider thumbnails
      ========================================================================== */
 

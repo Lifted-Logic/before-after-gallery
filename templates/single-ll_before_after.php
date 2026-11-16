@@ -324,6 +324,10 @@ if ( !empty($images_field) ) {
                     </div>
                 </div>
 
+                <?php if ( count( $ba_images ) > 1 ) : ?>
+                    <?= Hooks::bag_gallery_slider_arrows_markup() ?>
+                <?php endif; ?>
+
                 <div class="splide ll-ba-single-page-slider-nav" aria-label="Before & After Gallery Thumbnails">
                     <div class="splide__track">
                         <ul class="splide__list">

@@ -303,6 +303,33 @@ add_filter( 'lifted_logic/bag/bag_back_button_markup', function( $markup, $class
 
 ---
 
+### `bag_gallery_slider_arrows_markup`
+
+Filter: `lifted_logic/bag/gallery_slider_arrows_markup`
+
+Overrides the previous/next arrows between the main single-page image and the thumbnail strip. They only render when a post has more than one image set. The buttons **must keep** `splide__arrow--prev` and `splide__arrow--next` — `frontend.js` wires those to the main slider, and the thumbnails follow because they're synced to it. Return `''` to remove the arrows.
+
+The filter receives `$prev` and `$next` as separate strings, like the related slider arrows.
+
+**Default markup:**
+
+```html
+<div class="ll-ba-single__gallery-arrows">
+  <button type="button" class="ll-ba-single__related-arrow ll-ba-single__gallery-arrow ll-ba-single__gallery-arrow--prev splide__arrow--prev">
+    <svg class="ll-ba-single__related-arrow-icon icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
+    <span class="sr-only">Previous image set</span>
+  </button>
+  <button type="button" class="ll-ba-single__related-arrow ll-ba-single__gallery-arrow ll-ba-single__gallery-arrow--next splide__arrow--next">
+    <svg class="ll-ba-single__related-arrow-icon icon icon-arrow-right" aria-hidden="true"><use xlink:href="#icon-arrow-right"></use></svg>
+    <span class="sr-only">Next image set</span>
+  </button>
+</div>
+```
+
+They reuse the related-arrow classes, so they pick up the same `--arrow-buttons-*` colors. Because they sit on the gallery panel (`--cards-background`), you can recolor just these with `--gallery-arrows-fill`, `--gallery-arrows-stroke`, `--gallery-arrows-elements` and their `-hover` variants (e.g. in the theme's `ll-before-after/css/ba-colors.css`).
+
+---
+
 ### `bag_related_slider_arrows_markup`
 
 Filter: `lifted_logic/bag/related_slider_arrows_markup`
