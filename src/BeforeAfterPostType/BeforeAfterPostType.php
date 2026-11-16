@@ -12,6 +12,7 @@ class BeforeAfterPostType {
   public const MODE_POSTS      = 'posts';
   public const MODE_CATEGORIES = 'categories';
   public const FLUSH_FLAG      = 'll_bag_flush_rewrite';
+  public const VERSION_OPTION  = 'll_bag_rewrite_version';
 
   public function register(): void {
     add_action('init', [$this, 'registerPostType']);
@@ -104,9 +105,17 @@ class BeforeAfterPostType {
    * Settings saves set a flag instead of flushing on the spot: during that save, init has
    * already registered the rules for the *old* mode/slugs. This flushes on the next request.
    */
+  /**
+   * Flushes after a settings save (FLUSH_FLAG) or a plugin update: updates don't run
+   * activation hooks, so new routes (e.g. the Categories-mode posts URL) would 404
+   * until someone saved settings or Permalinks.
+   */
   public function maybeFlushRewriteRules(): void {
-    if (!get_option(self::FLUSH_FLAG)) return;
+    $versionChanged = get_option(self::VERSION_OPTION) !== LL_BAG_VERSION;
+    if (!get_option(self::FLUSH_FLAG) && !$versionChanged) return;
+
     delete_option(self::FLUSH_FLAG);
+    if ($versionChanged) update_option(self::VERSION_OPTION, LL_BAG_VERSION);
     flush_rewrite_rules(false);
   }
 
