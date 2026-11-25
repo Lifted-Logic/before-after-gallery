@@ -28,12 +28,12 @@ defined('ABSPATH') || exit;
         </li>
         <li>
           <a href="#archive-page" class="ll-bag-how-to__nav-link">
-            <?php esc_html_e('Archive Page', 'll-bag'); ?>
+            <?php esc_html_e('Gallery Page', 'll-bag'); ?>
           </a>
         </li>
         <li>
           <a href="#category-page" class="ll-bag-how-to__nav-link">
-            <?php esc_html_e('Category Page', 'll-bag'); ?>
+            <?php esc_html_e('Categories Page', 'll-bag'); ?>
           </a>
         </li>
       </ul>
@@ -47,7 +47,7 @@ defined('ABSPATH') || exit;
         <ol class="ll-bag-how-to__steps">
           <li>
             <strong><a href="#archive-page"><?php esc_html_e('Create your gallery page.', 'll-bag'); ?></a></strong>
-            <?php esc_html_e('Make a new WordPress page, then assign it under Before & Afters → Settings → Archive Settings. Save your permalinks afterward (Settings → Permalinks → Save Changes).', 'll-bag'); ?>
+            <?php esc_html_e('Make a new WordPress page, then choose it as the Gallery Page under Before & Afters → Settings → Archive Settings.', 'll-bag'); ?>
           </li>
           <li>
             <strong><a href="#setting-up-filters"><?php esc_html_e('Set up your filters.', 'll-bag'); ?></a></strong>
@@ -118,9 +118,9 @@ defined('ABSPATH') || exit;
 
         <h3><?php esc_html_e('Setting up Categories', 'll-bag'); ?></h3>
         <p><?php echo wp_kses_post(sprintf(
-          /* translators: %s: link to the Taxonomy Archive section */
-          __('Whichever filter you designate as the <strong>Featured Taxonomy</strong> — under Before & Afters → Settings → Taxonomy Archive Settings — gains extra fields once you\'ve made that selection. Go to that filter\'s term list (e.g. Before & Afters → Treatments) and edit any term: you\'ll now see a Background Image field. This needs to be filled in for each term so it displays correctly as a card on the Taxonomy Archive page. See %s for the full setup.', 'll-bag'),
-          '<a href="#category-page">' . esc_html__('Taxonomy Archive', 'll-bag') . '</a>'
+          /* translators: %s: link to the Categories Page section */
+          __('Whichever filter you choose as the <strong>Featured Taxonomy</strong> — under Before & Afters → Settings → Archive Settings — is treated as each post\'s category, and gains extra fields once you\'ve made that selection. Go to that filter\'s term list (e.g. Before & Afters → Treatments) and edit any term: you\'ll see a Background Image field, used for the term\'s card on the categories page, and CTA fields that override the default CTA on that category\'s posts. See %s for the full setup.', 'll-bag'),
+          '<a href="#category-page">' . esc_html__('Categories Page', 'll-bag') . '</a>'
         )); ?></p>
         <p><?php esc_html_e('Note that this is a separate setting from "Show on Cards" in the table above — a filter can be used for gallery card pills, the Featured Taxonomy, both, or neither, independently of one another.', 'll-bag'); ?></p>
       </section>
@@ -153,7 +153,7 @@ defined('ABSPATH') || exit;
           <dd><?php esc_html_e('Upload a single image — typically a combined before/after photo in one frame. The image will display in its original proportions.', 'll-bag'); ?></dd>
 
           <dt><?php esc_html_e('Two Images', 'll-bag'); ?></dt>
-          <dd><?php esc_html_e('Upload a separate before and after image. You\'ll also choose a crop ratio so both images align correctly, and optionally enable a comparison slider so visitors can drag to compare the two. The slider only appears on the single post page — on gallery cards the two images sit side by side. For best results, use images cropped the same way with the subject in the same position in both photos.', 'll-bag'); ?></dd>
+          <dd><?php esc_html_e('Upload a separate before and after image. You\'ll also choose a crop ratio so both images align correctly — "Site default" (preselected) follows the Default Image Ratio under Settings → Display — and optionally enable a comparison slider so visitors can drag to compare the two. The slider only appears on the single post page — on gallery cards the two images sit side by side. For best results, use images cropped the same way with the subject in the same position in both photos.', 'll-bag'); ?></dd>
 
           <dt><?php esc_html_e('Video', 'll-bag'); ?></dt>
           <dd><?php esc_html_e('Paste in a video URL and add a short title for accessibility. The video will be embedded in place of an image.', 'll-bag'); ?></dd>
@@ -161,10 +161,10 @@ defined('ABSPATH') || exit;
 
         <h3><?php esc_html_e('Settings Tab', 'll-bag'); ?></h3>
         <p><?php esc_html_e('Sensitive Images', 'll-bag'); ?></p>
-        <p><?php esc_html_e('Toggle this on if the post contains sensitive before & after content. Visitors will see the images blurred by default and be given the option to reveal them. This applies to both the gallery card, the single post page, and the Before and After components. The text shown inside that popup can be customized under Before & Afters → Settings → NSFW Popup.', 'll-bag'); ?></p>
+        <p><?php esc_html_e('Toggle this on if the post contains sensitive before & after content. Visitors will see the images blurred by default and be given the option to reveal them. This applies to both the gallery card, the single post page, and the Before and After components. The text shown inside that popup can be customized under Before & Afters → Settings → Display → Sensitive Content Popup Text.', 'll-bag'); ?></p>
 
         <h3><?php esc_html_e('Categorizing Your Post', 'll-bag'); ?></h3>
-        <p><?php esc_html_e('On the right side of the edit screen you\'ll see panels for each of your active filters — things like Categories, Providers, or any custom filters you\'ve set up. Check the terms that apply to this post. These are what visitors use to filter the gallery, and they also power the "Related Before & Afters" suggestions on the single post page.', 'll-bag'); ?></p>
+        <p><?php esc_html_e('On the right side of the edit screen you\'ll see panels for each of your active filters — things like Categories, Providers, or any custom filters you\'ve set up. Check the terms that apply to this post. These are what visitors use to filter the gallery, and they also decide which related posts are suggested on the single post page.', 'll-bag'); ?></p>
 
         <h3><?php esc_html_e('Provider Settings', 'll-bag'); ?></h3>
         <p><?php esc_html_e('If Providers is one of your active filters, each provider term has two extra fields available when you edit it — go to Before & Afters → Providers and click on a provider to see them.', 'll-bag'); ?></p>
@@ -179,35 +179,38 @@ defined('ABSPATH') || exit;
         <h3><?php esc_html_e('Related Before & After Posts', 'll-bag'); ?></h3>
         <p><?php esc_html_e('Near the bottom of the edit screen you\'ll find a "Related Before & After Posts" box. This controls which posts are suggested to visitors after they view this one.', 'll-bag'); ?></p>
 
-        <img
-          src="<?= esc_url(LL_BAG_URL . 'resources/img/before-after__related-posts.png') ?>"
-          alt="<?php esc_attr_e('Screenshot of the Related Before & After Posts meta box', 'll-bag'); ?>"
-          class="ll-bag-how-to__screenshot"
-        >
-        <p><?php esc_html_e('By default, the gallery automatically surfaces related posts based on the tags assigned to the current post — no action needed. If you want to override that and point to a specific set of posts instead, use this box to select the terms that should drive the suggestions. Switch between your filter categories using the tabs on the left of the box, then check whichever terms apply.', 'll-bag'); ?></p>
-        <p><?php esc_html_e('Leave everything unchecked to use the automatic behavior.', 'll-bag'); ?></p>
+        <p><?php esc_html_e('Related posts are chosen automatically, so there is nothing you need to do. The gallery looks at the terms you checked for this post (Category, Treatment, Provider and any other filters you use) and shows the six posts that have the most in common with it. Terms that only a few posts share count for more than terms that most posts share, so a specific match like a treatment name beats a broad one. If several posts match equally well, the ones closest to this post in the gallery order come first. If fewer than six posts share anything with this one, the empty spots are filled with the newest posts.', 'll-bag'); ?></p>
+        <p><?php esc_html_e('The box has a "Currently showing" list so you can see which posts will appear, with the terms each one shares with this post (or, for picks you made by checking terms, the checked terms it has). The list shows the saved post, so after you change anything, click Update to see the new result.', 'll-bag'); ?></p>
+        <p><?php esc_html_e('To pick the matches yourself, use the tabs on the left of the box and check the terms that should drive the suggestions. Posts with any of those terms are shown first, and the automatic matches fill whatever spots are left. Leave everything unchecked to use the automatic behavior only.', 'll-bag'); ?></p>
 
         <h3><?php esc_html_e('Global Settings for Single Posts', 'll-bag'); ?></h3>
-        <p><?php esc_html_e('A few things that appear on every single post page are controlled globally rather than per-post. You\'ll find them under Before & Afters → Settings, on the Single Page tab.', 'll-bag'); ?></p>
+        <p><?php esc_html_e('A few things that appear on every single post page are controlled globally rather than per-post. You\'ll find them under Before & Afters → Settings, on the Single Pages tab.', 'll-bag'); ?></p>
         <dl class="ll-bag-how-to__def-list">
-          <dt><?php esc_html_e('Default Single Page Label', 'll-bag'); ?></dt>
+          <dt><?php esc_html_e('Default Page Label', 'll-bag'); ?></dt>
           <dd><?php esc_html_e('The heading that appears above the detail content on every post. Individual posts can override this with their own Single Page Label — but if they don\'t, this is what shows. Leave it blank and no heading is shown.', 'll-bag'); ?></dd>
 
-          <dt><?php esc_html_e('CTA Title & CTA Link', 'll-bag'); ?></dt>
-          <dd><?php esc_html_e('A call-to-action button that appears on every single post page — typically something like "Book a Consultation" linking to a contact page. Fill in both the title and the link to show the CTA. Leave either field blank and the CTA won\'t appear at all.', 'll-bag'); ?></dd>
+          <dt><?php esc_html_e('Default CTA', 'll-bag'); ?></dt>
+          <dd><?php esc_html_e('A call-to-action button that appears on every single post page — typically something like "Book a Consultation" linking to a contact page. Fill in both the title and the link to show the CTA. Leave either field blank and the CTA won\'t appear at all. A category can override it with its own CTA from that term\'s edit screen.', 'll-bag'); ?></dd>
 
-          <dt><?php esc_html_e('Related Treatments Slider Title', 'll-bag'); ?></dt>
+          <dt><?php esc_html_e('Related Posts Slider Title', 'll-bag'); ?></dt>
           <dd><?php esc_html_e('The heading shown above the row of related before & after posts at the bottom of the single post page. Set it to whatever fits your site — something like "More Before & Afters" or "You Might Also Like".', 'll-bag'); ?></dd>
+        </dl>
 
-          <dt><?php esc_html_e('Card Background Color', 'll-bag'); ?></dt>
-          <dd><?php esc_html_e('The background color visible behind each gallery card. Found under Before & Afters → Settings → Card Background Color.', 'll-bag'); ?></dd>
+        <h3><?php esc_html_e('Display Settings', 'll-bag'); ?></h3>
+        <p><?php esc_html_e('Settings that apply everywhere the gallery appears — cards, sliders and single pages — live under Before & Afters → Settings, on the Display tab.', 'll-bag'); ?></p>
+        <dl class="ll-bag-how-to__def-list">
+          <dt><?php esc_html_e('Default Image Ratio', 'll-bag'); ?></dt>
+          <dd><?php esc_html_e('The crop frame for every image set to "Site default": 16/9 Wide, 1/1 Square, 3/1 Panorama, 4/5 Vertical, or Custom (enter width:height, e.g. 4:3). Changing it updates every "Site default" image at once; images with their own ratio keep it. Re-check focal points on a few posts after changing it.', 'll-bag'); ?></dd>
+
+          <dt><?php esc_html_e('Sensitive Content Popup Text', 'll-bag'); ?></dt>
+          <dd><?php esc_html_e('The message shown over posts marked as sensitive, on gallery cards and single pages.', 'll-bag'); ?></dd>
         </dl>
       </section>
 
       <section id="archive-page" class="ll-bag-how-to__section">
-        <h2><?php esc_html_e('Archive Page', 'll-bag'); ?></h2>
+        <h2><?php esc_html_e('Gallery Page', 'll-bag'); ?></h2>
 
-        <p><?php esc_html_e('The archive page is where all your before & after posts live — the main gallery visitors browse and filter. Setting it up takes a few steps across two different areas of WordPress.', 'll-bag'); ?></p>
+        <p><?php esc_html_e('The gallery page is where visitors browse your before & afters. Setting it up takes a few steps.', 'll-bag'); ?></p>
 
         <ol class="ll-bag-how-to__steps">
           <li>
@@ -215,51 +218,46 @@ defined('ABSPATH') || exit;
             <?php esc_html_e('Go to Pages → Add New and create a page with whatever title you want visitors to see (e.g. "Before & Afters"). You don\'t need to add any content — just publish it.', 'll-bag'); ?>
           </li>
           <li>
-            <strong><?php esc_html_e('Assign the page in Archive Settings.', 'll-bag'); ?></strong>
-            <?php esc_html_e('Go to Before & Afters → Settings and open the Archive Settings tab. Find the "All Posts Archive Page" field and select the page you just created.', 'll-bag'); ?>
+            <strong><?php esc_html_e('Assign the page.', 'll-bag'); ?></strong>
+            <?php esc_html_e('Go to Before & Afters → Settings → Archive Settings and select it in the Gallery Page field.', 'll-bag'); ?>
           </li>
           <li>
-            <strong><?php esc_html_e('Save your permalinks.', 'll-bag'); ?></strong>
-            <?php esc_html_e('Go to Settings → Permalinks and click Save Changes — you don\'t need to change anything, just save. This tells WordPress to recognize the new page as the gallery archive.', 'll-bag'); ?>
+            <strong><?php esc_html_e('Choose the Main Gallery View.', 'll-bag'); ?></strong>
+            <?php esc_html_e('Posts archive: the page shows every before & after with the filter sidebar, and there is no categories page. Categories: the page shows the category grid, and the full posts archive moves to its own URL, set by Posts Archive Slug (default "all", e.g. /before-afters/all/). The Gallery URLs box shows where each page lives. URL changes apply automatically when you save — no need to re-save Permalinks.', 'll-bag'); ?>
           </li>
           <li>
-            <strong><?php esc_html_e('Edit the archive page.', 'll-bag'); ?></strong>
-            <?php esc_html_e('Go back to the page you created and open it for editing. You\'ll now see a "Before & After Archive" section with fields for the hero banner — including a content area, an optional link, and a background image. Fill these in to customize the top of your gallery page.', 'll-bag'); ?>
+            <strong><?php esc_html_e('Edit the gallery page.', 'll-bag'); ?></strong>
+            <?php esc_html_e('Open the page you created for editing. You\'ll see a "Before & After Archive" section with fields for the hero banner — a content area, an optional link, and a background image.', 'll-bag'); ?>
           </li>
         </ol>
 
-        <p><?php esc_html_e('Once the page is assigned and permalinks are saved, the gallery will automatically display on that page — no template editing or shortcodes required. Any components added to this page will appear below the gallery.', 'll-bag'); ?></p>
+        <p><?php esc_html_e('Once the page is assigned, the gallery displays on it automatically — no template editing or shortcodes required. Any components added to this page will appear below the gallery.', 'll-bag'); ?></p>
       </section>
 
       <section id="category-page" class="ll-bag-how-to__section">
-        <h2><?php esc_html_e('Taxonomy Archive', 'll-bag'); ?></h2>
+        <h2><?php esc_html_e('Categories Page', 'll-bag'); ?></h2>
 
-        <p><?php esc_html_e('The taxonomy archive is an optional page that displays your filter categories as a browsable grid — for example, a page showing all your treatment types that visitors can click into. The category shown is whichever taxonomy you\'ve designated as the Featured Taxonomy in settings.', 'll-bag'); ?></p>
+        <p><?php esc_html_e('The categories page displays your categories as a browsable grid — for example, all your treatment types, each linking to its filtered posts. It uses whichever filter is set as the Featured Taxonomy, and is only available when Main Gallery View is set to Categories, where it becomes the main gallery page.', 'll-bag'); ?></p>
 
-        <h3><?php esc_html_e('Configuring the taxonomy archive', 'll-bag'); ?></h3>
-        <p><?php esc_html_e('All of these settings live under Before & Afters → Settings → Taxonomy Archive Settings.', 'll-bag'); ?></p>
+        <h3><?php esc_html_e('Configuring the categories page', 'll-bag'); ?></h3>
+        <p><?php esc_html_e('These settings live under Before & Afters → Settings → Categories Page.', 'll-bag'); ?></p>
         <ol class="ll-bag-how-to__steps">
           <li>
-            <strong><?php esc_html_e('Enable the taxonomy archive.', 'll-bag'); ?></strong>
-            <?php esc_html_e('Toggle "Use Taxonomy Archive?" on. This activates the page and its URL routing.', 'll-bag'); ?>
-          </li>
-          <li>
-            <strong><?php esc_html_e('Select a Featured Taxonomy.', 'll-bag'); ?></strong>
-            <?php esc_html_e('Choose which of your filters will be used as the category grid. The dropdown is populated from the filters you\'ve set up in Filter Settings — so if you don\'t see the one you want, add it there first.', 'll-bag'); ?>
-          </li>
-          <li>
-            <strong><?php esc_html_e('Set a URL slug.', 'll-bag'); ?></strong>
-            <?php esc_html_e('The slug controls the URL for the archive page (e.g. a slug of "treatments" would produce /before-afters/treatments/). After changing it, go to Settings → Permalinks and click Save Changes to apply the update.', 'll-bag'); ?>
+            <strong><?php esc_html_e('Pick the Featured Taxonomy.', 'll-bag'); ?></strong>
+            <?php esc_html_e('Under Archive Settings, choose the filter used for the category grid. The dropdown lists the filters from Filter Settings — if the one you want is missing, add it there first.', 'll-bag'); ?>
           </li>
           <li>
             <strong><?php esc_html_e('Fill in the hero and subtitle.', 'll-bag'); ?></strong>
-            <?php esc_html_e('The Taxonomy Archive Hero fields let you add a banner at the top of the page with content, an optional link, and a background image. The Taxonomy Archive Subtitle appears above the category grid as a short line of introductory text.', 'll-bag'); ?>
+            <?php esc_html_e('The Hero fields add a banner at the top of the page with content, an optional link, and a background image. The Subtitle appears above the category grid.', 'll-bag'); ?>
+          </li>
+          <li>
+            <strong><?php esc_html_e('Optional: set up Hero Navigation.', 'll-bag'); ?></strong>
+            <?php esc_html_e('Each row (Label, Taxonomy, Term) adds a pill to the hero — e.g. Breast / Face / Body from Body Area. Clicking a pill opens a page showing only the categories used by posts tagged with that term, at /before-afters/categories/breast/. Show "All" Pill adds a first pill that returns to the full grid, and Pill Pages Slug sets the "categories" part of those URLs.', 'll-bag'); ?>
           </li>
         </ol>
 
         <h3><?php esc_html_e('Adding images to category cards', 'll-bag'); ?></h3>
-        <p><?php esc_html_e('Each card in the category grid can have its own background image. Once you\'ve selected a Featured Taxonomy in settings, a background image field will appear whenever you edit a term within that taxonomy.', 'll-bag'); ?></p>
-        <p><?php esc_html_e('To add one, go to the taxonomy list for your selected filter (e.g. Before & Afters → Treatments), click on a term to edit it, and you\'ll find a "Background Image" field under the Before & After Category Settings section. Upload an image there and it will be used as the card background on the category archive page.', 'll-bag'); ?></p>
+        <p><?php esc_html_e('Each card in the category grid can have its own background image. Go to the term list for your Featured Taxonomy (e.g. Before & Afters → Treatments), click a term to edit it, and upload an image in the "Background Image" field under Before & After Category Settings.', 'll-bag'); ?></p>
       </section>
 
     </div>

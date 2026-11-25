@@ -3,8 +3,14 @@
 namespace LiftedLogic\LLBag\BeforeAfterPostType;
 
 use LiftedLogic\LLBag\Filters\FilterManager;
+use LiftedLogic\LLBag\Support\RelatedPosts;
 
 class Fields {
+  public function __construct(
+    private readonly FilterManager $filterManager,
+    private readonly RelatedPosts $relatedPosts,
+  ) {}
+
   public function register(): void {
     add_action('acf/init',           [$this, 'registerFields']);
     add_action('add_meta_boxes',     [$this, 'addRelatedMetaBox']);
@@ -23,9 +29,15 @@ class Fields {
   }
 
   public function renderRelatedMetaBox(\WP_Post $post): void {
-    $filters = (new FilterManager())->getEnabled()
+    $filters = $this->filterManager->getEnabled()
       ->filter(fn($f) => empty($f['builtin']) && !empty($f['meta_key']))
       ->values();
+
+    ?>
+    <p class="description" style="margin-bottom:8px"><?= esc_html__('Related posts are chosen automatically: the gallery shows the posts that share the most specific terms with this one. A term that only a few posts have counts for more than one that most posts have. When posts are tied, the ones nearest to this post in the gallery order come first. If fewer than 6 posts share any term, the rest are filled with the newest posts.', 'll-bag'); ?></p>
+    <p class="description" style="margin-bottom:8px"><?= esc_html__('To choose yourself, check terms below. Posts with those terms are shown first, and the automatic matches fill any remaining spots. Leave everything unchecked to stay fully automatic.', 'll-bag'); ?></p>
+    <?php $this->renderRelatedPreview($post); ?>
+    <?php
 
     if ($filters->isEmpty()) {
       echo '<p class="ll-ba-rmb-none">No custom taxonomies are configured as filters.</p>';
@@ -35,7 +47,6 @@ class Fields {
     $saved = (array) (get_post_meta($post->ID, 'll_ba_related_terms', true) ?: []);
     wp_nonce_field('ll_ba_related_terms_save', 'll_ba_related_terms_nonce');
     ?>
-    <p class="description" style="margin-bottom:8px">Select specific terms to use when finding related posts. Defaults to the current post's Card Display terms if left empty.</p>
     <div class="ll-ba-tax-tabs">
       <ul class="ll-ba-tax-tab-list">
         <?php foreach ($filters as $i => $f) : ?>
@@ -80,6 +91,71 @@ class Fields {
       </div>
     </div>
     <?php
+  }
+
+  /**
+   * "Currently showing" list: the saved state, as the front end would build it right now.
+   */
+  /**
+   * "Category: Nose · Treatment Areas: Nose". Plain text; escape at output.
+   *
+   * @param array<int, array{taxonomy:string, name:string}> $shared
+   */
+  public static function termLabels(array $shared): string {
+    $parts = [];
+    foreach ($shared as $term) {
+      $taxonomy = get_taxonomy($term['taxonomy']);
+      $label    = $taxonomy && isset($taxonomy->labels->singular_name) && $taxonomy->labels->singular_name !== ''
+                  ? $taxonomy->labels->singular_name
+                  : $term['taxonomy'];
+      $parts[]  = $label . ': ' . $term['name'];
+    }
+    return implode(' · ', $parts);
+  }
+
+  private function renderRelatedPreview(\WP_Post $post): void {
+    echo '<h4 style="margin:12px 0 4px">' . esc_html__('Currently showing', 'll-bag') . '</h4>';
+
+    if ($post->post_status === 'auto-draft') {
+      echo '<p class="description">' . esc_html__('Save this post to see its related posts.', 'll-bag') . '</p>';
+      return;
+    }
+
+    $picks = $this->relatedPosts->explain($post->ID, RelatedPosts::SLOTS, true);
+
+    if (!$picks) {
+      echo '<p class="description">' . esc_html__('No other published posts yet.', 'll-bag') . '</p>';
+      return;
+    }
+
+    $labels = [
+      'manual' => __('From the terms checked below', 'll-bag'),
+      'newest' => __('Newest post, no specific terms in common', 'll-bag'),
+    ];
+
+    echo '<ol class="ll-ba-related-preview" style="margin:0 0 8px 20px">';
+    foreach ($picks as $pick) {
+      $title = get_the_title($pick['id']);
+      $link  = get_edit_post_link($pick['id']);
+      $terms = self::termLabels($pick['shared']);
+      ?>
+      <li style="margin-bottom:4px">
+        <?php if ($link) : ?>
+          <a href="<?= esc_url($link); ?>"><?= esc_html($title !== '' ? $title : __('(no title)', 'll-bag')); ?></a>
+        <?php else : ?>
+          <?= esc_html($title); ?>
+        <?php endif; ?>
+        <?php if (isset($labels[$pick['source']])) : ?>
+          <em style="font-size:11px">(<?= esc_html($labels[$pick['source']]); ?>)</em>
+        <?php endif; ?>
+        <?php if ($terms) : ?>
+          <br><small style="color:#646970"><?= esc_html($terms); ?></small>
+        <?php endif; ?>
+      </li>
+      <?php
+    }
+    echo '</ol>';
+    echo '<p class="description" style="margin-bottom:12px">' . esc_html__('This list shows the saved post. Changes to the terms below show after you click Update.', 'll-bag') . '</p>';
   }
 
   public function saveRelatedTerms(int $postId): void {
@@ -185,7 +261,7 @@ class Fields {
           'name' => 'll_ba_title',
           'type' => 'text',
           'wrapper' => [
-            'data-tooltip' => 'The heading shown above this post\'s categories. Leave blank to use Before & Afters > Settings > Single Page > Default Single Page Label, or to show no heading if that is empty too',
+            'data-tooltip' => 'The heading shown above this post\'s categories. Leave blank to use Before & Afters > Settings > Single Pages > Default Page Label, or to show no heading if that is empty too',
           ],
         ],
         [
