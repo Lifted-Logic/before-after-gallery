@@ -1,0 +1,443 @@
+/* ── B&A posts list: grid view ───────────────────────────────────────────────
+   Same WP_List_Table, restyled. One tr = one tile. Everything is scoped under
+   .post-type-ll_before_after.ll-bag-view-grid and uses #the-list so it wins over
+   core's list-tables.css (including its <=782px stacked-row rules).
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.post-type-ll_before_after.ll-bag-view-grid {
+  .wp-list-table {
+    display: block;
+    width: 100%;
+    border: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .wp-list-table tfoot {
+    display: none;
+  }
+
+  /* Header keeps only the select-all checkbox */
+  .wp-list-table thead {
+    display: block;
+  }
+
+  .wp-list-table thead tr {
+    display: flex;
+  }
+
+  .wp-list-table thead th:not(.check-column),
+  .wp-list-table thead td:not(.check-column) {
+    display: none;
+  }
+
+  .wp-list-table thead td.check-column,
+  .wp-list-table thead th.check-column {
+    display: flex;
+    align-items: center;
+    width: auto;
+    padding: 0 0 0 2px;
+
+    /* Show core's "Select All" label next to the box, like media's Bulk select. */
+    /* WordPress 7.1 stretches this label over the cell (position: absolute). */
+    label {
+      position: static;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .screen-reader-text {
+      position: static;
+      width: auto;
+      height: auto;
+      margin: 0 0 0 8px;
+      clip-path: none;
+      overflow: visible;
+      white-space: nowrap;
+      word-wrap: normal;
+    }
+  }
+
+  .wp-list-table tbody {
+    display: block;
+  }
+
+  #the-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    padding-top: 8px;
+
+    > tr:not(.inline-edit-row):not(.no-items):not(.hidden) {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      /* WordPress 7.1's <=782px list-table rules make rows wrapping flex boxes with
+         100% flex-basis cells; in a vertical tile that pushes the title into a second
+         column beside the image. Keep one column. */
+      flex-wrap: nowrap;
+      min-width: 0;
+      background: #fff;
+      border: 1px solid #c3c4c7;
+
+      /* Every cell is hidden unless listed below (date, author, third-party columns) */
+      > th,
+      > td {
+        display: none;
+      }
+
+      > td.column-ll_bag_thumb {
+        display: block;
+        flex: none;
+        order: -1;
+        padding: 0;
+        width: auto;
+      }
+
+      > .column-title,
+      > .column-title.hidden {
+        display: block;
+        flex: 1 1 auto;
+        min-width: 0;
+        width: auto;
+        padding: 8px 10px 10px;
+
+        strong {
+          display: flex;
+          align-items: baseline;
+          min-width: 0;
+          gap: 4px;
+          white-space: nowrap;
+        }
+
+        .row-title,
+        > strong > span:not(.post-state) {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .post-state {
+          flex: none;
+        }
+
+        /* Hidden until hover or focus, like core (it keeps the space reserved) */
+        .row-actions {
+          position: relative;
+          left: -9999em;
+          padding-top: 4px;
+          white-space: normal;
+        }
+      }
+
+      &:hover > .column-title .row-actions,
+      &:focus-within > .column-title .row-actions,
+      > .column-title .row-actions.visible {
+        position: static;
+        left: auto;
+      }
+
+      > .check-column {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        z-index: 2;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        background: #fff;
+        border-radius: 3px;
+        box-shadow: 0 0 0 1px rgb(0 0 0 / 0.12);
+
+        input {
+          margin: 0;
+        }
+      }
+
+      > td.column-ll_bag_order_handle {
+        display: none;
+      }
+    }
+
+    /* Drag handle chip, only on rows the order script has enabled */
+    > tr.ll-bag-orderable:not(.inline-edit-row):not(.no-items):not(.hidden) > td.column-ll_bag_order_handle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      z-index: 2;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      background: #fff;
+      border-radius: 3px;
+      box-shadow: 0 0 0 1px rgb(0 0 0 / 0.12);
+    }
+
+    /* Quick Edit, Bulk Edit and "No posts found" span the whole grid */
+    > tr.inline-edit-row,
+    > tr.no-items {
+      grid-column: 1 / -1;
+      display: block;
+
+      > td {
+        display: block;
+        width: auto;
+      }
+    }
+
+    .toggle-row {
+      display: none;
+    }
+  }
+
+  .striped > tbody > :nth-child(odd) {
+    background: #fff;
+  }
+}
+
+@media (max-width: 782px) {
+  .post-type-ll_before_after.ll-bag-view-grid #the-list {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+
+    /* Core shows row actions at all times on small screens */
+    > tr:not(.inline-edit-row):not(.no-items):not(.hidden) > .column-title .row-actions {
+      position: static;
+      left: auto;
+    }
+
+    /* Core's narrow-screen rules widen the title cell past the tile and keep the
+       row actions on one line: keep the cell inside its tile and let actions wrap. */
+    > tr:not(.inline-edit-row):not(.no-items):not(.hidden) > .column-title {
+      box-sizing: border-box;
+      max-width: 100%;
+      padding-right: 10px;
+
+      .row-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px 10px;
+        margin: 0;
+        padding-top: 6px;
+
+        > span {
+          padding: 0;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .post-type-ll_before_after.ll-bag-view-grid #the-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ── Tile image (also used outside the grid rules above) ─────────────────── */
+
+.ll-bag-thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #f0f0f1;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.ll-bag-thumb__play {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.6);
+  color: #fff;
+  font-size: 28px;
+  pointer-events: none;
+
+  &::before {
+    width: 28px;
+    height: 28px;
+    font-size: 28px;
+  }
+}
+
+/* ── List view: small thumbnail column, like the media library's list view ─ */
+
+.post-type-ll_before_after.ll-bag-view-list .wp-list-table {
+  .column-ll_bag_thumb {
+    width: 60px;
+  }
+
+  td.column-ll_bag_thumb .ll-bag-thumb {
+    width: 60px;
+    height: 60px;
+    border-radius: 2px;
+  }
+
+  .ll-bag-thumb__play {
+    width: 24px;
+    height: 24px;
+    font-size: 16px;
+
+    &::before {
+      width: 16px;
+      height: 16px;
+      font-size: 16px;
+    }
+  }
+}
+
+/* ── Toolbar (both views): media-library-style bar built by postListToolbar() ─ */
+
+.post-type-ll_before_after.edit-php {
+  /* Hide the pieces the script moves until it has moved them (no jump on load). */
+  &.js:not(.ll-bag-has-toolbar) {
+    #posts-filter > .search-box,
+    .tablenav.top > .actions,
+    .tablenav.top > .view-switch {
+      visibility: hidden;
+    }
+  }
+
+  .ll-bag-toolbar {
+    clear: both;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    margin: 0;
+    padding: 12px 16px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    box-shadow: 0 1px 1px rgb(0 0 0 / 0.04);
+  }
+
+  .ll-bag-toolbar__primary {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 24px;
+    min-width: 0;
+  }
+
+  .ll-bag-toolbar__secondary {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
+
+  .ll-bag-toolbar .view-switch {
+    display: flex;
+    gap: 2px;
+    float: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .ll-bag-toolbar .ll-bag-toolbar__filters {
+    flex-basis: 100%;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f1;
+  }
+
+  .ll-bag-toolbar .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    float: none;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+
+    select,
+    .button,
+    input[type="submit"] {
+      float: none;
+      margin: 0;
+    }
+
+    select {
+      max-width: 12.5rem;
+    }
+  }
+
+  .ll-bag-toolbar .search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: static;
+    float: none;
+    width: auto;
+    height: auto;
+    margin: 0;
+
+    input[type="search"] {
+      width: 16rem;
+      max-width: 100%;
+      margin: 0;
+    }
+
+    .button {
+      margin: 0;
+    }
+  }
+
+  /* The top tablenav now only holds pagination. */
+  /* Status links sit on their own line above the bar. */
+  &.ll-bag-has-toolbar .subsubsub {
+    float: none;
+    margin: 8px 0 12px;
+  }
+
+  &.ll-bag-has-toolbar .tablenav.top {
+    height: auto;
+    min-height: 0;
+    margin: 12px 0 8px;
+  }
+}
+
+@media (max-width: 782px) {
+  .post-type-ll_before_after.edit-php .ll-bag-toolbar {
+    .view-switch {
+      display: flex;
+    }
+
+    .actions,
+    .search-box {
+      width: 100%;
+    }
+
+    .actions select {
+      flex: 1 1 10rem;
+      max-width: none;
+    }
+
+    .search-box input[type="search"] {
+      flex: 1 1 auto;
+      width: auto;
+    }
+  }
+}

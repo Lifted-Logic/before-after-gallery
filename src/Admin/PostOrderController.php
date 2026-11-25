@@ -52,7 +52,23 @@ class PostOrderController {
     if ($hook !== 'edit.php') return;
     if ((get_current_screen()?->post_type ?? '') !== BeforeAfterPostType::SLUG) return;
 
-    $enabled = empty($_GET['s']) && empty($_GET['orderby']) && empty($_GET['m']);
+    // Saving offset + index renumbers only the visible posts, so reordering is
+    // off whenever the list is a subset: search, sort, month, a taxonomy filter
+    // a status tab other than All or the Mine view. (empty() treats the dropdown's "All" 0 as no filter.)
+    $taxonomyFiltered = false;
+    foreach (get_object_taxonomies(BeforeAfterPostType::SLUG, 'objects') as $tax) {
+      if ($tax->query_var && !empty($_GET[$tax->query_var])) {
+        $taxonomyFiltered = true;
+        break;
+      }
+    }
+
+    $rawStatus      = $_GET['post_status'] ?? '';
+    $status         = is_string($rawStatus) ? sanitize_key(wp_unslash($rawStatus)) : '';
+    $statusFiltered = $status !== '' && $status !== 'all';
+
+    $enabled = empty($_GET['s']) && empty($_GET['orderby']) && empty($_GET['m']) && empty($_GET['author'])
+      && !$taxonomyFiltered && !$statusFiltered;
 
     $paged   = max(1, (int) ($_GET['paged'] ?? 1));
     $perPage = (int) (get_user_option('edit_' . BeforeAfterPostType::SLUG . '_per_page') ?: 20);
@@ -80,6 +96,9 @@ class PostOrderController {
       if (get_post_type($id) !== BeforeAfterPostType::SLUG) continue;
       wp_update_post(['ID' => $id, 'menu_order' => $offset + $i]);
     }
+
+    // Gallery order feeds related-post tie-breaks; see Support\RelatedPosts.
+    do_action('ll_bag/post_order_saved');
 
     wp_send_json_success(['count' => count($ids)]);
   }

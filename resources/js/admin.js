@@ -213,6 +213,43 @@ document.addEventListener( 'DOMContentLoaded', () => {
   } );
 } );
 
+( function postListToolbar() {
+  // Media-library-style toolbar above the table: view switch and bulk actions on
+  // the left, search on the right, the filter dropdowns on a second row. Same form, same fields: only
+  // their placement changes, so every submit works exactly as before.
+  const body = document.body;
+  if ( !body.classList.contains( 'edit-php' ) || !body.classList.contains( 'post-type-ll_before_after' ) ) return;
+
+  const nav = document.querySelector( '#posts-filter .tablenav.top' );
+  if ( !nav ) return;
+
+  const toolbar = document.createElement( 'div' );
+  toolbar.className = 'll-bag-toolbar';
+  const primary = document.createElement( 'div' );
+  primary.className = 'll-bag-toolbar__primary';
+  const secondary = document.createElement( 'div' );
+  secondary.className = 'll-bag-toolbar__secondary';
+
+  [
+    nav.querySelector( ':scope > .view-switch' ),
+    nav.querySelector( ':scope > .bulkactions' ),
+  ].forEach( el => el && primary.append( el ) );
+
+  const search = document.querySelector( '#posts-filter > .search-box' );
+  if ( search ) secondary.append( search );
+
+  toolbar.append( primary, secondary );
+
+  // Second row: the date and taxonomy dropdowns plus the Filter button.
+  const filters = nav.querySelector( ':scope > .actions:not(.bulkactions)' );
+  if ( filters ) {
+    filters.classList.add( 'll-bag-toolbar__filters' );
+    toolbar.append( filters );
+  }
+  nav.before( toolbar );
+  body.classList.add( 'll-bag-has-toolbar' );
+} )();
+
 ( function postListOrder() {
   const cfg = window.llBagOrder;
   const body = document.body;
@@ -225,7 +262,10 @@ document.addEventListener( 'DOMContentLoaded', () => {
   const rows = () => [...list.querySelectorAll( 'tr[id^="post-"]' )];
   if ( rows().length < 2 ) return;
 
-  rows().forEach( r => r.classList.add( 'll-bag-orderable' ) );
+  const markOrderable = () => rows().forEach( r => r.classList.add( 'll-bag-orderable' ) );
+  markOrderable();
+  // Quick Edit swaps in a fresh row; keep it draggable (grid shows the handle only on this class).
+  new MutationObserver( markOrderable ).observe( list, { childList: true } );
 
   let dragged = null;
   let before = '';
@@ -250,7 +290,10 @@ document.addEventListener( 'DOMContentLoaded', () => {
     const target = e.target.closest( 'tr[id^="post-"]' );
     if ( !target || !dragged || target === dragged ) return;
     const rect = target.getBoundingClientRect();
-    list.insertBefore( dragged, e.clientY < rect.top + rect.height / 2 ? target : target.nextSibling );
+    const placeBefore = document.body.classList.contains( 'll-bag-view-grid' )
+      ? e.clientX < rect.left + rect.width / 2
+      : e.clientY < rect.top + rect.height / 2;
+    list.insertBefore( dragged, placeBefore ? target : target.nextSibling );
   } );
 
   list.addEventListener( 'dragend', () => {
@@ -275,7 +318,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 } )();
 
 ( function cropPanels() {
-  // "default" follows Settings → Default Image Ratio (window.llBagDefaultRatio, set by SettingsPage).
+  // "default" follows Settings → Display → Default Image Ratio (window.llBagDefaultRatio, set by SettingsPage).
   const DEFAULT_RATIO = window.llBagDefaultRatio || { value: 16 / 9, stacked: true };
   const RATIOS = { wide: 16 / 9, square: 1, panorama: 3, vertical: 4 / 5, '': 1, default: DEFAULT_RATIO.value };
   const STACKED = ['wide', 'panorama', ...( DEFAULT_RATIO.stacked ? ['default'] : [] )];
@@ -645,7 +688,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 } )();
 
 /**
- * Settings → Taxonomy Archive → Hero Navigation: each row's Term select holds every
+ * Settings → Categories Page → Hero Navigation: each row's Term select holds every
  * term of every enabled filter taxonomy, grouped in <optgroup>s labelled by taxonomy.
  * Show only the group matching the row's Taxonomy select, and clear a term that no
  * longer fits. (Server-side, SettingsPage::validateCategoryNav() enforces the same.)
