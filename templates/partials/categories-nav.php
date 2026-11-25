@@ -2,7 +2,7 @@
 /**
  * Partial: Categories hero navigation pills
  *
- * One pill per Hero Navigation row (Settings → Taxonomy Archive Settings), plus an
+ * One pill per Hero Navigation row (Settings → Categories Page), plus an
  * optional leading "All" pill that returns to the unscoped categories page.
  *
  * Available variables:

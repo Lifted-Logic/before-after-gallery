@@ -22,7 +22,6 @@ class SettingsPage {
     add_action('admin_init',   [$this, 'disableArchivePageEditor']);
     add_filter('use_block_editor_for_post', [$this, 'disableBlockEditorForArchivePage'], 10, 2);
     add_filter('acf/load_field/key=field_ll_bag_category_taxonomy',          [$this, 'populateCategoryTaxonomyChoices']);
-    add_filter('acf/load_field/key=field_ll_bag_category_archive_url_message', [$this, 'updateCategoryArchiveUrlMessage']);
     add_filter('acf/load_field/key=field_ll_bag_archive_mode_urls', [$this, 'updateArchiveModeUrlsMessage']);
     add_filter('acf/load_value/key=field_ll_bag_archive_mode', [$this, 'loadArchiveModeValue']);
     add_filter('acf/load_field/key=field_ll_ba_image_ratio', [$this, 'labelDefaultRatioChoice']);
@@ -75,6 +74,9 @@ class SettingsPage {
     $categoriesHeroBannerOverridden = TemplateLoader::resolve( 'partials/categories-hero-banner.php' )
       !== LL_BAG_PATH . 'templates/partials/categories-hero-banner.php';
 
+    $archiveOn = [ 'field' => 'field_ll_bag_archive_mode', 'operator' => '==', 'value' => BeforeAfterPostType::MODE_CATEGORIES ];
+
+    // ── Archive Settings: routing and how posts are grouped ──
     $fields = [
       [
         'key'       => 'field_ll_bag_archive_settings_tab',
@@ -85,12 +87,15 @@ class SettingsPage {
       ],
       [
         'key'           => 'field_ll_bag_posts_page',
-        'label'         => 'All Posts Archive Page',
+        'label'         => 'Gallery Page',
         'name'          => self::FIELD_POSTS_PAGE,
         'type'          => 'post_object',
         'post_type'     => ['page'],
         'return_format' => 'id',
         'allow_null'    => 1,
+        'wrapper'       => [
+          'data-tooltip' => 'The page that holds the gallery. Its title and hero banner show at the top; it needs no content.',
+        ],
       ],
       [
         'key'           => 'field_ll_bag_archive_mode',
@@ -128,120 +133,6 @@ class SettingsPage {
         'message' => '',
       ],
       [
-        'key'           => 'field_ll_bag_default_image_ratio',
-        'label'         => 'Default Image Ratio',
-        'name'          => 'll_bag_default_image_ratio',
-        'type'          => 'select',
-        'choices'       => [
-          'wide'     => '16/9 (Wide)',
-          'square'   => '1/1 (Square)',
-          'panorama' => '3/1 (Panorama)',
-          'vertical' => '4/5 (Vertical)',
-          'custom'   => 'Custom',
-        ],
-        'default_value' => 'wide',
-        'return_format' => 'value',
-        'wrapper'       => [
-          'data-tooltip' => 'Used by every post image set to "Site default" (the default for new images). Images with their own ratio keep it.',
-        ],
-      ],
-      [
-        'key'           => 'field_ll_bag_default_image_ratio_custom',
-        'label'         => 'Custom Ratio',
-        'name'          => 'll_bag_default_image_ratio_custom',
-        'type'          => 'text',
-        'placeholder'   => '4:3',
-        'wrapper'       => [
-          'data-tooltip' => 'Width:height, e.g. 4:3 or 3:2.',
-        ],
-        'conditional_logic' => [
-          [ [ 'field' => 'field_ll_bag_default_image_ratio', 'operator' => '==', 'value' => 'custom' ] ],
-        ],
-      ],
-    ];
-
-    $fields = array_merge( $fields, [
-      [
-        'key'       => 'field_ll_bag_global_options_tab',
-        'label'     => 'Single Page',
-        'type'      => 'tab',
-        'placement' => 'left',
-        'endpoint'  => 0,
-      ],
-      [
-        'key'  => 'field_ll_bag_global_default_single_page_label',
-        'label' => 'Default Single Page Label',
-        'name' => 'll_ba_global_default_single_page_label',
-        'type' => 'text',
-        'wrapper' => [
-          'data-tooltip' => 'The heading shown above each post\'s categories, for posts that do not set their own Single Page Label. Leave empty to show no heading',
-        ],
-      ],
-      [
-        'key'  => 'field_ll_bag_global_back_label',
-        'label' => 'Back to Gallery Label',
-        'name' => 'll_ba_global_back_label',
-        'type' => 'text',
-        'wrapper' => [
-          'data-tooltip' => 'If left empty the link will default to "Back to Gallery"',
-        ],
-      ],
-      [
-        'key'     => 'field_ll_bag_cta_message',
-        'type'    => 'message',
-        'message' => 'Leave CTA fields blank to omit CTA on single pages',
-      ],
-      [
-        'key'     => 'field_ll_ba_global_cta_title',
-        'label'   => 'CTA Title',
-        'name'    => 'll_ba_global_cta_title',
-        'type'    => 'text',
-        'wrapper' => [ 'width' => '50%' ],
-      ],
-      [
-        'key'           => 'field_ll_ba_global_cta_link',
-        'label'         => 'CTA Link',
-        'name'          => 'll_ba_global_cta_link',
-        'type'          => 'link',
-        'return_format' => 'array',
-        'wrapper'       => [ 'width' => '50%' ],
-      ],
-      [
-        'key'   => 'field_ll_bag_related_treatments_slider_title',
-        'label' => 'Related Treatments Slider Title',
-        'name'  => 'll_bag_related_treatments_slider_title',
-        'type'  => 'text',
-      ],
-      [
-        'key'       => 'field_ll_bag_nsfw_popup_tab',
-        'label'     => 'NSFW Popup',
-        'type'      => 'tab',
-        'placement' => 'left',
-        'endpoint'  => 0,
-      ],
-      [
-        'key'           => 'field_ll_bag_nsfw_popup_text',
-        'label'         => 'NSFW Popup Text',
-        'name'          => 'll_bag_nsfw_popup_text',
-        'type'          => 'text',
-        'default_value' => 'This before and after contains sensitive content.',
-      ],
-      [
-        'key'       => 'field_ll_bag_category_settings_tab',
-        'label'     => 'Taxonomy Archive Settings',
-        'type'      => 'tab',
-        'placement' => 'left',
-        'endpoint'  => 0,
-      ],
-      [
-        'key'     => 'field_ll_bag_posts_mode_notice',
-        'type'    => 'message',
-        'message' => 'The categories page is off because Archive Settings → Main Gallery View is set to Posts archive. Switch it to Categories to use the settings below.',
-        'conditional_logic' => [
-          [ [ 'field' => 'field_ll_bag_archive_mode', 'operator' => '!=', 'value' => BeforeAfterPostType::MODE_CATEGORIES ] ],
-        ],
-      ],
-      [
         'key'           => 'field_ll_bag_category_taxonomy',
         'label'         => 'Featured Taxonomy',
         'name'          => 'll_bag_category_taxonomy',
@@ -252,33 +143,31 @@ class SettingsPage {
         'ui'            => 1,
         'return_format' => 'value',
         'placeholder'   => 'Select a taxonomy…',
-        'instructions'  => 'The taxonomy treated as the post\'s category. Its terms fill out the Taxonomy Archive page, and each term can carry its own CTA that overrides the global one below.',
+        'instructions'  => 'The filter treated as each post\'s category. Used for category CTAs, related posts and the Categories page.',
+      ],
+
+      // ── Categories Page (Categories mode only) ──
+      [
+        'key'       => 'field_ll_bag_category_settings_tab',
+        'label'     => 'Categories Page',
+        'type'      => 'tab',
+        'placement' => 'left',
+        'endpoint'  => 0,
       ],
       [
-        'key'           => 'field_ll_bag_category_archive_slug',
-        'label'         => 'Scoped Pages Slug',
-        'name'          => 'll_bag_category_archive_slug',
-        'type'          => 'text',
-        'default_value' => 'categories',
-        'instructions'  => 'URL segment for the Hero Navigation pages, e.g. "categories" → /before-afters/categories/breast/.',
-        'conditional_logic' => [
-          [ [ 'field' => 'field_ll_bag_archive_mode', 'operator' => '==', 'value' => BeforeAfterPostType::MODE_CATEGORIES ] ],
-        ],
-      ],
-      [
-        'key'     => 'field_ll_bag_category_archive_url_message',
+        'key'     => 'field_ll_bag_posts_mode_notice',
         'type'    => 'message',
-        'message' => '',
+        'message' => 'The Categories page is off because <strong>Archive Settings → Main Gallery View</strong> is set to Posts archive. Switch it to Categories to use these settings.',
         'conditional_logic' => [
-          [ [ 'field' => 'field_ll_bag_archive_mode', 'operator' => '==', 'value' => BeforeAfterPostType::MODE_CATEGORIES ] ],
+          [ [ 'field' => 'field_ll_bag_archive_mode', 'operator' => '!=', 'value' => BeforeAfterPostType::MODE_CATEGORIES ] ],
         ],
       ],
-    ] );
+    ];
 
     if ( !$categoriesHeroBannerOverridden ) {
       $fields[] = [
         'key'    => 'field_ll_ba_category_archive_hero',
-        'label'  => 'Taxonomy Archive Hero',
+        'label'  => 'Hero',
         'name'   => 'll_ba_category_archive_hero',
         'type'   => 'group',
         'layout' => 'block',
@@ -337,25 +226,14 @@ class SettingsPage {
       ];
     }
 
-    $archiveOn = [ 'field' => 'field_ll_bag_archive_mode', 'operator' => '==', 'value' => BeforeAfterPostType::MODE_CATEGORIES ];
-
     $fields[] = [
-      'key'           => 'field_ll_ba_category_nav_show_all',
-      'label'         => 'Show "All" Pill',
-      'name'          => CategoryScope::FIELD_SHOW_ALL,
-      'type'          => 'true_false',
-      'default_value' => 1,
-      'ui'            => 1,
-      'conditional_logic' => [ [ $archiveOn ] ],
-    ];
-
-    $fields[] = [
-      'key'           => 'field_ll_ba_category_nav_all_label',
-      'label'         => '"All" Pill Label',
-      'name'          => CategoryScope::FIELD_ALL_LABEL,
+      'key'           => 'field_ll_ba_categories_subtitle',
+      'label'         => 'Subtitle',
+      'name'          => 'll_ba_categories_subtitle',
       'type'          => 'text',
-      'default_value' => 'All',
-      'conditional_logic' => [ [ $archiveOn, [ 'field' => 'field_ll_ba_category_nav_show_all', 'operator' => '==', 'value' => '1' ] ] ],
+      'default_value' => 'Select a category below to start exploring.',
+      'instructions'  => 'Text shown above the category grid.',
+      'conditional_logic' => [ [ $archiveOn ] ],
     ];
 
     $fields[] = [
@@ -365,6 +243,7 @@ class SettingsPage {
       'type'         => 'repeater',
       'layout'       => 'table',
       'button_label' => 'Add Row',
+      'instructions' => 'Each row adds a pill to the hero. Clicking one shows only the categories used by posts with that term.',
       'conditional_logic' => [ [ $archiveOn ] ],
       'sub_fields'   => [
         [
@@ -399,16 +278,141 @@ class SettingsPage {
     ];
 
     $fields[] = [
-      'key'           => 'field_ll_ba_categories_subtitle',
-      'label'         => 'Taxonomy Archive Subtitle',
-      'name'          => 'll_ba_categories_subtitle',
-      'type'          => 'text',
-      'default_value' => 'Select a category below to start exploring.',
-      'instructions'  => 'Text shown above the category grid.',
-      'conditional_logic' => [
-        [ [ 'field' => 'field_ll_bag_archive_mode', 'operator' => '==', 'value' => BeforeAfterPostType::MODE_CATEGORIES ] ],
-      ],
+      'key'           => 'field_ll_ba_category_nav_show_all',
+      'label'         => 'Show "All" Pill',
+      'name'          => CategoryScope::FIELD_SHOW_ALL,
+      'type'          => 'true_false',
+      'default_value' => 1,
+      'ui'            => 1,
+      'wrapper'       => [ 'width' => '50%' ],
+      'conditional_logic' => [ [ $archiveOn ] ],
     ];
+
+    $fields[] = [
+      'key'           => 'field_ll_ba_category_nav_all_label',
+      'label'         => '"All" Pill Label',
+      'name'          => CategoryScope::FIELD_ALL_LABEL,
+      'type'          => 'text',
+      'default_value' => 'All',
+      'wrapper'       => [ 'width' => '50%' ],
+      'conditional_logic' => [ [ $archiveOn, [ 'field' => 'field_ll_ba_category_nav_show_all', 'operator' => '==', 'value' => '1' ] ] ],
+    ];
+
+    $fields[] = [
+      'key'           => 'field_ll_bag_category_archive_slug',
+      'label'         => 'Pill Pages Slug',
+      'name'          => 'll_bag_category_archive_slug',
+      'type'          => 'text',
+      'default_value' => 'categories',
+      'instructions'  => 'URL segment for the Hero Navigation pill pages, e.g. "categories" → /before-afters/categories/breast/.',
+      'conditional_logic' => [ [ $archiveOn ] ],
+    ];
+
+    // ── Single Pages: single post pages ──
+    $fields = array_merge( $fields, [
+      [
+        'key'       => 'field_ll_bag_global_options_tab',
+        'label'     => 'Single Pages',
+        'type'      => 'tab',
+        'placement' => 'left',
+        'endpoint'  => 0,
+      ],
+      [
+        'key'  => 'field_ll_bag_global_default_single_page_label',
+        'label' => 'Default Page Label',
+        'name' => 'll_ba_global_default_single_page_label',
+        'type' => 'text',
+        'wrapper' => [
+          'data-tooltip' => 'The heading shown above each post\'s categories, for posts that do not set their own Single Page Label. Leave empty to show no heading',
+        ],
+      ],
+      [
+        'key'  => 'field_ll_bag_global_back_label',
+        'label' => 'Back to Gallery Label',
+        'name' => 'll_ba_global_back_label',
+        'type' => 'text',
+        'wrapper' => [
+          'data-tooltip' => 'If left empty the link will default to "Back to Gallery"',
+        ],
+      ],
+      [
+        'key'     => 'field_ll_bag_cta_message',
+        'label'   => 'Default CTA',
+        'type'    => 'message',
+        'message' => 'Shown on every before & after page. A category can override it from its own edit screen. Leave both fields blank to show no CTA.',
+      ],
+      [
+        'key'     => 'field_ll_ba_global_cta_title',
+        'label'   => 'CTA Title',
+        'name'    => 'll_ba_global_cta_title',
+        'type'    => 'text',
+        'wrapper' => [ 'width' => '50%' ],
+      ],
+      [
+        'key'           => 'field_ll_ba_global_cta_link',
+        'label'         => 'CTA Link',
+        'name'          => 'll_ba_global_cta_link',
+        'type'          => 'link',
+        'return_format' => 'array',
+        'wrapper'       => [ 'width' => '50%' ],
+      ],
+      [
+        'key'   => 'field_ll_bag_related_treatments_slider_title',
+        'label' => 'Related Posts Slider Title',
+        'name'  => 'll_bag_related_treatments_slider_title',
+        'type'  => 'text',
+      ],
+
+      // ── Display: applies everywhere ──
+      [
+        'key'       => 'field_ll_bag_nsfw_popup_tab',
+        'label'     => 'Display',
+        'type'      => 'tab',
+        'placement' => 'left',
+        'endpoint'  => 0,
+      ],
+      [
+        'key'           => 'field_ll_bag_default_image_ratio',
+        'label'         => 'Default Image Ratio',
+        'name'          => 'll_bag_default_image_ratio',
+        'type'          => 'select',
+        'choices'       => [
+          'wide'     => '16/9 (Wide)',
+          'square'   => '1/1 (Square)',
+          'panorama' => '3/1 (Panorama)',
+          'vertical' => '4/5 (Vertical)',
+          'custom'   => 'Custom',
+        ],
+        'default_value' => 'wide',
+        'return_format' => 'value',
+        'wrapper'       => [
+          'data-tooltip' => 'Used by every post image set to "Site default" (the default for new images). Images with their own ratio keep it.',
+        ],
+      ],
+      [
+        'key'           => 'field_ll_bag_default_image_ratio_custom',
+        'label'         => 'Custom Ratio',
+        'name'          => 'll_bag_default_image_ratio_custom',
+        'type'          => 'text',
+        'placeholder'   => '4:3',
+        'wrapper'       => [
+          'data-tooltip' => 'Width:height, e.g. 4:3 or 3:2.',
+        ],
+        'conditional_logic' => [
+          [ [ 'field' => 'field_ll_bag_default_image_ratio', 'operator' => '==', 'value' => 'custom' ] ],
+        ],
+      ],
+      [
+        'key'           => 'field_ll_bag_nsfw_popup_text',
+        'label'         => 'Sensitive Content Popup Text',
+        'name'          => 'll_bag_nsfw_popup_text',
+        'type'          => 'text',
+        'default_value' => 'This before and after contains sensitive content.',
+        'wrapper'       => [
+          'data-tooltip' => 'Shown over posts marked sensitive, on gallery cards and single pages.',
+        ],
+      ],
+    ] );
 
     acf_add_local_field_group( [
       'key'      => 'group_ll_ba_settings',
@@ -427,7 +431,7 @@ class SettingsPage {
   }
 
   /**
-   * Populate the Category Taxonomy select with all taxonomies registered to the BAG post type.
+   * Populate the Featured Taxonomy select with all taxonomies registered to the BAG post type.
    * Hooked to acf/load_field — fires at render time, well after init, so all custom taxonomies exist.
    *
    * @param array<string, mixed> $field
@@ -440,14 +444,6 @@ class SettingsPage {
    * @param array<string, mixed> $field
    * @return array<string, mixed>
    */
-  public function updateCategoryArchiveUrlMessage(array $field): array {
-    $url = BeforeAfterPostType::getCategoriesArchiveUrl();
-    if ($url) {
-      $field['message'] = 'The categories page lives at: <a href="' . esc_url($url) . '" target="_blank" rel="noopener">' . esc_html($url) . '</a>';
-    }
-    return $field;
-  }
-
   /**
    * Both modes' URLs are rendered; admin.js shows the set matching the selected
    * Main Gallery View (and the typed Posts Archive Slug) before saving.
@@ -455,7 +451,7 @@ class SettingsPage {
   public function updateArchiveModeUrlsMessage(array $field): array {
     $base = BeforeAfterPostType::getGalleryUrl();
     if (!$base) {
-      $field['message'] = esc_html__('Assign an All Posts Archive Page to see the gallery URLs.', 'll-bag');
+      $field['message'] = esc_html__('Choose a Gallery Page to see the gallery URLs.', 'll-bag');
       return $field;
     }
 
@@ -479,7 +475,7 @@ class SettingsPage {
     return $field;
   }
 
-  /** Sites that never saved the mode show what they're actually running (see BeforeAfterPostType::archiveMode()). */
+  /** Sites that never saved the mode show what they're actually running (see BeforeAfterPostType::archiveMode(), Support\Upgrader). */
   public function loadArchiveModeValue($value) {
     // ACF has already swapped in default_value by now, so check whether it was ever saved.
     return get_option('options_ll_bag_archive_mode') === false ? BeforeAfterPostType::archiveMode() : $value;

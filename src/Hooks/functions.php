@@ -133,7 +133,7 @@ if ( ! function_exists( 'bag_image_ratio_presets' ) ) {
 
 if ( ! function_exists( 'bag_default_image_ratio' ) ) {
   /**
-   * Site-wide default ratio (Settings → Archive Settings → Default Image Ratio), used by image
+   * Site-wide default ratio (Settings → Display → Default Image Ratio), used by image
    * rows set to "Site default". Returns key (a preset or 'custom'), value (W/H) and css ("4 / 5").
    * Reads options directly (no ACF) so it's cheap to call per image row.
    */

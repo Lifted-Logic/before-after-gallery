@@ -9,8 +9,8 @@ use WP_Term;
 /**
  * Scoped category archive ("/{archive}/{categories}/{scope}/").
  *
- * A scope is one row of the Hero Navigation repeater (Settings → Taxonomy Archive
- * Settings): a term from any enabled filter taxonomy (e.g. Body Area → Breast).
+ * A scope is one row of the Hero Navigation repeater (Settings → Categories Page):
+ * a term from any enabled filter taxonomy (e.g. Body Area → Breast).
  * A scoped page lists the featured-taxonomy terms used by posts that also carry
  * the scope term, so no term-to-term mapping is stored anywhere.
  *
