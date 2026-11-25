@@ -41,8 +41,11 @@ class BeforeAfterPostType {
     $mode = (string) get_option('options_ll_bag_archive_mode');
     if ($mode === self::MODE_POSTS || $mode === self::MODE_CATEGORIES) return $mode;
 
-    // Not saved yet (sites from before this setting): the old "Use Taxonomy Archive?" toggle decides.
-    return get_option('options_ll_bag_use_category_archive') ? self::MODE_CATEGORIES : self::MODE_POSTS;
+    // Never saved: posts archive. Don't fall back to the old "Use Taxonomy Archive?" toggle:
+    // before 3.3.0 it only added an extra categories page (the gallery URL still showed
+    // posts) and it defaulted to on, so reading it as Categories flipped existing sites
+    // on update. Support\Upgrader also saves this value once, on the first 3.4.0 request.
+    return self::MODE_POSTS;
   }
 
   public static function isCategoriesMode(): bool {
