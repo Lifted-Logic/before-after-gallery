@@ -4,7 +4,7 @@ WordPress plugin for the LL Before & After plugin.
 
 ## Requirements
 
-- PHP 8.0+
+- PHP 8.1+
 - Node.js
 - A local WordPress install
 
@@ -42,6 +42,56 @@ Build assets for production:
 ```bash
 npm run build
 ```
+
+## Installing on a site
+
+Install the latest release:
+
+```sh
+wp plugin install https://lifted-logic-documents.nyc3.digitaloceanspaces.com/before-after-gallery/before-after-gallery-latest.zip --activate
+```
+
+Or download that zip and upload it through **Plugins → Add New → Upload Plugin**. From 3.4.0 on, updates arrive through **Dashboard → Updates** like any other plugin (via [Plugin Update Checker](https://github.com/YahnisElsts/plugin-update-checker)). Sites read `before-after-gallery/info.json` from our DigitalOcean Spaces bucket, so the repo stays private and sites need no credentials. Sites on 3.3.x or older have no update checker yet: update those once by hand.
+
+Sites check for updates about every 12 hours. To check right away, use **Dashboard → Updates → Check again**. The update checker turns itself off when the plugin folder is a git checkout (a dev copy symlinked into a local site), so clicking "Update" can never delete your working source. Never use `wp plugin install --force` on a symlinked dev copy for the same reason.
+
+## Releasing
+
+Bump the version in all three places (`ll-bag.php` header, `LL_BAG_VERSION`, `package.json`) with `npm run dist x.y.z`, commit, and merge to `main`. `.github/workflows/release.yml` sees a version with no `v{version}` tag yet and:
+
+1. builds and verifies the zip (`npm run dist`),
+2. uploads it to Spaces as `before-after-gallery/before-after-gallery-{version}.zip` and `before-after-gallery/before-after-gallery-latest.zip` (no-cache, overwritten each release),
+3. writes and uploads `before-after-gallery/info.json` (changelog = commit subjects since the last tag),
+4. checks all three are publicly reachable and that `-latest` matches this release byte for byte,
+5. creates the GitHub release and `v{version}` tag as the internal record.
+
+One-time setup, in GitHub → Settings → Secrets and variables → Actions (same names as `ll-page-collections`):
+
+| Name | Type |
+| --- | --- |
+| `SPACES_BUCKET` | Variable |
+| `SPACES_REGION` | Variable |
+| `SPACES_PUBLIC_URL` | Variable |
+| `SPACES_KEY` | Secret |
+| `SPACES_SECRET` | Secret |
+
+`Updater::METADATA_URL` (`src/Support/Updater.php`) must equal `SPACES_PUBLIC_URL` + `/before-after-gallery/info.json`.
+
+## Admin posts list
+
+**Before & After → All** has a media-library-style **List / Grid** switch (top right of the table). Grid view shows one tile per post with the image from the first row of its Images repeater: the image for *One image*, the before image for *Two images*, the uploaded still for *Video* (with a play icon), or an empty grey box. List view shows the same image as a small thumbnail column (hideable from Screen Options). Each user's choice is remembered (`ll_bag_list_view` user setting). Grid view is the same list table restyled, so search, status tabs, bulk actions, Quick Edit and drag-to-reorder all still work.
+
+The screen also has one dropdown per filter taxonomy that has terms in use in the current status tab, and hides Yoast SEO's columns, filter dropdowns and "Cornerstone content" link (on this screen only; the SEO box on the edit screen is untouched). Drag-to-reorder is off while searching, sorting, filtering by month or taxonomy, or on any status tab other than All. No new hooks or filters.
+
+## Related posts
+
+The related posts slider on a single post shows 6 related posts, chosen like this:
+
+1. Terms checked in the post's **Related Before & After Posts** box come first: posts with any of them, the rarest terms counting most.
+2. Then posts that share terms with this one in any filter taxonomy (enabled or not). A term few posts have counts for more than a term most posts have. Equal matches go to the posts nearest this one in gallery order.
+3. If fewer than 6 posts share anything, the rest are the newest posts.
+
+The Card Display setting does not affect this. Results are cached (one day at most) and refreshed automatically whenever a before & after is saved, trashed, deleted or reordered, its terms change, or filter settings change. The edit screen's box lists the posts currently showing and the terms they share. The Related Before & Afters theme component picks its posts separately.
 
 ## Theme Overrides
 
@@ -86,7 +136,7 @@ your-theme/
 |---|---|---|
 | `/{archive-slug}/` | Posts archive (filters + grid) | Categories page |
 | Posts archive | `/{archive-slug}/` | `/{archive-slug}/{posts-slug}/` (**Posts Archive Slug**, default `all`), filters as `?{taxonomy}={term}` |
-| Scoped categories pages | not registered | `/{archive-slug}/{scoped-slug}/{term}/` (**Scoped Pages Slug**, default `categories`) |
+| Scoped categories pages | not registered | `/{archive-slug}/{scoped-slug}/{term}/` (**Pill Pages Slug**, default `categories`) |
 | `/{archive-slug}/{scoped-slug}/` | not registered | 301 → `/{archive-slug}/` |
 | Old `/{archive-slug}/?{filters}` links | — | 301 → `/{archive-slug}/{posts-slug}/?{filters}` |
 
@@ -96,12 +146,13 @@ Every "show posts" link (category cards, single-page category pills, Grid "View 
 
 #### Categories page
 
-Controlled via **B&A Posts → Settings → Taxonomy Archive Settings** (Categories mode only):
+Controlled via **B&A Posts → Settings → Categories Page** (Categories mode only). The grid's taxonomy is **Archive Settings → Featured Taxonomy**.
 
-- **Taxonomy Archive Hero** — content/link/image for the hero banner on that page.
-- **Show "All" Pill** / **"All" Pill Label** — optional first pill linking back to the unscoped page.
+- **Hero** — content/link/image for the hero banner on that page.
+- **Subtitle** — text shown above the category grid (defaults to "Select a category below to start exploring.").
 - **Hero Navigation** — repeater; each row (Label / Taxonomy / Term) becomes a pill in the hero and a scoped categories page (see below).
-- **Taxonomy Archive Subtitle** — text shown above the category grid (defaults to "Select a category below to start exploring.").
+- **Show "All" Pill** / **"All" Pill Label** — optional first pill linking back to the unscoped page.
+- **Pill Pages Slug** — URL segment for the scoped pages (default `categories`).
 
 Category cards link to the posts archive pre-filtered by category (`?{featured-taxonomy}={slug}`) — the archive's filter/restore URL logic handles the rest.
 
@@ -128,7 +179,7 @@ Filters:
 | `lifted_logic/bag/categories_scoped_subtitle` | `$text`, `$scope`, `$default` | Subtitle on scoped pages |
 | `lifted_logic/bag/categories_terms_args` | `$args`, `$scope` (null when unscoped) | `get_terms()` args for the category grid |
 
-#### Adding fields to the Taxonomy Archive Settings tab
+#### Adding fields to the Settings page
 
 Register your own field group on `acf/init` targeting the `'ll-bag-settings'` options page slug. Multiple groups can coexist on the same page.
 
@@ -161,14 +212,14 @@ The archive page (`archive-ll_before_after.php`) and the categories page (`archi
 
 | Partial | Page | ACF field |
 |---|---|---|
-| `archive-hero-banner.php` | Main archive | `ll_ba_hero_banner` (Archive Settings tab) |
+| `archive-hero-banner.php` | Main archive | `ll_ba_hero_banner` (Gallery Page edit screen) |
 | `categories-hero-banner.php` | Categories listing | `ll_ba_category_archive_hero` (Category Settings tab) |
 
 A theme can override either file independently. `categories-hero-banner.php` is not a delegate — it reads from its own distinct ACF field.
 
 #### Hero Banner ACF fields
 
-The plugin registers ACF fields for `archive-hero-banner.php` directly on the page set as the archive in **B&A Posts → Settings → Archive Settings → All Posts Archive Page**. They appear as a "Before & After Archive" meta box on that page's edit screen. When a theme overrides that partial, those fields are automatically removed from the admin — the plugin detects the override at registration time and skips them.
+The plugin registers ACF fields for `archive-hero-banner.php` directly on the page set as the archive in **B&A Posts → Settings → Archive Settings → Gallery Page**. They appear as a "Before & After Archive" meta box on that page's edit screen. When a theme overrides that partial, those fields are automatically removed from the admin — the plugin detects the override at registration time and skips them.
 
 When you override the partial, register your own fields on the archive page using the approach described in [Archive page ACF fields](#archive-page-acf-fields) below. Read values in your template with `get_field( 'my_theme_hero_heading', $page_id )`, where `$page_id = (int) get_field( 'll_bag_posts_page', 'option' )`.
 
@@ -230,7 +281,7 @@ Both are printed **inline and minified** in the page head (not linked as stylesh
 
 ### Default image ratio
 
-**Settings → Archive Settings → Default Image Ratio** (16/9, 1/1, 3/1, 4/5, or Custom `W:H`) applies to every post image whose **Individual Image Ratio** is "Site default" — the default for new image rows. Rows with their own ratio keep it. A preset default renders that preset's class; a custom one renders `ll-ba-single__ratio--default`, sized by `--ll-ba-default-ratio` / `--ll-ba-default-ratio-value` on `:root` (plus `ll-ba-single__ratio--landscape` when it's wide enough, ≥ 1.7:1, to stack before/after images like 16/9 does). Theme overrides of the card/single templates should resolve ratios with `bag_resolve_image_ratio( $row )`.
+**Settings → Display → Default Image Ratio** (16/9, 1/1, 3/1, 4/5, or Custom `W:H`) applies to every post image whose **Individual Image Ratio** is "Site default" — the default for new image rows. Rows with their own ratio keep it. A preset default renders that preset's class; a custom one renders `ll-ba-single__ratio--default`, sized by `--ll-ba-default-ratio` / `--ll-ba-default-ratio-value` on `:root` (plus `ll-ba-single__ratio--landscape` when it's wide enough, ≥ 1.7:1, to stack before/after images like 16/9 does). Theme overrides of the card/single templates should resolve ratios with `bag_resolve_image_ratio( $row )`.
 
 ### Card Background Image
 
@@ -513,7 +564,7 @@ Filter: `lifted_logic/bag/nsfw_modal_markup`
 
 Overrides the sensitive-content confirmation modal shown on single posts where the "Sensitive Images" (`ll_ba_is_nsfw`) field is enabled, unless the visitor's `ll-ba-sensitive-mode` cookie is already `unblur`. The modal markup must keep the `#ll-ba-nsfw-modal` id and `ll-ba-hidden` class — `resources/js/nsfw-modal.js` looks up the modal by id and toggles `ll-ba-hidden`. Buttons are wired up via `data-nsfw-action` values (`unblur-once`, `unblur-all`, `leave`); the close button additionally needs `data-fallback-url` for same-origin-referrer-less visits.
 
-`$message` comes from the **NSFW Popup → NSFW Popup Text** field on the **B&A Posts → Settings** options page (defaults to "This before and after contains sensitive content." if empty). `$archive_url` is the Before & After post type archive link, used as the close button's fallback URL.
+`$message` comes from the **Display → Sensitive Content Popup Text** field on the **B&A Posts → Settings** options page (defaults to "This before and after contains sensitive content." if empty). `$archive_url` is the Before & After post type archive link, used as the close button's fallback URL.
 
 The filter also receives `$actions` — the `.ll-ba-nsfw-modal__actions` button group HTML — as its own string, since themes will most often want to swap out just the buttons while leaving the rest of the modal untouched.
 
@@ -617,7 +668,7 @@ Filter: `lifted_logic/bag/slider_card_sensitive_overlay_markup`
 
 Overrides the sensitive-content overlay panel shown on slider cards (Before & After Slider component) when a post has the "Sensitive Images" (`ll_ba_is_nsfw`) field enabled. The overlay is only shown when the visitor's `ll-ba-sensitive-mode` cookie is not `unblur` — if the cookie is already `unblur`, `applySensitiveMode()` never adds `is-blurred` to the card, so the overlay remains hidden.
 
-`$message` is the same text from **B&A Posts → Settings → NSFW Popup → NSFW Popup Text** (defaults to "This before and after contains sensitive content." if empty).
+`$message` is the same text from **B&A Posts → Settings → Display → Sensitive Content Popup Text** (defaults to "This before and after contains sensitive content." if empty).
 
 The two buttons in the overlay are wired via `data-slider-card-action` attributes handled by `before-and-after-slider.js`:
 - `unblur-once` — removes `is-blurred` from the single card only; cookie is untouched
