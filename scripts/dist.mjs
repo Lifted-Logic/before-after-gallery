@@ -86,13 +86,14 @@ const mustShip = [
   'll-bag.php',
   'public/build/.vite/manifest.json',
   'vendor/autoload.php',
+  'vendor/yahnis-elsts/plugin-update-checker/plugin-update-checker.php', // updates from Spaces
   'resources/css/primitives.css',        // runtime-read, not Vite-bundled —
   'resources/css/ba-colors.css',         // stripping these broke staging once
   'resources/img/symbol-defs.svg',
   'resources/vendor/magnific-popup/magnific-popup.css',
   'resources/vendor/magnific-popup/jquery.magnific-popup.min.js',
 ];
-const mustNotShip = ['/hot', 'node_modules/', '.git/', 'vendor/php-stubs', 'package.json', '.distignore'];
+const mustNotShip = ['/hot', 'node_modules/', '.git/', 'vendor/php-stubs', 'vendor/nesbot/', 'vendor/illuminate/database/', 'package.json', '.distignore'];
 for ( const f of mustShip ) if ( !listing.includes( f ) ) die( `zip is missing ${f}` );
 for ( const f of mustNotShip ) if ( listing.includes( f ) ) die( `zip must not contain ${f}` );
 const shippedMain = sh( `unzip -p "${zipPath}" "${slug}/ll-bag.php"` );
